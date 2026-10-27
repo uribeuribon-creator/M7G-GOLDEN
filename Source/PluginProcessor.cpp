@@ -1,13 +1,21 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 void M7GProcessor::controlTick() {
-  if (manualCommit.load() == 1 && !automatic()) {
+  bool stoppedFreeze =
+      !automatic() && publishedAutomatic.load() && manualCommit.load() != 1;
+  if (!automatic() && (manualCommit.load() == 1 || stoppedFreeze)) {
     for (size_t i = 0; i < rack::Count; ++i) {
       auto k = static_cast<rack::Param>(i);
       if (k != rack::AlienAutomation && k != rack::Bypass && k != rack::Solo)
-        setValue(k, effective[i].load());
+        setValue(k,
+                 effective[i].load() + (stoppedFreeze && k == rack::OutputTrim
+                                            ? publishedMakeupDB.load()
+                                            : 0));
     }
     manualCommit.store(2);
+    publishedAutomatic.store(false);
+    if (stoppedFreeze)
+      runtimeReset.store(true);
   }
   if (noiseLearnState.load() == 2) {
     float profile = learnedNoise.load();
@@ -141,6 +149,8 @@ void M7GProcessor::setCurrentProgram(int i) {
   for (size_t k = 0; k < v.size(); ++k)
     setValue(static_cast<rack::Param>(k), v[k]);
   program.store(i);
+  manualCommit.store(0);
+  publishedAutomatic.store(false);
   runtimeReset.store(true);
 }
 bool M7GProcessor::isBusesLayoutSupported(const BusesLayout &l) const {
@@ -164,6 +174,8 @@ const char *M7GProcessor::action(int i) {
 void M7GProcessor::prepareToPlay(double sr, int block) {
   rate = sr;
   runtimeReady = false;
+  publishedAutomatic.store(false);
+  publishedMakeupDB.store(0);
   wasAutomatic = automatic();
   manualCommit.store(0);
   quietSamples = 0;
@@ -403,6 +415,8 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   bool autoOn = settings[rack::AlienAutomation] > .5f;
   if (runtimeReset.exchange(false)) {
     runtimeReady = false;
+    if (!autoOn)
+      producerMakeupDB = 0;
     wasAutomatic = autoOn;
     manualCommit.store(0);
   }
@@ -455,6 +469,9 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   wasAutomatic = autoOn;
   for (size_t k = 0; k < rack::Count; ++k)
     effective[k].store(settings[k]);
+  publishedMakeupDB.store(
+      autoOn ? producerMakeupDB * settings[rack::AutoProducer] * .01f : 0);
+  publishedAutomatic.store(autoOn);
   if (noiseLearnRequest.exchange(false)) {
     noiseLearner.start(rate);
     learning = true;
@@ -638,7 +655,8 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
     if (activeMode != 0)
       neural.processFrame(denoised, channels,
                           p[rack::NoiseOn] > .5f && voice != 5
-                              ? p[rack::NoiseAmount] * .01f
+                              ? p[rack::NoiseAmount] * .01f *
+                                    (1 - p[rack::NeuralProtect] * .003f)
                               : 0);
     if (activeMode != 0) {
       for (int c = 0; c < channels; ++c)
@@ -761,6 +779,22 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
 }
 juce::ValueTree M7GProcessor::parameterState() {
   auto state = apvts.copyState();
+  if (!automatic() && (manualCommit.load() == 1 || publishedAutomatic.load())) {
+    bool addMakeup = publishedAutomatic.load();
+    for (size_t i = 0; i < rack::Count; ++i) {
+      auto k = static_cast<rack::Param>(i);
+      if (k == rack::AlienAutomation || k == rack::Bypass || k == rack::Solo)
+        continue;
+      auto child = state.getChildWithProperty("id", rack::specs()[i].id);
+      if (child.isValid())
+        child.setProperty("value",
+                          effective[i].load() +
+                              (addMakeup && k == rack::OutputTrim
+                                   ? publishedMakeupDB.load()
+                                   : 0),
+                          nullptr);
+    }
+  }
   state.setProperty("program", program.load(), nullptr);
   state.setProperty("factoryCreator", rack::presetCreator, nullptr);
   return state;
@@ -774,6 +808,8 @@ void M7GProcessor::selectCompare(int slot) {
   auto next = compare[size_t(slot)].createCopy();
   program.store(int(next.getProperty("program", 0)));
   apvts.replaceState(next);
+  manualCommit.store(0);
+  publishedAutomatic.store(false);
   runtimeReset.store(true);
   activeCompare = slot;
 }
@@ -810,6 +846,8 @@ void M7GProcessor::setStateInformation(const void *data, int bytes) {
   program.store(juce::jlimit(0, rack::presetCount - 1,
                              int(state.getProperty("program", 0))));
   apvts.replaceState(state);
+  manualCommit.store(0);
+  publishedAutomatic.store(false);
   runtimeReset.store(true);
 }
 void M7GProcessor::beginAnalysis(int module) {

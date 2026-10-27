@@ -164,6 +164,7 @@ enum Param {
   AlienAutomation,
   KeepHuman,
   NoiseProfile,
+  NeuralProtect,
   Count
 };
 struct Spec {
@@ -346,7 +347,9 @@ inline const std::array<Spec, Count> &specs() {
        {"alienautomation", "Alien Automation AUTO", 0, 1, 0, 1, "", true},
        {"keephuman", "Conservar expresion", 0, 100, 70, .1f, " %"},
        {"noiseprofile", "Perfil de ruido aprendido", -100, -20, -100, .1f,
-        " dB"}}};
+        " dB"},
+       {"neuralprotect", "Conservar detalle al limpiar", 0, 100, 70, .1f,
+        " %"}}};
   return s;
 }
 using Values = std::array<float, Count>;

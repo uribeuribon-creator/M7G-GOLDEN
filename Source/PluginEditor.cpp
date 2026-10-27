@@ -467,7 +467,7 @@ RackModule::RackModule(M7GProcessor &p, int module)
     break;
   case 17:
     knob(NoiseAmount, "QUITAR RUIDO");
-    knob(TransientProtect, "CUIDAR VOZ");
+    knob(NeuralProtect, "CUIDAR DETALLES");
     break;
   case 18:
     knob(PreampStyle, "TIPO DE PREVIO");
@@ -604,11 +604,12 @@ void RackModule::paint(juce::Graphics &g) {
     vu(g, graph.reduced(4).withTrimmedBottom(10), reduction, true);
     g.setColour(cyan.withAlpha(.18f));
     g.fillRect(graph.getX() + 5, graph.getBottom() - 8, graph.getWidth() - 10,
-               4);
+               4.0f);
     g.setColour(cyan);
-    g.fillRect(
-        graph.getX() + 5, graph.getBottom() - 8,
-        (graph.getWidth() - 10) * juce::jlimit(0.0f, 1.0f, reduction / 18), 4);
+    g.fillRect(graph.getX() + 5, graph.getBottom() - 8,
+               (graph.getWidth() - 10) *
+                   juce::jlimit(0.0f, 1.0f, reduction / 18),
+               4.0f);
     return;
   }
   if (index == 0) {

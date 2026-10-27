@@ -124,6 +124,24 @@ int main() {
     check(p->effectiveValue(EQGain) == -4, "MANUAL edit ignored");
     std::cout << "PASS: live AUTO, internal values, MANUAL latch, no drift, "
                  "manual edit, audio retained\n";
+    auto stopped = std::make_unique<M7GProcessor>();
+    stopped->setValue(EngineMode, 0);
+    stopped->prepareToPlay(48000, 256);
+    render(*stopped, 200, .025f);
+    float savedTrim = stopped->effectiveValue(InputTrim);
+    stopped->setValue(AlienAutomation, 0);
+    juce::MemoryBlock instant;
+    stopped->getStateInformation(instant);
+    auto instantRestore = std::make_unique<M7GProcessor>();
+    instantRestore->setStateInformation(instant.getData(),
+                                        int(instant.getSize()));
+    check(std::abs(instantRestore->value(InputTrim) - savedTrim) < .06f,
+          "Immediate stopped-transport state lost effective values");
+    stopped->controlTick();
+    check(std::abs(stopped->value(InputTrim) - savedTrim) < .06f,
+          "Stopped transport did not latch MANUAL");
+    std::cout << "PASS: stopped-transport MANUAL capture and immediate session "
+                 "save\n";
     p->learnNoise();
     render(*p, 376, .003f, true);
     p->controlTick();

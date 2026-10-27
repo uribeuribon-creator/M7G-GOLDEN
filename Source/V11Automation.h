@@ -24,6 +24,7 @@ inline void propose(rack::Values &p, const rack::Values &base, float db,
   float profile = base[NoiseProfile];
   set(GateThreshold, profile > -99 ? profile + p[InputTrim] + 8
                                    : std::clamp(level - 29, -65.0f, -35.0f));
+  set(NeuralProtect, 80);
   set(GateRange, 22 + nn[3] * 16);
   set(GateAttack, 1.5f + crest * .04f);
   set(GateRelease, 110 + crest * 4);

@@ -105,6 +105,8 @@ private:
   std::array<std::atomic<float>, 8> modelTargets;
   std::atomic<float> liveCrest{0}, liveBrightness{0}, learnedNoise{-100};
   std::atomic<int> manualCommit{0};
+  std::atomic<bool> publishedAutomatic{false};
+  std::atomic<float> publishedMakeupDB{0};
   rack::Values runtime = rack::defaults(), frozen = rack::defaults();
   bool wasAutomatic = false, runtimeReady = false;
   std::atomic<bool> runtimeReset{false};
