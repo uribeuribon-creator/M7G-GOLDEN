@@ -771,10 +771,11 @@ M7GEditor::M7GEditor(M7GProcessor &p) : AudioProcessorEditor(p), processor(p) {
   input = std::make_unique<RackKnob>(p, rack::InputTrim, "INPUT");
   mix = std::make_unique<RackKnob>(p, rack::Mix, "MIX");
   output = std::make_unique<RackKnob>(p, rack::OutputTrim, "OUTPUT");
-  sino = std::make_unique<RackKnob>(p, rack::Sino, "SINO / ESPECTACULAR");
-  for (auto *c : {input.get(), mix.get(), output.get(), sino.get()})
+  producer =
+      std::make_unique<RackKnob>(p, rack::AutoProducer, "ALIEN AUTO PRODUCER");
+  for (auto *c : {input.get(), mix.get(), output.get(), producer.get()})
     addAndMakeVisible(c);
-  sino->slider.setTooltip(
+  producer->slider.setTooltip(
       "Macro neuronal local. Analiza continuamente y mezcla objetivos de "
       "nivel, color, espacio y armonias; los controles manuales son su punto "
       "de partida.");
@@ -830,7 +831,7 @@ void M7GEditor::resized() {
   place(status, 986, 78, 282, 29);
   place(*input, 14, 787, 85, 83);
   place(*mix, 320, 787, 85, 83);
-  place(*sino, 429, 768, 119, 109);
+  place(*producer, 429, 768, 119, 109);
   place(*output, 855, 787, 85, 83);
   place(bypass, 1095, 780, 155, 25);
   place(solo, 1095, 813, 155, 25);
@@ -913,8 +914,8 @@ void M7GEditor::paint(juce::Graphics &g) {
              " dB",
          {905, 527, 275, 40}, 12, gold);
     text(g,
-         "SINO AUTO LEVEL " + juce::String(processor.sinoTrim.load(), 1) +
-             " dB",
+         "AUTO PRODUCER LEVEL " +
+             juce::String(processor.producerTrim.load(), 1) + " dB",
          {905, 578, 275, 35}, 11, cyan);
   }
   auto meter = [&](int x, int y, int w, float db) {

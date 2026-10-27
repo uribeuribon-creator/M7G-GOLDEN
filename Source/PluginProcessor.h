@@ -53,10 +53,11 @@ public:
   void beginAnalysis(int module);
   int engineMode() const { return activeMode; }
   std::atomic<float> dereverbGR{0}, resonanceGR{0}, fetGR{0}, pitchNN{0},
-      sinoTrim{0};
+      producerTrim{0};
   std::atomic<int> harmonyVoices{0};
   std::atomic<float> alignOffset{0}, alignConfidence{0};
   std::atomic<bool> referencePresent{false};
+  std::atomic<bool> analysisReferenceSeen{false};
   float verbLayerDB(int i) const { return layerMeters[size_t(i)].load(); }
   bool applyAnalysis();
   int analysisTarget() const { return requestedModule.load(); }
@@ -117,10 +118,10 @@ private:
   std::atomic<double> tailSeconds{6};
   std::atomic<int> activeMode{1};
   int neuralClock = 0;
-  float previousBlockDB = -100, sinoMakeupDB = 0;
+  float previousBlockDB = -100, producerMakeupDB = 0;
   std::array<float, 8> autoTargets{};
   void configureMode(int);
-  void applySino(rack::Values &, float);
+  void applyAutoProducer(rack::Values &, float);
   void refreshFilters();
   void meterFFT();
   juce::ValueTree parameterState();

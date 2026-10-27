@@ -62,7 +62,7 @@ void M7GProcessor::prepareToPlay(double sr, int block) {
   decimation = juce::jmax(1, int(sr / 22050));
   decimatePos = pitchPos = pitchCount = pitchHop = write = fftPos =
       filterClock = neuralClock = 0;
-  phase = autoGainDB = sinoMakeupDB = 0;
+  phase = autoGainDB = producerMakeupDB = 0;
   pitchWindow.fill(0);
   fftData.fill(0);
   pitchHz.store(0);
@@ -144,8 +144,8 @@ void M7GProcessor::configureMode(int mode) {
                                     saturation.latency() + limiter.latency() +
                                     (alignmentActive ? aligner.latency() : 0));
 }
-void M7GProcessor::applySino(rack::Values &p, float rawDB) {
-  float s = p[rack::Sino] * .01f;
+void M7GProcessor::applyAutoProducer(rack::Values &p, float rawDB) {
+  float s = p[rack::AutoProducer] * .01f;
   if (s <= 0)
     return;
   auto blend = [&](rack::Param k, float target) {
@@ -186,7 +186,7 @@ void M7GProcessor::applySino(rack::Values &p, float rawDB) {
   p[rack::InputTrim] =
       juce::jlimit(-24.0f, 24.0f, manual + s * (target - manual));
   p[rack::AutoGain] = 0;
-  sinoTrim.store(p[rack::InputTrim] - manual);
+  producerTrim.store(p[rack::InputTrim] - manual);
 }
 void M7GProcessor::refreshFilters() {
   const auto &p = settings;
@@ -263,6 +263,8 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   bool hasReference =
       reference.getNumChannels() > 0 && reference.getRMSLevel(0, 0, n) > .0005f;
   referencePresent.store(hasReference);
+  if (analysisState.load() == 1 && hasReference)
+    analysisReferenceSeen.store(true);
   double tempo = 120;
   if (auto *head = getPlayHead())
     if (auto pos = head->getPosition())
@@ -307,7 +309,7 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
     neuralClock = int(rate * .5);
   }
   neuralClock -= n;
-  applySino(settings, rawDB);
+  applyAutoProducer(settings, rawDB);
   const auto &p = settings;
   int voice = juce::jlimit(0, 5, int(p[rack::VoiceType]));
   if (filterClock <= 0 || p[rack::EQOn] != lastSettings[rack::EQOn] ||
@@ -349,7 +351,7 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   inputSmooth.setTargetValue(
       juce::Decibels::decibelsToGain(p[rack::InputTrim] + automatic));
   outputSmooth.setTargetValue(juce::Decibels::decibelsToGain(
-      p[rack::OutputTrim] + sinoMakeupDB * p[rack::Sino] * .01f));
+      p[rack::OutputTrim] + producerMakeupDB * p[rack::AutoProducer] * .01f));
   mixSmooth.setTargetValue(p[rack::Mix] * .01f);
   bypassSmooth.setTargetValue(p[rack::Bypass]);
   if (analysisRequest.exchange(false)) {
@@ -535,14 +537,15 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       float(std::sqrt(inEnergy / (n * channels))), -100.0f));
   outputDB.store(juce::Decibels::gainToDecibels(
       float(std::sqrt(outEnergy / (n * channels))), -100.0f));
-  if (p[rack::Sino] > .01f && p[rack::Bypass] < .5f && rawDB > -50 &&
+  if (p[rack::AutoProducer] > .01f && p[rack::Bypass] < .5f && rawDB > -50 &&
       outputDB.load() > -60) {
     float error = -18 - (outputDB.load() - p[rack::OutputTrim]);
-    sinoMakeupDB = juce::jlimit(
-        -6.0f, 12.0f,
-        sinoMakeupDB + (1 - std::exp(-float(n) / float(rate * .8))) * error);
-  } else if (p[rack::Sino] < .01f)
-    sinoMakeupDB *= std::exp(-float(n) / float(rate * .3));
+    producerMakeupDB =
+        juce::jlimit(-6.0f, 12.0f,
+                     producerMakeupDB +
+                         (1 - std::exp(-float(n) / float(rate * .8))) * error);
+  } else if (p[rack::AutoProducer] < .01f)
+    producerMakeupDB *= std::exp(-float(n) / float(rate * .3));
   reductionDB.store(p[rack::CompOn] > .5f ? analogue.gainReduction() : 0);
   fetGR.store(fet.gainReduction());
   deEssDB.store(cleaner.getDeEssReduction());
@@ -621,6 +624,7 @@ void M7GProcessor::setStateInformation(const void *data, int bytes) {
   apvts.replaceState(state);
 }
 void M7GProcessor::beginAnalysis(int module) {
+  analysisReferenceSeen.store(false);
   requestedModule.store(juce::jlimit(0, analysisAll, module));
   analysisState.store(1);
   analysisProgress.store(0);
@@ -750,7 +754,7 @@ bool M7GProcessor::applyAnalysis() {
   if (selected(23))
     setValue(rack::ThrowSensitivity, 150);
   if (selected(25)) {
-    if (referencePresent.load()) {
+    if (analysisReferenceSeen.load()) {
       setValue(rack::AlignAmount, 90);
       setValue(rack::AlignRange, 50);
     } else {

@@ -39,7 +39,7 @@ Se conservarán filtros lineales estables donde su función sea filtrado o recon
 - **Studio:** etapas no lineales con 8× y filtros de reconstrucción IIR; compensación de todos los retardos de ventanas, dry/wet y bypass.
 - **Linear:** reconstrucción FIR de fase lineal y compensación de su retardo; conserva las etapas espectrales. La fase lineal se refiere a estos filtros, no a una cadena no lineal completa.
 
-### SINO / ESPECTACULAR
+### ALIEN AUTO PRODUCER / ESPECTACULAR
 
 Macro automatizable 0–100 %, análisis continuo de nivel, espectro y periodicidad y política neuronal local. Debe producir cambios audibles graduales, mantener límites de ganancia y permitir comparación de nivel. No realizar cambios de preset ni de latencia silenciosamente. La selección manual de tonalidad tiene prioridad.
 

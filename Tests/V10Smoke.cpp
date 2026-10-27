@@ -18,7 +18,7 @@ void neutral(M7GProcessor &p) {
         DelayOn,   StereoOn,   ModOn,   DereverbOn, ResonanceOn, SaturationOn,
         HarmonyOn, SculptorOn, AlignOn, GodSpace})
     p.setValue(i, 0);
-  p.setValue(Sino, 0);
+  p.setValue(AutoProducer, 0);
   p.setValue(InputTrim, 0);
   p.setValue(OutputTrim, 0);
   p.setValue(Mix, 100);
@@ -64,10 +64,70 @@ std::vector<float> spaceRender(int mask) {
   }
   return out;
 }
+void sidechainCheck() {
+  auto p = std::make_unique<M7GProcessor>();
+  neutral(*p);
+  auto layout = p->getBusesLayout();
+  layout.inputBuses.set(0, juce::AudioChannelSet::mono());
+  layout.inputBuses.set(1, juce::AudioChannelSet::mono());
+  layout.outputBuses.set(0, juce::AudioChannelSet::stereo());
+  require(p->setBusesLayout(layout),
+          "Mono-to-stereo sidechain layout rejected");
+  p->setRateAndBufferSizeDetails(48000, 256);
+  p->prepareToPlay(48000, 256);
+  p->beginAnalysis(25);
+  juce::MidiBuffer midi;
+  auto voice = [](double t) {
+    if (t < 0)
+      return 0.0f;
+    float envelope = float(
+        .05 +
+        .2 * std::pow(.5 + .5 * std::sin(juce::MathConstants<double>::twoPi *
+                                         3.7 * t),
+                      4));
+    return envelope *
+           float(std::sin(juce::MathConstants<double>::twoPi * 220 * t));
+  };
+  for (int block = 0; block < 565; ++block) {
+    juce::AudioBuffer<float> audio(2, 256);
+    for (int i = 0; i < 256; ++i) {
+      double t = double(block * 256 + i) / 48000;
+      bool silent = t > 2.8;
+      audio.setSample(0, i, silent ? 0 : voice(t - .025));
+      audio.setSample(1, i, silent ? 0 : voice(t));
+    }
+    p->processBlock(audio, midi);
+  }
+  require(!p->referencePresent.load(),
+          "Sidechain fixture must end with a pause");
+  require(p->analysisState.load() == 2 && p->applyAnalysis() &&
+              p->analysisState.load() == 0 && p->value(AlignOn) > .5f,
+          "Alignment forgot reference during phrase-end silence");
+  for (int block = 565; block < 850; ++block) {
+    juce::AudioBuffer<float> audio(2, 256);
+    for (int i = 0; i < 256; ++i) {
+      double t = double(block * 256 + i) / 48000;
+      audio.setSample(0, i, voice(t - .025));
+      audio.setSample(1, i, voice(t));
+    }
+    p->processBlock(audio, midi);
+  }
+  require(std::abs(p->alignOffset.load() - 25) < 5.1 &&
+              p->alignConfidence.load() > .6f,
+          "Active mono sidechain was overwritten by stereo output");
+  std::cout << "PASS: host-style mono/stereo sidechain, phrase-end analysis "
+               "and alignment offset "
+            << p->alignOffset.load() << " ms\n";
+}
+
 } // namespace
-int main() {
+int main(int argc, char **argv) {
   try {
     juce::ScopedJuceInitialiser_GUI init;
+    if (argc > 1 && std::string(argv[1]) == "--sidechain") {
+      sidechainCheck();
+      return 0;
+    }
     juce::MidiBuffer midi;
     auto begin = std::chrono::steady_clock::now();
     auto p = std::make_unique<M7GProcessor>();
@@ -305,6 +365,7 @@ int main() {
     std::cout << "PASS: new spectral, harmony, FET, Unison, parallel and "
                  "triple-space analysis routes\n";
 
+    sidechainCheck();
     std::cout << "PASS: V10 integration checks in "
               << std::chrono::duration<double>(
                      std::chrono::steady_clock::now() - begin)

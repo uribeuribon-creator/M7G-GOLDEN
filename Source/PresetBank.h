@@ -11,8 +11,8 @@ struct Preset {
 inline const std::array<Preset, presetCount> &presets() {
   static const auto bank = [] {
     std::array<Preset, presetCount> b{};
-    const char *special[]{"SINO | ESPECTACULAR",    "SINO | Natural Silk",
-                          "SINO | Robot Platinum",  "GOD | Eight Voice Choir",
+    const char *special[]{"AUTO | ESPECTACULAR",    "AUTO | Natural Silk",
+                          "AUTO | Robot Platinum",  "GOD | Eight Voice Choir",
                           "GOD | Fifth Dimension",  "GOD | Octave Cathedral",
                           "GOD | Angelic Shimmer",  "IRON | Urban Weight",
                           "VALVE | Intimate Gold",  "CONSOLE | Clean Pressure",
@@ -74,7 +74,7 @@ inline Values presetValues(int index) {
   int r = p.role, g = p.genre, v = p.variation % 6;
   auto x = defaults();
   x[VoiceType] = float(r);
-  x[Sino] = index < 14 ? 0.0f : float(20 + g * 4 + v * 3);
+  x[AutoProducer] = index < 14 ? 0.0f : float(20 + g * 4 + v * 3);
   x[WarmDrive] = float(30 + g * 5 + v * 6);
   x[WarmBias] = float(20 + v * 8);
   x[PreampStyle] = float(v % 6);
@@ -139,7 +139,7 @@ inline Values presetValues(int index) {
   x[HarmonyDetune] = float(4 + v * 2);
   x[HarmonyFormant] = v == 4 ? 1.0f : 0.0f;
   if (index < 14) {
-    x[Sino] =
+    x[AutoProducer] =
         index == 0 ? 90.0f : (index == 1 ? 45.0f : (index == 2 ? 75.0f : 0));
     if (index == 2) {
       x[PitchStyle] = 1;
@@ -179,7 +179,7 @@ inline Values presetValues(int index) {
       x[DelayStyle] = 1;
     }
     if (index == 12) {
-      x[Sino] = 0;
+      x[AutoProducer] = 0;
       x[WarmDrive] = 20;
       x[SatLow] = 8;
       x[SatMid] = 10;
@@ -188,7 +188,7 @@ inline Values presetValues(int index) {
     }
     if (index == 13) {
       x[EngineMode] = 0;
-      x[Sino] = 0;
+      x[AutoProducer] = 0;
       x[NoiseOn] = x[TuneOn] = x[DereverbOn] = x[ResonanceOn] = x[HarmonyOn] =
           0;
       x[ReverbMix] = x[DelayMix] = x[ModMix] = 0;
@@ -223,7 +223,7 @@ inline Values presetValues(int index) {
   x[SculptorTilt] = -1.0f - (g % 3) * .3f;
   if (index >= 230) {
     int e = index - 230, group = e / 5, k = e % 5;
-    x[Sino] = 0;
+    x[AutoProducer] = 0;
     x[HarmonyOn] = 0;
     x[ModOn] = 0;
     x[GodSpace] = 0;

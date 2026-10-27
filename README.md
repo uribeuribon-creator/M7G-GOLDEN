@@ -22,11 +22,11 @@ Las tres páginas muestran **Cabina Vocal**, **Alien Intelligence** y **Triple G
 
 **BUS VOCAL** evita afinación monofónica, generación de armonías y salida neuronal sobre notas simultáneas.
 
-## SINO / ESPECTACULAR
+## ALIEN AUTO PRODUCER / ESPECTACULAR
 
 Macro 0–100 % automatizable. Analiza continuamente nivel, espectro y periodicidad; una MLP local combina objetivos de limpieza, color, dinámica y espacio con los ajustes manuales. Al 80–100 % activa GOD SPACE y una combinación de las tres reverbs con delay ducked. La selección de previo y tonalidad manual sigue disponible. La macro gestiona su nivel y compensa pérdidas de salida de forma gradual, con ganancia limitada y un objetivo aproximado de −18 dBFS RMS antes del trim de salida.
 
-**Analizar todo** y los botones por módulo miden tres segundos de audio reproducido y aplican recomendaciones. Si no hay señal, se indica. La alineación necesita audio en el sidechain. Cambiar preset cancela el análisis. Los resultados se aplican también si se cierra el editor. En SINO activo, los parámetros manuales son el punto de partida de la macro; SINO a cero permite control manual completo.
+**Analizar todo** y los botones por módulo miden tres segundos de audio reproducido y aplican recomendaciones. Si no hay señal, se indica. La alineación necesita audio en el sidechain. Cambiar preset cancela el análisis. Los resultados se aplican también si se cierra el editor. En Auto Producer activo, los parámetros manuales son el punto de partida de la macro; Auto Producer a cero permite control manual completo.
 
 No se promete una mezcla terminada de ingeniería universal ni un máster apto para Spotify a partir de cualquier grabación. La voz procesada sigue formando parte de una mezcla musical con otras pistas, niveles y decisiones artísticas.
 
@@ -54,7 +54,7 @@ Detener el transporte al cambiar modo o activar alineación. Studio/Linear son m
 
 1. Cerrar Studio One y ejecutar **M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe**.
 2. Buscar **M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN** en Efectos VST3. Si no aparece, restablecer bloqueados y volver a escanear los VST3 en las opciones de Studio One.
-3. Elegir el preset según función y género, reproducir la voz y usar Analizar todo o SINO. Comparar a nivel equivalente con A/B.
+3. Elegir el preset según función y género, reproducir la voz y usar Analizar todo o Auto Producer. Comparar a nivel equivalente con A/B.
 4. Para alinear dobles/armonías: insertar V10 en esa pista, activar su sidechain, enviar la principal a **Lead reference**, activar Vocal Align y analizar reproduciendo ambas pistas. El envío de referencia no es una salida audible del plugin.
 5. Para grabar, usar Monitor; para mezclar con la cadena completa, usar Studio/Linear y compensación del DAW.
 

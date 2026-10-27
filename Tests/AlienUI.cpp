@@ -29,14 +29,16 @@ int main(int argc, char **argv) {
   }
   std::unique_ptr<juce::AudioProcessorEditor> editor(p->createEditor());
   editor->setSize(1280, 900);
-  int modules = 0, ai = 0, knobs = 0, presetItems = 0, parallelBars=0;
+  int modules = 0, ai = 0, knobs = 0, presetItems = 0, parallelBars = 0;
   juce::TextButton *global = nullptr;
   juce::ToggleButton *bypass = nullptr;
   std::vector<juce::TextButton *> analyse;
   visit(*editor, [&](juce::Component &c) {
     if (dynamic_cast<RackModule *>(&c))
       ++modules;
-    if(auto* slider=dynamic_cast<juce::Slider*>(&c))if(slider->getSliderStyle()==juce::Slider::LinearHorizontal)++parallelBars;
+    if (auto *slider = dynamic_cast<juce::Slider *>(&c))
+      if (slider->getSliderStyle() == juce::Slider::LinearHorizontal)
+        ++parallelBars;
     if (dynamic_cast<RackKnob *>(&c))
       ++knobs;
     if (auto *combo = dynamic_cast<juce::ComboBox *>(&c))
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
             << " analysis buttons, " << knobs << " knobs, " << presetItems
             << " presets\n";
   if (modules != 26 || ai != 26 || knobs != 113 || presetItems != 280 ||
-      !global || !bypass || parallelBars!=26)
+      !global || !bypass || parallelBars != 26)
     return 1;
   if (argc > 1) {
     auto image =
@@ -67,10 +69,24 @@ int main(int argc, char **argv) {
     auto stream = out.createOutputStream();
     if (!stream || !juce::PNGImageFormat().writeImageToStream(image, *stream))
       return 2;
-    for(const auto& page:std::array<std::pair<juce::String,juce::String>,2>{{{"CABINA VOCAL","-cabina"},{"ALIEN INTELLIGENCE","-intelligence"}}}){
-      visit(*editor,[&](juce::Component& child){if(auto* button=dynamic_cast<juce::TextButton*>(&child))if(button->getButtonText()==page.first)button->onClick();});
-      auto pageImage=editor->createComponentSnapshot(editor->getLocalBounds(),true);
-      auto pageFile=out.getSiblingFile(out.getFileNameWithoutExtension()+page.second+".png");pageFile.deleteFile();auto pageStream=pageFile.createOutputStream();if(!pageStream||!juce::PNGImageFormat().writeImageToStream(pageImage,*pageStream))return 6;
+    for (const auto &page :
+         std::array<std::pair<juce::String, juce::String>, 2>{
+             {{"CABINA VOCAL", "-cabina"},
+              {"ALIEN INTELLIGENCE", "-intelligence"}}}) {
+      visit(*editor, [&](juce::Component &child) {
+        if (auto *button = dynamic_cast<juce::TextButton *>(&child))
+          if (button->getButtonText() == page.first)
+            button->onClick();
+      });
+      auto pageImage =
+          editor->createComponentSnapshot(editor->getLocalBounds(), true);
+      auto pageFile = out.getSiblingFile(out.getFileNameWithoutExtension() +
+                                         page.second + ".png");
+      pageFile.deleteFile();
+      auto pageStream = pageFile.createOutputStream();
+      if (!pageStream ||
+          !juce::PNGImageFormat().writeImageToStream(pageImage, *pageStream))
+        return 6;
     }
     std::cout << "UI image: " << out.getFullPathName() << "\n";
   }

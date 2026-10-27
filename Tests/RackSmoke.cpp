@@ -11,7 +11,7 @@ void neutral(M7GProcessor &p) {
         StereoOn,     ModOn,     Bypass,  Solo,       DereverbOn, ResonanceOn,
         SaturationOn, HarmonyOn, FetOn,   SculptorOn, AlignOn,    GodSpace})
     p.setValue(id, 0);
-  p.setValue(Sino, 0);
+  p.setValue(AutoProducer, 0);
   p.setValue(CompParallel, 100);
   p.setValue(EQParallel, 100);
   p.setValue(SatParallel, 100);

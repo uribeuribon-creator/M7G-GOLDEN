@@ -91,7 +91,7 @@ private:
       menu{"..."};
   juce::ToggleButton bypass{"BYPASS"}, solo{"SOLO / DELTA"},
       autoLevel{"AUTO LEVEL"};
-  std::unique_ptr<RackKnob> input, mix, output, sino;
+  std::unique_ptr<RackKnob> input, mix, output, producer;
   std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
       bypassAttachment, soloAttachment, autoAttachment;
   juce::Label status;

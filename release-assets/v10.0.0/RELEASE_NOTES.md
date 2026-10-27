@@ -3,7 +3,7 @@
 - Cabina de nave espacial negra/dorada/cian, iconos alien y lema graffiti **LAS MAKKINAS PRODUCEN SOLAS**.
 - 280 presets: 230 de producción vocal y 50 efectos clásicos/futuristas. Autoría visible: **Makkine Seven Golden**. Los nombres de artistas son referencias de estilo; no implican participación ni clonación de voces.
 - 26 módulos con análisis automático individual, análisis global y sección paralela por módulo.
-- SINO / ESPECTACULAR, autoajuste local con MLP y CNN de candidatos de pitch; pesos, entrenamiento reproducible y evaluación sintética incluidos en el repositorio. RNNoise conserva su modelo/licencia original.
+- ALIEN AUTO PRODUCER / ESPECTACULAR, autoajuste local con MLP y CNN de candidatos de pitch; pesos, entrenamiento reproducible y evaluación sintética incluidos en el repositorio. RNNoise conserva su modelo/licencia original.
 - Seis previos digitales originales con carga virtual, memoria magnética, PAD y polarización virtual 48V. Un VST3 no activa phantom ni cambia la impedancia física de la interfaz.
 - Compresión óptica/FET en serie, New York paralelo, Punch, cinco leyes de saturación multibanda y EQ paralelo limpio/sucio.
 - EQ Sculptor y control espectral de resonancias con máscara estéreo enlazada, persistencia y protección armónica/de transitorios.
