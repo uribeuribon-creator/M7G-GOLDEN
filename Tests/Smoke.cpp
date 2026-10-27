@@ -1,7 +1,11 @@
 #include "../Source/PluginProcessor.h"
 #include <iostream>
 int main() {
-  M7GProcessor p;
+  juce::ScopedJuceInitialiser_GUI initialise;
+  // A host creates processors on the heap. Several embedded RNNoise buffers
+  // exceed MSVC's default 1 MiB stack if all fixtures live in main's frame.
+  auto processor = std::make_unique<M7GProcessor>();
+  auto &p = *processor;
   juce::MidiBuffer midi;
   for (double sr : {44100.0, 48000.0, 96000.0})
     for (int size : {64, 256, 1024}) {
@@ -42,7 +46,8 @@ int main() {
 
   // Exercise actual recurrent-model inference, not only the heuristic gate.
   for (double neuralRate : {44100.0, 48000.0, 96000.0}) {
-    NeuralDenoiser denoiser;
+    auto denoiserStorage = std::make_unique<NeuralDenoiser>();
+    auto &denoiser = *denoiserStorage;
     denoiser.prepare(neuralRate);
     uint32_t randomState = 1;
     double noiseIn = 0, noiseOut = 0;
@@ -94,7 +99,8 @@ int main() {
   if (essDb > -3 || quietDb > -6)
     return 7;
   // Native mono layout and variable host block lengths, including one sample.
-  M7GProcessor mono;
+  auto monoStorage = std::make_unique<M7GProcessor>();
+  auto &mono = *monoStorage;
   auto layout = mono.getBusesLayout();
   layout.inputBuses.set(0, juce::AudioChannelSet::mono());
   layout.outputBuses.set(0, juce::AudioChannelSet::mono());
@@ -158,7 +164,8 @@ int main() {
   if (musical.target(440, .3f, .025f) != 0)
     return 15;
   // Polyphonic bus keeps all three fundamental notes.
-  M7GProcessor bus;
+  auto busStorage = std::make_unique<M7GProcessor>();
+  auto &bus = *busStorage;
   bus.apvts.getParameter("voicetype")->setValueNotifyingHost(1);
   bus.apvts.getParameter("intensity")->setValueNotifyingHost(1);
   bus.prepareToPlay(48000, 256);
@@ -234,7 +241,8 @@ int main() {
   p.apvts.getParameter("intensity")->setValueNotifyingHost(.42f);
   juce::MemoryBlock state;
   p.getStateInformation(state);
-  M7GProcessor restored;
+  auto restoredStorage = std::make_unique<M7GProcessor>();
+  auto &restored = *restoredStorage;
   restored.setStateInformation(state.getData(), int(state.getSize()));
   if (std::abs(*restored.apvts.getRawParameterValue("intensity") - 42) > .01f)
     return 4;

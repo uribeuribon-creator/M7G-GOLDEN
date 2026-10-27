@@ -9,7 +9,7 @@ if (-not (Test-Path JUCE/CMakeLists.txt)) {
 }
 Checked { cmake -S . -B build-windows -A x64 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded }
 Checked { cmake --build build-windows --config Release -j 4 }
-Checked { ctest --test-dir build-windows -C Release --output-on-failure }
+Checked { ctest --test-dir build-windows -C Release --output-on-failure --verbose }
 $artefacts = Join-Path $PSScriptRoot 'build-windows/M7G_Golden_Voice_AI_artefacts/Release'
 $binary = Join-Path $artefacts 'VST3/M7G ALIEN VOICE.vst3/Contents/x86_64-win/M7G ALIEN VOICE.vst3'
 if (-not (Test-Path $binary)) { throw "Falta el binario VST3 Windows x64: $binary" }
