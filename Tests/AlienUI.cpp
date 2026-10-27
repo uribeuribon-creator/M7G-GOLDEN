@@ -144,10 +144,12 @@ int main(int argc, char **argv) {
   });
   if (!workflow || !search || !back || !forward || !random || !fav || !autoMode)
     return 8;
-  search->setText("no-preset-__", true);
+  search->setText("no-preset-__", false);
+  search->onTextChange();
   if (workflow->getNumItems() != 0)
     return 9;
-  search->setText("", true);
+  search->setText("", false);
+  search->onTextChange();
   if (workflow->getNumItems() < 40)
     return 10;
   int start = p->getCurrentProgram();

@@ -37,6 +37,11 @@ latch and no drift; learned floor -55.1 dBFS; 35-cent pitch-centre correction,
 0.165-cent residual mean and 14.77-cent vibrato RMS in a synthetic fixture.
 These are engineering checks, not singer/perceptual-quality ratings.
 
+All six Windows-PE suites passed under Wine for the V11 implementation. The
+UI check also exercises asynchronous search callbacks explicitly, navigation,
+random selection, favourite persistence and the separate AUTO/MANUAL control.
+The native Windows release gate remains required before publication.
+
 ## Limits
 
 No physical i5 performance certification, real-vocal comparative listening,
