@@ -33,6 +33,10 @@ int main(int argc, char **argv) {
     PClassInfo cls{};
     factory->getClassInfo(i, &cls);
     if (std::strcmp(cls.category, "Audio Module Class") == 0) {
+      std::printf("VST3 name: %s; class ID: ", cls.name);
+      for (auto byte : cls.cid)
+        std::printf("%02X", static_cast<unsigned char>(byte));
+      std::puts("");
       if (factory->createInstance(cls.cid, Vst::IComponent_iid,
                                   reinterpret_cast<void **>(&component)) !=
           kResultOk)

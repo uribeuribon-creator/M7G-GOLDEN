@@ -1,3 +1,20 @@
+# MAKKINE VOICE 7 — validación 0.2.1
+
+Actualización de nombre, sin cambios en los algoritmos de audio.
+
+- Compilación de VST3, Standalone e instalador Windows x64 completada con Clang/LLVM y SDK Microsoft.
+- El módulo VST3 devuelve el nombre **MAKKINE VOICE 7** mediante la interfaz que consulta el host.
+- Los módulos 0.2.0 y 0.2.1 se cargaron, procesaron audio estéreo y descargaron correctamente bajo Wine.
+- Identificador de clase VST3 conservado: `01EFCDAB8291EBFA4D374737476C6441`.
+- La suite Windows bajo Wine pasó las 54 combinaciones de perfiles/tasas/bloques, con el mismo comportamiento DSP medido.
+- Instalador verificado como PE AMD64, ProductName MAKKINE VOICE 7 y versión 0.2.1.
+- La actualización conserva el formato de estado y parámetros; instala el bundle con el nombre nuevo y elimina el bundle antiguo después de copiarlo correctamente. Esta migración y la reapertura de sesiones todavía requieren prueba en Windows real y Studio One 7.
+- El instalador no tiene firma digital. La compilación nativa con MSVC presenta una incompatibilidad previa con los arrays C99 de RNNoise; esta versión se ha compilado con Clang, sin modificar RNNoise.
+
+El registro siguiente corresponde a las verificaciones previas de 0.2.0. La interfaz de Studio One 7 y las comparaciones perceptuales con hardware/UAD siguen pendientes.
+
+---
+
 # Validación 0.2.0 — Windows VST3 y Linux
 
 Artefactos generados: VST3 Windows x64, Standalone Windows x64, instalador NSIS amd64, VST3/Standalone Linux.

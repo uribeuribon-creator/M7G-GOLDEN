@@ -27,7 +27,7 @@ M7GEditor::M7GEditor(M7GProcessor &p)
     l->setJustificationType(juce::Justification::centred);
     l->setColour(juce::Label::textColourId, juce::Colours::white);
   }
-  title.setText("M7G GOLDEN VOICE AI", juce::dontSendNotification);
+  title.setText("MAKKINE VOICE 7", juce::dontSendNotification);
   title.setFont(juce::Font(juce::FontOptions(30, juce::Font::bold)));
   title.setColour(juce::Label::textColourId, gold);
   subtitle.setText(
@@ -78,7 +78,7 @@ void M7GEditor::paint(juce::Graphics &g) {
   g.setColour(gold.withAlpha(.6f));
   g.setFont(juce::Font(juce::FontOptions(11)));
   g.drawText(
-      "M7G  /  GOLDEN SERIES                                   VOCAL ENGINE 02",
+      "MAKKINE  /  VOICE SERIES                                VOCAL ENGINE 7",
       40, 475, 620, 20, juce::Justification::centred);
 }
 void M7GEditor::timerCallback() {

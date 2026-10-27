@@ -1,0 +1,37 @@
+name: Publish MAKKINE VOICE 7 installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/v0.2.1/**
+      - .github/workflows/publish-makkine-release.yml
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify the installer checksum
+        working-directory: release-assets/v0.2.1
+        run: sha256sum --check --strict MAKKINE-VOICE-7-Setup-Windows-x64.exe.sha256
+      - name: Publish the renamed installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if ! gh release view v0.2.1 --json tagName >/dev/null 2>&1; then
+            gh release create v0.2.1 --target "$GITHUB_SHA" --draft --prerelease \
+              --title 'MAKKINE VOICE 7 v0.2.1 — Windows x64' \
+              --notes-file release-assets/v0.2.1/RELEASE_NOTES.md
+          fi
+          gh release upload v0.2.1 \
+            release-assets/v0.2.1/MAKKINE-VOICE-7-Setup-Windows-x64.exe \
+            release-assets/v0.2.1/MAKKINE-VOICE-7-Setup-Windows-x64.exe.sha256 \
+            --clobber
+          gh release edit v0.2.1 --draft=false --prerelease
+          gh release view v0.2.1 --json tagName,isDraft,assets,url

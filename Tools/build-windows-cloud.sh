@@ -36,9 +36,9 @@ CMAKE="$TOOLS/cmake/data/bin/cmake"
 python3 - <<'PY'
 from pathlib import Path
 import struct
-p=Path('build-windows/M7G_Golden_Voice_AI_artefacts/Release/VST3/M7G Golden Voice AI.vst3/Contents/x86_64-win/M7G Golden Voice AI.vst3')
+p=Path('build-windows/M7G_Golden_Voice_AI_artefacts/Release/VST3/MAKKINE VOICE 7.vst3/Contents/x86_64-win/MAKKINE VOICE 7.vst3')
 d=p.read_bytes();offset=struct.unpack_from('<I',d,0x3c)[0]
 assert d[:2]==b'MZ' and d[offset:offset+4]==b'PE\0\0' and struct.unpack_from('<H',d,offset+4)[0]==0x8664
 PY
 mkdir -p dist
-NSISDIR="$TOOLS/windows-tools/usr/share/nsis" "$TOOLS/windows-tools/usr/bin/makensis" -V3 "-DARTIFACT_DIR=$PWD/build-windows/M7G_Golden_Voice_AI_artefacts/Release" "-DOUTPUT_FILE=$PWD/dist/M7G-Golden-Voice-AI-Setup-Windows-x64.exe" Installer/Windows.nsi
+NSISDIR="$TOOLS/windows-tools/usr/share/nsis" "$TOOLS/windows-tools/usr/bin/makensis" -V3 "-DARTIFACT_DIR=$PWD/build-windows/M7G_Golden_Voice_AI_artefacts/Release" "-DOUTPUT_FILE=$PWD/dist/MAKKINE-VOICE-7-Setup-Windows-x64.exe" Installer/Windows.nsi

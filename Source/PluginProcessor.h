@@ -16,7 +16,7 @@ public:
   bool isBusesLayoutSupported(const BusesLayout &) const override;
   juce::AudioProcessorEditor *createEditor() override;
   bool hasEditor() const override { return true; }
-  const juce::String getName() const override { return "M7G Golden Voice AI"; }
+  const juce::String getName() const override { return "MAKKINE VOICE 7"; }
   bool acceptsMidi() const override { return false; }
   bool producesMidi() const override { return false; }
   double getTailLengthSeconds() const override { return 6.0; }

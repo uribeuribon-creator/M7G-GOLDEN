@@ -1,4 +1,4 @@
-# M7G Golden Voice AI — 0.2.0
+# MAKKINE VOICE 7 — 0.2.1
 
 Plugin vocal VST3 y aplicación Standalone, C++17 / JUCE 8.0.6. Interfaz negra y dorada de 700 × 520, sin perillas: selector de voz e intensidad automatizable.
 
@@ -17,7 +17,7 @@ Los perfiles de armonías y dobles procesan pistas ya grabadas; no generan voces
 
 ## Instalador Windows
 
-`BuildInstaller.ps1` compila con Visual Studio x64, ejecuta las pruebas, comprueba la cabecera PE x64 del plugin y empaqueta mediante NSIS 3. Produce `dist/M7G-Golden-Voice-AI-Setup-Windows-x64.exe`. Instala en la carpeta VST3 estándar de Windows y registra desinstalación. Requiere Windows 10/11 x64. El certificado de firma de código no está configurado.
+`BuildInstaller.ps1` compila con Visual Studio x64, ejecuta las pruebas, comprueba la cabecera PE x64 del plugin y empaqueta mediante NSIS 3. Produce `dist/MAKKINE-VOICE-7-Setup-Windows-x64.exe`. Instala en la carpeta VST3 estándar de Windows y registra desinstalación. Requiere Windows 10/11 x64. El certificado de firma de código no está configurado.
 
 El flujo `.github/workflows/windows-installer.yml` hace la compilación y adjunta el instalador cuando se ejecuta en GitHub Actions. Crear el archivo de flujo no equivale a ejecutarlo.
 
@@ -27,7 +27,7 @@ El SDK oficial ya está disponible. VST3 Windows x64 e instalador compilados des
 
 Instalar Git, CMake ≥3.22 y Visual Studio 2022 con “Desktop development with C++” y Windows SDK. Ejecutar `Build.bat` desde una consola. Descarga JUCE 8.0.6 si falta, compila VST3/Standalone y ejecuta las pruebas.
 
-Artefacto: `build/M7G_Golden_Voice_AI_artefacts/Release/VST3/M7G Golden Voice AI.vst3`. Copiar la carpeta completa a `C:\Program Files\Common Files\VST3`, volver a escanear plugins en el DAW y cargarlo en una pista vocal. Los archivos VST3 para Windows y Linux son distintos. La validación en Studio One 7 debe realizarse en Windows.
+Artefacto: `build/M7G_Golden_Voice_AI_artefacts/Release/VST3/MAKKINE VOICE 7.vst3`. Copiar la carpeta completa a `C:\Program Files\Common Files\VST3`, volver a escanear plugins en el DAW y cargarlo en una pista vocal. Los archivos VST3 para Windows y Linux son distintos. La validación en Studio One 7 debe realizarse en Windows.
 
 ## Compilar en Linux
 
@@ -59,10 +59,16 @@ RNNoise se incluye con su modelo predeterminado y avisos BSD en `ThirdParty/rnno
 ## Studio One 7 — Windows x64
 
 1. Cerrar Studio One y ejecutar el instalador Windows x64.
-2. Abrir Studio One 7 y buscar **M7G Golden Voice AI** en el explorador de **Efectos**.
+2. Abrir Studio One 7 y buscar **MAKKINE VOICE 7** en el explorador de **Efectos**.
 3. Arrastrarlo a una pista de audio mono/estéreo o a un bus vocal. Para grupos con varias voces, seleccionar **BUS VOCAL**: conserva las notas simultáneas y omite la corrección monofónica y la salida neuronal para evitar alterar el conjunto.
 4. Si no aparece, revisar **Studio One > Opciones > Ubicaciones > Plug-ins VST**, restablecer la lista de bloqueados y reiniciar el DAW para volver a escanear.
 
-El instalador coloca el bundle en `C:\Program Files\Common Files\VST3\M7G Golden Voice AI.vst3`. El plugin declara compensación de latencia, automatización de parámetros y persistencia de estado al host VST3. Está preparado como efecto de audio, no como instrumento. Estos requisitos se han implementado; todavía no se ha probado dentro de Studio One 7.
+El instalador coloca el bundle en `C:\Program Files\Common Files\VST3\MAKKINE VOICE 7.vst3`. El plugin declara compensación de latencia, automatización de parámetros y persistencia de estado al host VST3. Está preparado como efecto de audio, no como instrumento. Estos requisitos se han implementado; todavía no se ha probado dentro de Studio One 7.
 
 La calidez se obtiene mediante armónicos pares e impares controlados y compresión suave. Es un diseño original: no es una emulación medida de equipos UAD ni garantiza el resultado de un estudio físico con cualquier grabación.
+
+## Actualización del nombre — 0.2.1
+
+El producto se llama **MAKKINE VOICE 7**. Se actualizan el nombre que recibe el DAW, el título de la interfaz, el bundle VST3 y el instalador. Los identificadores VST3, los parámetros y el formato del estado se conservan para mantener la continuidad con la versión anterior. El instalador conserva la misma entrada interna de desinstalación y sustituye el bundle anterior después de copiar correctamente el nuevo.
+
+Cerrar Studio One 7 antes de actualizar y volver a escanear los plugins si el explorador conserva el nombre antiguo. El cambio de nombre no modifica los algoritmos de audio.
