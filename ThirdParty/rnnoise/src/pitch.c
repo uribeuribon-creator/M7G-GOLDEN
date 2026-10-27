@@ -294,9 +294,9 @@ void rnn_pitch_search(const opus_val16 *x_lp, opus_val16 *y,
    celt_assert(max_pitch>0);
    lag = len+max_pitch;
 
-   opus_val16 x_lp4[len>>2];
-   opus_val16 y_lp4[lag>>2];
-   opus_val32 xcorr[max_pitch>>1];
+   RN_STACK_ARRAY(opus_val16, x_lp4, len>>2);
+   RN_STACK_ARRAY(opus_val16, y_lp4, lag>>2);
+   RN_STACK_ARRAY(opus_val32, xcorr, max_pitch>>1);
 
    /* Downsample by 2 again */
    for (j=0;j<len>>2;j++)
@@ -424,7 +424,7 @@ opus_val16 rnn_remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
    opus_val16 g, g0;
    opus_val16 pg;
    opus_val32 xy,xx,yy,xy2;
-   opus_val32 xcorr[3];
+   RN_STACK_ARRAY(opus_val32, xcorr, 3);
    opus_val32 best_xy, best_yy;
    int offset;
    int minperiod0;
@@ -440,7 +440,7 @@ opus_val16 rnn_remove_doubling(opus_val16 *x, int maxperiod, int minperiod,
       *T0_=maxperiod-1;
 
    T = T0 = *T0_;
-   opus_val32 yy_lookup[maxperiod+1];
+   RN_STACK_ARRAY(opus_val32, yy_lookup, maxperiod+1);
    dual_inner_prod(x, x, x-T0, N, &xx, &xy);
    yy_lookup[0] = xx;
    yy=xx;

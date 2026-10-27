@@ -1,8 +1,6 @@
 name: Windows VST3 installer
 on:
   workflow_dispatch:
-  push:
-    branches: [main, work]
 jobs:
   build:
     runs-on: windows-2022

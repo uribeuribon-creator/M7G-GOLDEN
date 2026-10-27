@@ -43,7 +43,7 @@ public:
   }
   int latency() const { return 2 * int(std::ceil(rate * .01)); }
   size_t framesProcessed() const { return frames; }
-  void processFrame(float *samples, int channels) {
+  void processFrame(float *samples, int channels, float strength = .65f) {
     std::array<float, 2> current{};
     for (int c = 0; c < channels; ++c) {
       auto k = static_cast<size_t>(c);
@@ -99,8 +99,8 @@ public:
       const float filtered =
           count > 0 ? queue[k][static_cast<size_t>(read)] : 0;
       // Retain a dry residual to protect quiet syllables and sung overtones.
-      samples[c] =
-          .65f * filtered + .35f * original[k][static_cast<size_t>(aligned)];
+      samples[c] = strength * filtered +
+                   (1 - strength) * original[k][static_cast<size_t>(aligned)];
     }
     if (count > 0) {
       read = (read + 1) % 8192;

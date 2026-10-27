@@ -46,3 +46,11 @@ static RNN_INLINE void rnnoise_free (void *ptr)
 
 
 #endif
+
+/* Portable stack arrays for MSVC, which does not implement C99 VLAs. */
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <malloc.h>
+#define RN_STACK_ARRAY(type, name, count) type *name = (type *)_alloca(sizeof(type) * (count))
+#else
+#define RN_STACK_ARRAY(type, name, count) type name[count]
+#endif

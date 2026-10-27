@@ -17,7 +17,8 @@ public:
     candidateFrames = 0;
     updates = 0;
   }
-  float target(float hz, float confidence, float elapsed) {
+  float target(float hz, float confidence, float elapsed, int key = 0,
+               int mode = 0) {
     if (hz < 35 || hz > 1400 || confidence < .8f)
       return 0;
     recent[static_cast<size_t>(history++ % 3)] = hz;
@@ -72,17 +73,28 @@ public:
       }
     }
     int targetNote = note;
-    if (scale >= 0) {
+    auto allowed = [&](int n) {
+      if (mode == 1)
+        return true;
+      if (key > 0 && mode >= 2) {
+        static constexpr bool minor[]{true,  false, true, true,  false, true,
+                                      false, true,  true, false, true,  false};
+        int pc = (n - (key - 1) + 1200) % 12;
+        return mode == 3 ? minor[pc] : inScale((n % 12 + 12) % 12, key - 1);
+      }
+      return scale < 0 || inScale((n % 12 + 12) % 12, scale);
+    };
+    if (mode != 1 && (scale >= 0 || (key > 0 && mode >= 2))) {
       float distance = 100;
       for (int n = note - 1; n <= note + 1; ++n)
-        if (inScale((n % 12 + 12) % 12, scale) &&
-            std::abs(float(n) - midi) < distance) {
+        if (allowed(n) && std::abs(float(n) - midi) < distance) {
           distance = std::abs(float(n) - midi);
           targetNote = n;
         }
     }
     // Hysteresis reduces note toggling at vibrato boundaries.
-    if (lastTarget >= 0 && std::abs(midi - float(lastTarget)) < .60f)
+    if (lastTarget >= 0 && allowed(lastTarget) &&
+        std::abs(midi - float(lastTarget)) < .60f)
       targetNote = lastTarget;
     lastTarget = targetNote;
     return 440 * std::pow(2.0f, float(targetNote - 69) / 12);

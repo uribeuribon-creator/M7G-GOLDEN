@@ -4,12 +4,20 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
+#include <string>
 #include <windows.h>
 int main(int argc, char **argv) {
   using namespace Steinberg;
   if (argc != 2)
     return 1;
-  HMODULE module = LoadLibraryA(argv[1]);
+  std::string modulePath = argv[1];
+  if (!modulePath.empty() && modulePath[0] == '@') {
+    std::ifstream args(modulePath.substr(1));
+    if (!std::getline(args, modulePath))
+      return 16;
+  }
+  HMODULE module = LoadLibraryA(modulePath.c_str());
   if (!module) {
     std::printf("LoadLibrary failed: %lu\n", GetLastError());
     return 2;

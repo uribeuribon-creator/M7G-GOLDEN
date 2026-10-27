@@ -1,37 +1,66 @@
-# MAKKINE VOICE 7 — 0.2.1
+# M7G ALIEN VOICE — 0.3.0
 
-Plugin vocal VST3 y aplicación Standalone, C++17 / JUCE 8.0.6. Interfaz negra y dorada de 700 × 520, sin perillas: selector de voz e intensidad automatizable.
+Plugin vocal VST3 y Standalone para Windows x64, C++17 / JUCE 8.0.6. Interfaz negra y dorada de 12 módulos, 50 presets de fábrica y análisis automático por módulo o para toda la cadena. Está orientado a Studio One 7 mediante el formato VST3 estándar.
 
-## Qué hace esta versión
+## Los 12 módulos
 
-- Seis perfiles: voz principal, dobles, refuerzos, adlibs, armonías / coros y bus vocal.
-- Análisis continuo de nivel y tono, ganancia automática limitada a ±12 dB, corrección cromática, saturación asimétrica normalizada con sobremuestreo 4× y bloqueo de DC, de-esser de banda alta, puerta/expansor suave con seguimiento de ruido entre frases, filtros dinámicos para cuerpo y aspereza, tres bandas de ecualización, compresión estéreo enlazada de rodilla suave con recuperación dependiente del programa y techo de salida de −1 dBFS.
-- Afinación mediante correlación normalizada y dos cabezas de retardo con fundido; funciona con bloques pequeños del host sin reiniciar el análisis.
-- Reverberación y delay estéreo con ducking y sincronización al tempo del host (120 BPM si no hay tempo disponible); mezcla de efectos dependiente del perfil.
-- Entrada/salida mono o estéreo; estado de parámetros guardable por el DAW; medidores de entrada, salida y reducción de compresión real.
-- Procesamiento local, sin API, credenciales ni envío de grabaciones.
+| Módulo | Controles y función |
+|---|---|
+| Gate | Umbral, rango, ataque y release. Limpieza neuronal activable para pistas individuales. |
+| De-ess AI | Frecuencia, umbral, cantidad y Listen para escuchar el contenido retirado. |
+| Warmth Tube | Drive, bias, tono y salida; saturación asimétrica con sobremuestreo 4×. |
+| Presence EQ | Campana de frecuencia, ganancia y Q; control adaptativo de cuerpo/aspereza. |
+| Air | Realce de agudos, shine, armónicos y filtro superior. |
+| Opto Compress | Peak reduction, ratio, ganancia y recuperación; compresión estéreo enlazada de rodilla suave. |
+| Limiter | Ceiling, release, fast y lookahead. El techo es de picos de muestras, no true-peak certificado. |
+| Reverb | Red de ocho retardos, tamaño, decay, pre-delay, envío y ducking. |
+| Delay | Divisiones sincronizadas al tempo del host, feedback, tono, envío y ducking independiente. |
+| Stereo | Width, pan, graves mono y spread con suma mono conservada. |
+| Modulation | Chorus, flanger y vibrato; rate, depth y mix. |
+| Pitch | Afinación monofónica: amount, retune, tonalidad y escala automática/cromática/mayor/menor. |
 
-La reducción de ruido usa **RNNoise**, un modelo neuronal recurrente preentrenado de Xiph.Org (v0.1.1, incluido localmente). La afinación, ecualización, dinámica y selección de efectos usan análisis DSP adaptativo determinista. El modelo no fue entrenado por M7G ni garantiza resultados óptimos en canto. El resto de algoritmos son propios y JUCE: no son copias ni emulaciones certificadas de Auto-Tune, Neve, LA-2A u otros productos. No se garantiza un resultado profesional con cualquier grabación.
+Cada módulo tiene activación y botón **AI**. **Analizar todo** mide tres segundos de audio reproducido y propone ajustes sobre los controles. Las perillas siguen disponibles para edición manual y automatización del DAW. Si no hay señal suficiente, el análisis lo indica y permite volver a intentarlo. Cambiar de preset cancela un análisis pendiente.
 
-Los perfiles de armonías y dobles procesan pistas ya grabadas; no generan voces nuevas ni separan cantantes. El afinador estima una escala a partir de notas estables únicamente cuando reúne suficiente evidencia. Las melodías ambiguas usan afinación cromática. La voz aislada no permite determinar siempre la tonalidad de la canción. La limpieza combina RNNoise con un expansor suave entre frases. Se conserva un 35 % de señal residual para proteger consonantes y armónicos. No es un separador de fuentes. No incluye generación de armonías ni escritura de automatización en el DAW. La adaptación interna sí funciona durante la reproducción.
+La reducción de ruido usa el modelo neuronal preentrenado RNNoise de Xiph.Org, incluido localmente. Los botones AI y el resto del control musical usan mediciones y reglas DSP adaptativas; no son doce modelos neuronales entrenados. No se envían grabaciones a Internet ni se requieren claves. No se ha demostrado equivalencia con UAD ni se garantiza el resultado de un estudio físico para cualquier grabación.
 
-## Instalador Windows
+## Los 50 presets
 
-`BuildInstaller.ps1` compila con Visual Studio x64, ejecuta las pruebas, comprueba la cabecera PE x64 del plugin y empaqueta mediante NSIS 3. Produce `dist/MAKKINE-VOICE-7-Setup-Windows-x64.exe`. Instala en la carpeta VST3 estándar de Windows y registra desinstalación. Requiere Windows 10/11 x64. El certificado de firma de código no está configurado.
+- 12 para voces principales: rap, pop, RnB, trap, reggaeton, acústica, balada, rock, voces graves/agudas y locución.
+- 8 para dobles.
+- 8 para refuerzos.
+- 8 para adlibs.
+- 8 para armonías.
+- 6 para buses vocales.
 
-El flujo `.github/workflows/windows-installer.yml` hace la compilación y adjunta el instalador cuando se ejecuta en GitHub Actions. Crear el archivo de flujo no equivale a ejecutarlo.
+Los presets contienen configuraciones distintas, no modelos de cantantes ni imitaciones de artistas. El menú del plugin y los programas del host ofrecen los 50 presets. A/B guarda dos configuraciones completas y Copy A/B permite transferir la configuración al otro slot. Las comparaciones se conservan dentro del estado de la sesión.
 
-El SDK oficial ya está disponible. VST3 Windows x64 e instalador compilados desde Linux; validación en Studio One 7 pendiente.
+**BUS VOCAL** conserva las notas simultáneas y omite la corrección monofónica y la salida neuronal. El afinador está diseñado para pistas de una sola voz: no separa un coro ni genera armonías. Una voz aislada no permite inferir siempre la tonalidad de la canción; cuando falte evidencia se puede elegir Key y Scale manualmente.
 
-## Compilar en Windows
+## Reverb y delay con ducking
 
-Instalar Git, CMake ≥3.22 y Visual Studio 2022 con “Desktop development with C++” y Windows SDK. Ejecutar `Build.bat` desde una consola. Descarga JUCE 8.0.6 si falta, compila VST3/Standalone y ejecuta las pruebas.
+Los dos efectos tienen ducking independiente. El detector usa el nivel de la voz para reducir el envío audible mientras hay señal y recuperarlo suavemente en las pausas. 0 % desactiva el ducking; el máximo permite hasta 24 dB de atenuación. El delay sigue el tempo indicado por el DAW; usa 120 BPM si el host no comunica un tempo válido. Feedback y decay cambian la cola real, y el plugin la declara al host.
 
-Artefacto: `build/M7G_Golden_Voice_AI_artefacts/Release/VST3/MAKKINE VOICE 7.vst3`. Copiar la carpeta completa a `C:\Program Files\Common Files\VST3`, volver a escanear plugins en el DAW y cargarlo en una pista vocal. Los archivos VST3 para Windows y Linux son distintos. La validación en Studio One 7 debe realizarse en Windows.
+## Controles globales
 
-## Compilar en Linux
+Input y Output ajustan las ganancias; Mix combina señal original y procesada con compensación de latencia. Auto Level mantiene una normalización limitada. Bypass devuelve la señal original con la misma latencia. **Solo / Delta** escucha la diferencia entre entrada y procesamiento. Los medidores y gráficos usan niveles, FFT, correlación, reducción de ganancia y LFO reales. El indicador 4× informa del sobremuestreo fijo.
 
-Dependencias habituales Debian: compilador C++, CMake, pkg-config, libasound2-dev, libx11-dev, libxext-dev, libxinerama-dev, libxrandr-dev, libxcursor-dev, libfreetype-dev, libfontconfig1-dev y libgl1-mesa-dev.
+El menú `...` restaura el preset, copia A/B y muestra información del motor. Los ajustes de los módulos están expuestos como parámetros automatizables. La latencia incluye procesamiento neuronal, afinación y lookahead; el host recibe la compensación correspondiente.
+
+## Instalar en Studio One 7
+
+1. Cerrar Studio One y ejecutar **M7G-ALIEN-VOICE-Setup-Windows-x64.exe**.
+2. Abrir Studio One 7 y buscar **M7G ALIEN VOICE** en el explorador de **Efectos**.
+3. Insertarlo en una pista mono/estéreo o bus vocal y elegir el preset de la función correspondiente.
+4. Reproducir voz y usar AI por módulo o Analizar todo; ajustar al gusto y comparar con A/B a un volumen equivalente.
+5. Si el nombre antiguo sigue en caché, revisar **Studio One > Opciones > Ubicaciones > Plug-ins VST**, restablecer la lista de bloqueados y reiniciar para volver a escanear.
+
+Se instala en `C:\Program Files\Common Files\VST3\M7G ALIEN VOICE.vst3`. El instalador conserva la entrada interna de desinstalación y retira los bundles antiguos después de copiar el nuevo. Los identificadores VST3 y los parámetros originales se mantienen. La versión 0.3.0 amplía y modifica el procesamiento; no promete reproducir de forma idéntica el sonido de sesiones de 0.2.x. La prueba directa en Studio One 7 sigue pendiente. El flujo de publicación comprueba la instalación y desinstalación en Windows. Instalador sin firma digital.
+
+## Compilar
+
+Windows: Visual Studio 2022 Desktop C++, CMake ≥3.22, Git y NSIS 3. `BuildInstaller.ps1` compila, ejecuta las pruebas y genera el instalador. Se incluye compatibilidad de arrays de pila de RNNoise para MSVC.
+
+Linux: dependencias JUCE habituales (ALSA, X11, Xrandr, Xinerama, Xcursor, FreeType, Fontconfig, OpenGL), CMake y C++17.
 
 ```sh
 git clone --depth 1 --branch 8.0.6 https://github.com/juce-framework/JUCE.git JUCE
@@ -40,35 +69,10 @@ cmake --build build --config Release -j 4
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Omitir el clone si JUCE ya existe. JUCE se mantiene fuera de los archivos versionados y está fijado a la etiqueta 8.0.6 (commit `51a8a6d7aeae7326956d747737ccf1575e61e209`). No hay descargas de dependencias durante el procesamiento de audio.
+Omitir el clone si JUCE ya existe. En el entorno cloud: `bash Tools/setup-cloud.sh` y `bash Tools/build-windows-cloud.sh`. Los checkouts de cada tarea ya están aislados; no es necesario crear worktrees.
 
-## Uso
+JUCE está fijado a 8.0.6, commit `51a8a6d7aeae7326956d747737ccf1575e61e209`. RNNoise v0.1.1 conserva sus pesos originales y avisos BSD en `ThirdParty/rnnoise/COPYING`. Revisar la licencia de JUCE antes de distribuir un producto cerrado.
 
-Insertar en una pista vocal aislada; seleccionar su función; reproducir audio. El detector de tono necesita aproximadamente 100 ms de señal sonora; el modelo de ruido puede necesitar varios segundos para adaptarse al ambiente. La ganancia se adapta más despacio para evitar saltos. Ajustar intensidad para reducir o aumentar el tratamiento. Usar el bypass del DAW para comparar a volumen equivalente. El techo de salida es de picos de muestras, no un limitador true-peak certificado.
+## Validación
 
-La afinación por retardo tiene latencia nominal de 40 ms aproximadamente, más el retardo de los filtros (la mitad corresponde al bloque neuronal), declarada al host, y puede producir modulación o artefactos. Probar primero en una copia de la sesión. 0 % conserva la señal con el retardo nominal y protección de salida; no equivale a bypass bit a bit. La detección está pensada para una sola voz entre 35 y 1400 Hz.
-
-## Validación y alcance
-
-`M7GSmoke` procesa señales sintéticas en los seis perfiles a 44.1, 48 y 96 kHz con bloques de 64, 256 y 1024 muestras. Comprueba señal no nula, valores finitos, techo de salida, retorno al silencio después de la cola, restauración del estado y dirección de corrección de afinación. También comprueba el de-esser, la atenuación de ruido tenue y bloques variables en mono. Estas pruebas no certifican calidad perceptual. Faltan sesiones de escucha con voces reales, validación de interfaz en DAW, compatibilidad de hosts y medición rigurosa de tiempo real antes de una versión comercial.
-
-JUCE requiere una licencia compatible con la distribución elegida: revisar `JUCE/LICENSE.md` antes de distribuir un producto cerrado.
-
-RNNoise se incluye con su modelo predeterminado y avisos BSD en `ThirdParty/rnnoise/COPYING`; el instalador conserva esos avisos. Se comprueba la inferencia neuronal y la atenuación sobre ruido sintético a 44.1, 48 y 96 kHz.
-
-## Studio One 7 — Windows x64
-
-1. Cerrar Studio One y ejecutar el instalador Windows x64.
-2. Abrir Studio One 7 y buscar **MAKKINE VOICE 7** en el explorador de **Efectos**.
-3. Arrastrarlo a una pista de audio mono/estéreo o a un bus vocal. Para grupos con varias voces, seleccionar **BUS VOCAL**: conserva las notas simultáneas y omite la corrección monofónica y la salida neuronal para evitar alterar el conjunto.
-4. Si no aparece, revisar **Studio One > Opciones > Ubicaciones > Plug-ins VST**, restablecer la lista de bloqueados y reiniciar el DAW para volver a escanear.
-
-El instalador coloca el bundle en `C:\Program Files\Common Files\VST3\MAKKINE VOICE 7.vst3`. El plugin declara compensación de latencia, automatización de parámetros y persistencia de estado al host VST3. Está preparado como efecto de audio, no como instrumento. Estos requisitos se han implementado; todavía no se ha probado dentro de Studio One 7.
-
-La calidez se obtiene mediante armónicos pares e impares controlados y compresión suave. Es un diseño original: no es una emulación medida de equipos UAD ni garantiza el resultado de un estudio físico con cualquier grabación.
-
-## Actualización del nombre — 0.2.1
-
-El producto se llama **MAKKINE VOICE 7**. Se actualizan el nombre que recibe el DAW, el título de la interfaz, el bundle VST3 y el instalador. Los identificadores VST3, los parámetros y el formato del estado se conservan para mantener la continuidad con la versión anterior. El instalador conserva la misma entrada interna de desinstalación y sustituye el bundle anterior después de copiar correctamente el nuevo.
-
-Cerrar Studio One 7 antes de actualizar y volver a escanear los plugins si el explorador conserva el nombre antiguo. El cambio de nombre no modifica los algoritmos de audio.
+Consultar `VALIDATION.md`. Las pruebas comprueban procesamiento real de todos los presets, cambios de los doce módulos, ducking de reverb/delay, análisis, persistencia A/B, interfaz y carga del módulo VST3. Las pruebas sintéticas y Wine no sustituyen la escucha de voces reales ni la validación dentro del DAW.
