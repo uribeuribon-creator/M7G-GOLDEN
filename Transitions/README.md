@@ -2,6 +2,8 @@
 
 **V1 TRANSITIONS · 150 FX · Makkine Seven Golden**
 
+[Descargar instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/transitions-v1.0.0/M7G-ALIEN-TRANSITIONS-GOD-V1-Windows-x64.exe) · [Validación nativa](VALIDATION.md) · [Release con demo y capturas](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/transitions-v1.0.0)
+
 Independent Windows x64 VST3 vocal-transition designer. Three banks of 50 effects:
 **INTRO – ENTRADA**, **CAMBIO – PUENTE**, **SALIDA – FINAL**. Four controls,
 Spanish tooltips, blue/gold cockpit, live colour waveform, searchable browser,

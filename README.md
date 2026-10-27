@@ -1,4 +1,16 @@
-# M7G ALIEN VOICE V11 — ALIEN INTELLIGENCE
+# M7G — plugins vocales para Windows
+
+## M7G ALIEN TRANSITIONS GOD V1 — 150 FX
+
+[Descargar instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/transitions-v1.0.0/M7G-ALIEN-TRANSITIONS-GOD-V1-Windows-x64.exe) · [Manual](Transitions/README.md) · [Validación](Transitions/VALIDATION.md)
+
+Producto independiente: INTRO, CAMBIO y SALIDA, 50 presets por banco y cuatro
+perillas. Conserva Alien Voice y comparte su licencia global. Instalador y tres
+suites aprobados en Windows; descarga pública y SHA-256 verificados.
+**Anticipación fija de 2 segundos:** usar compensación de latencia del DAW en
+mezcla/reproducción. Evaluación directa en Studio One 7 pendiente.
+
+## M7G ALIEN VOICE V11 — ALIEN INTELLIGENCE
 
 **LAS MAKKINAS PRODUCEN SOLAS.** Presets hechos por **Makkine Seven Golden**.
 
