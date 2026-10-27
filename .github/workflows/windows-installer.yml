@@ -1,0 +1,22 @@
+name: Windows VST3 installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, work]
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build, test and package Windows x64
+        shell: pwsh
+        run: ./BuildInstaller.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Golden-Voice-AI-Windows-x64
+          path: |
+            dist/*.exe
+            build-windows/M7G_Golden_Voice_AI_artefacts/Release/VST3/**
+          if-no-files-found: error
