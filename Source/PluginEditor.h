@@ -5,6 +5,7 @@ public:
   AlienSkin();
   static juce::Typeface::Ptr bodyTypeface();
   static juce::Typeface::Ptr titleTypeface();
+  static juce::Typeface::Ptr graffitiTypeface();
   juce::Typeface::Ptr getTypefaceForFont(const juce::Font &) override {
     return bodyTypeface();
   }
@@ -60,6 +61,9 @@ private:
       switchAttachments;
   std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
       enableAttachment;
+  juce::Slider parallel;
+  std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
+      parallelAttachment;
   std::array<float, 48> history{};
 };
 class M7GEditor final : public juce::AudioProcessorEditor, private juce::Timer {
@@ -72,13 +76,22 @@ public:
 private:
   M7GProcessor &processor;
   AlienSkin skin;
-  std::array<std::unique_ptr<RackModule>, 12> modules;
-  juce::ComboBox presetBox;
+  std::array<std::unique_ptr<RackModule>, 26> modules;
+  juce::ComboBox presetBox, modeBox;
+  juce::TextButton classicTab{"CABINA VOCAL"}, engineTab{"ALIEN INTELLIGENCE"},
+      tripleTab{"TRIPLE GOD"};
+  int page = 2;
+  void showPage(int);
+  juce::ToggleButton godSpace{"GOD SPACE"};
+  std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>
+      modeAttachment;
+  std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
+      godAttachment;
   juce::TextButton analyseAll{"ANALIZAR TODO"}, compareA{"A"}, compareB{"B"},
       menu{"..."};
   juce::ToggleButton bypass{"BYPASS"}, solo{"SOLO / DELTA"},
       autoLevel{"AUTO LEVEL"};
-  std::unique_ptr<RackKnob> input, mix, output;
+  std::unique_ptr<RackKnob> input, mix, output, sino;
   std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
       bypassAttachment, soloAttachment, autoAttachment;
   juce::Label status;

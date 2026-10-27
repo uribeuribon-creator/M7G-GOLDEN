@@ -6,9 +6,15 @@ using namespace rack;
 namespace {
 void neutral(M7GProcessor &p) {
   for (Param id :
-       {AutoGain, GateOn, DeessOn, WarmOn, EQOn, AirOn, CompOn, LimitOn, TuneOn,
-        NoiseOn, ReverbOn, DelayOn, StereoOn, ModOn, Bypass, Solo})
+       {AutoGain,     GateOn,    DeessOn, WarmOn,     EQOn,       AirOn,
+        CompOn,       LimitOn,   TuneOn,  NoiseOn,    ReverbOn,   DelayOn,
+        StereoOn,     ModOn,     Bypass,  Solo,       DereverbOn, ResonanceOn,
+        SaturationOn, HarmonyOn, FetOn,   SculptorOn, AlignOn,    GodSpace})
     p.setValue(id, 0);
+  p.setValue(Sino, 0);
+  p.setValue(CompParallel, 100);
+  p.setValue(EQParallel, 100);
+  p.setValue(SatParallel, 100);
   p.setValue(Mix, 100);
   p.setValue(InputTrim, 0);
   p.setValue(OutputTrim, 0);
@@ -59,6 +65,7 @@ double diff(const std::vector<float> &a, const std::vector<float> &b) {
 } // namespace
 int main() {
   try {
+    juce::ScopedJuceInitialiser_GUI gui;
     auto p = std::make_unique<M7GProcessor>();
     juce::MidiBuffer midi;
     std::set<juce::String> names;
@@ -303,7 +310,7 @@ int main() {
       Param probe = probes[module];
       p->setValue(probe, specs()[size_t(probe)].min);
       float previous = p->value(probe);
-      p->beginAnalysis(module);
+      p->beginAnalysis(module == 12 ? M7GProcessor::analysisAll : module);
       for (int block = 0; block < 565; ++block) {
         juce::AudioBuffer<float> b(2, 256);
         for (int c = 0; c < 2; ++c)

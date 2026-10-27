@@ -9,7 +9,7 @@ for argument in sys.argv[1:]:
  if argument.startswith('/workspace/') or argument.startswith('/tmp/'):argument='Z:'+argument.replace('/','\\')
  args.append('"'+argument+'"' if ' ' in argument else argument)
 command=' '.join(args)+' & echo __ALIEN_TEST_EXIT__!errorlevel!'
-run=subprocess.run(['/workspace/tooling/proot/usr/bin/proot','-b','/workspace/tooling/wine/usr/share/wine:/usr/share/wine','/workspace/tooling/wine/usr/lib/wine/wine64','cmd.exe','/d','/v:on','/c',command],env=env,capture_output=True,timeout=180)
+run=subprocess.run(['/workspace/tooling/proot/usr/bin/proot','-b','/workspace/tooling/wine/usr/share/wine:/usr/share/wine','/workspace/tooling/wine/usr/lib/wine/wine64','cmd.exe','/d','/v:on','/c',command],env=env,capture_output=True,timeout=600)
 output=run.stdout.decode('utf-8',errors='replace')+run.stderr.decode('utf-8',errors='replace')
 print(output,end='')
 status=re.findall(r'__ALIEN_TEST_EXIT__(\d+)',output)

@@ -1,129 +1,322 @@
 #pragma once
 #include "RackParameters.h"
 namespace rack {
+inline constexpr int presetCount = 280;
 struct Preset {
-  const char *name;
-  int role;
-  float drive, air, reduction, ratio, tune, verb, delay, duck, feedback;
+  juce::String name;
+  int role = 0;
+  int genre = 0;
+  int variation = 0;
 };
-inline const std::array<Preset, 50> &presets() {
-  static const std::array<Preset, 50> bank{
-      {{"Commercial Rap Vocal", 0, 66, 48, 48, 4.5f, 78, 8, 6, 78, 24},
-       {"Lead - Studio Gold", 0, 60, 42, 43, 4, 70, 9, 5, 75, 22},
-       {"Lead - Modern Pop", 0, 42, 60, 40, 3.5f, 72, 12, 7, 72, 26},
-       {"Lead - Velvet RnB", 0, 74, 36, 38, 3, 68, 14, 9, 68, 32},
-       {"Lead - Trap Focus", 0, 68, 55, 55, 5.5f, 95, 6, 11, 86, 28},
-       {"Lead - Reggaeton Front", 0, 62, 50, 52, 5, 85, 7, 8, 82, 24},
-       {"Lead - Acoustic Intimate", 0, 32, 28, 26, 2.2f, 42, 10, 3, 60, 15},
-       {"Lead - Power Ballad", 0, 58, 52, 39, 3.4f, 60, 17, 8, 68, 30},
-       {"Lead - Rock Edge", 0, 85, 30, 54, 5, 35, 8, 5, 80, 20},
-       {"Lead - Deep Baritone", 0, 72, 35, 40, 3.5f, 62, 9, 4, 75, 20},
-       {"Lead - Silky Soprano", 0, 36, 46, 32, 2.8f, 58, 13, 6, 70, 26},
-       {"Lead - Voiceover Clean", 0, 25, 25, 34, 3, 0, 0, 0, 100, 0},
-       {"Doubles - Tight Rap", 1, 52, 24, 62, 6, 35, 5, 5, 82, 18},
-       {"Doubles - Wide Pop", 1, 42, 36, 49, 4.5f, 40, 11, 10, 72, 26},
-       {"Doubles - Dark Glue", 1, 70, 12, 59, 5.5f, 25, 8, 4, 78, 20},
-       {"Doubles - Velvet Stereo", 1, 63, 28, 45, 4, 32, 12, 9, 68, 30},
-       {"Doubles - Air Layer", 1, 30, 62, 46, 4.2f, 45, 13, 8, 72, 24},
-       {"Doubles - Urban Stack", 1, 65, 28, 64, 6.5f, 42, 7, 7, 82, 22},
-       {"Doubles - Soft Whisper", 1, 28, 40, 52, 4.8f, 18, 15, 6, 65, 24},
-       {"Doubles - Vintage Pair", 1, 82, 16, 50, 4.5f, 25, 10, 8, 70, 28},
-       {"Support - Low Anchor", 2, 62, 12, 68, 7, 20, 5, 3, 82, 16},
-       {"Support - Rap Emphasis", 2, 70, 25, 65, 6.5f, 25, 6, 6, 86, 20},
-       {"Support - Soft Bed", 2, 40, 20, 48, 4, 15, 12, 4, 72, 20},
-       {"Support - Warm Body", 2, 84, 18, 56, 5, 22, 8, 5, 78, 22},
-       {"Support - Bright Accent", 2, 42, 55, 52, 4.5f, 32, 9, 7, 80, 24},
-       {"Support - Rhythmic Glue", 2, 58, 30, 67, 7.5f, 28, 5, 9, 86, 30},
-       {"Support - Intimate Texture", 2, 32, 24, 44, 3.5f, 12, 10, 3, 65, 16},
-       {"Support - Dense Stack", 2, 75, 22, 72, 8, 20, 9, 6, 82, 24},
-       {"Adlibs - Trap Hard", 3, 80, 70, 42, 4, 100, 17, 18, 88, 38},
-       {"Adlibs - Air Throw", 3, 58, 82, 35, 3.2f, 90, 22, 24, 90, 50},
-       {"Adlibs - Dark Echo", 3, 78, 20, 46, 4.5f, 80, 14, 25, 82, 58},
-       {"Adlibs - Wide Orbit", 3, 64, 58, 38, 3.5f, 88, 26, 22, 75, 46},
-       {"Adlibs - Vintage Radio", 3, 90, 15, 60, 6, 55, 9, 16, 72, 42},
-       {"Adlibs - RnB Answer", 3, 66, 48, 34, 3, 72, 21, 16, 78, 36},
-       {"Adlibs - Urban Spark", 3, 72, 72, 44, 4.2f, 95, 15, 20, 86, 40},
-       {"Adlibs - Long Tail", 3, 48, 60, 30, 2.8f, 78, 30, 26, 88, 60},
-       {"Harmony - Silk Choir", 4, 55, 42, 43, 4, 55, 20, 8, 70, 24},
-       {"Harmony - Wide Gospel", 4, 64, 50, 48, 4.5f, 50, 24, 10, 72, 30},
-       {"Harmony - Pop Halo", 4, 35, 68, 38, 3.4f, 62, 22, 12, 75, 32},
-       {"Harmony - Warm Ensemble", 4, 78, 28, 46, 4.2f, 40, 18, 6, 68, 22},
-       {"Harmony - Acoustic Blend", 4, 30, 32, 30, 2.5f, 35, 17, 4, 65, 18},
-       {"Harmony - Urban Chords", 4, 62, 42, 53, 5, 58, 16, 9, 78, 28},
-       {"Harmony - Angel Air", 4, 25, 82, 35, 3, 65, 28, 10, 72, 35},
-       {"Harmony - Dark Velvet", 4, 82, 18, 45, 4, 40, 21, 7, 68, 26},
-       {"Bus - Transparent Glue", 5, 20, 20, 28, 2, 0, 3, 0, 80, 0},
-       {"Bus - Rap Console", 5, 42, 32, 38, 2.5f, 0, 4, 2, 85, 16},
-       {"Bus - Pop Polish", 5, 28, 48, 30, 2.2f, 0, 5, 3, 80, 18},
-       {"Bus - Warm Tape", 5, 68, 16, 35, 2.4f, 0, 4, 2, 78, 18},
-       {"Bus - Choir Space", 5, 32, 38, 25, 1.8f, 0, 12, 4, 75, 20},
-       {"Bus - Dry Master", 5, 18, 18, 24, 1.6f, 0, 0, 0, 100, 0}}};
+inline const std::array<Preset, presetCount> &presets() {
+  static const auto bank = [] {
+    std::array<Preset, presetCount> b{};
+    const char *special[]{"SINO | ESPECTACULAR",    "SINO | Natural Silk",
+                          "SINO | Robot Platinum",  "GOD | Eight Voice Choir",
+                          "GOD | Fifth Dimension",  "GOD | Octave Cathedral",
+                          "GOD | Angelic Shimmer",  "IRON | Urban Weight",
+                          "VALVE | Intimate Gold",  "CONSOLE | Clean Pressure",
+                          "SPACE | Chamber Bloom",  "SPACE | Echo Orbit",
+                          "BUS | Transparent Glue", "MONITOR | Record Dry"};
+    for (int i = 0; i < 14; ++i)
+      b[size_t(i)] = {special[i], i == 12 ? 5 : (i >= 3 && i <= 6 ? 4 : 0), 0,
+                      i};
+    const char *genres[]{"Rap",       "Trap",     "Reggaeton",
+                         "Dancehall", "Afrobeat", "RnB"};
+    const char *roles[]{"Lead",   "Doubles", "Support",
+                        "Adlibs", "Harmony", "Bus"};
+    const char *artists[6][6] = {
+        {"Drake", "Kendrick", "J. Cole", "Nas", "Travis Scott", "M7G"},
+        {"Travis Scott", "Future", "Don Toliver", "Lil Baby", "21 Savage",
+         "M7G"},
+        {"Feid", "Bad Bunny", "J Balvin", "Rauw Alejandro", "Karol G", "M7G"},
+        {"Sean Paul", "Vybz Kartel", "Popcaan", "Shenseea", "Koffee", "M7G"},
+        {"Burna Boy", "Wizkid", "Tems", "Rema", "Ayra Starr", "M7G"},
+        {"The Weeknd", "SZA", "Brent Faiyaz", "PARTYNEXTDOOR", "Chris Brown",
+         "M7G"}};
+    for (int g = 0; g < 6; ++g)
+      for (int r = 0; r < 6; ++r)
+        for (int v = 0; v < 6; ++v) {
+          int i = 14 + g * 36 + r * 6 + v;
+          b[size_t(i)] = {juce::String(genres[g]) + " | " + artists[g][v] +
+                              " | " + roles[r],
+                          r, g, v};
+        }
+    const char *effects[]{
+        "Victrola Neon",       "Gramophone Quantum",     "Cassette Nebula",
+        "Vinyl Andromeda",     "Valve CyberSoul",        "Opera Hologram",
+        "Baroque Plasma",      "Crooner Android",        "Tape DeLorean",
+        "Disco Singularity",   "Cathedral Zero Gravity", "Choir Chrononaut",
+        "Vellum Starship",     "Gospel Photon",          "Velvet Saturn",
+        "Radio Orion",         "Motown Cyborg",          "Shellac Supernova",
+        "Cinema Nanowave",     "Magnetic Eclipse",       "Angel Arpeggio",
+        "Celestial Chamber",   "Gregorian Stardust",     "Halo Hyperdrive",
+        "Cathedral Chrome",    "Boombap Mech",           "Soul Transistor",
+        "Golden Tesla",        "Retro Reactor",          "Dusty Solaris",
+        "Echo Voyager",        "Dub Time Machine",       "Drake Chronosphere",
+        "Tape Wormhole",       "Throw Nebulizer",        "PingPong Olympus",
+        "Stereo Atlantis",     "Chamber Spacesuit",      "Orbit Ballroom",
+        "Wide Renaissance",    "Telephone Titan",        "Radio Empyrean",
+        "Victorian Megaphone", "AM Astronaut",           "Gramophone Galaxy",
+        "Alien Crooner",       "Cyber Gospel",           "Unison Stardust",
+        "Robo Bolero",         "Makkine Genesis"};
+    for (int i = 0; i < 50; ++i)
+      b[size_t(230 + i)] = {juce::String("FX | ") + effects[i],
+                            i / 5 == 3 || i / 5 == 4 ? 4 : 3, 0, i};
+    return b;
+  }();
   return bank;
 }
+inline constexpr const char *presetCreator = "Makkine Seven Golden";
 inline Values presetValues(int index) {
-  const auto &bank = presets();
-  index = juce::jlimit(0, 49, index);
-  const auto &p = bank[static_cast<size_t>(index)];
-  auto v = defaults();
-  v[VoiceType] = float(p.role);
-  v[WarmDrive] = p.drive;
-  v[WarmBias] = p.drive * .6f;
-  v[AirAmount] = p.air;
-  v[CompReduction] = p.reduction;
-  v[CompRatio] = p.ratio;
-  v[TuneAmount] = p.tune;
-  v[TuneOn] = p.tune > 0 ? 1.0f : 0.0f;
-  v[ReverbMix] = p.verb;
-  v[DelayMix] = p.delay;
-  v[ReverbDuck] = p.duck;
-  v[DelayDuck] = juce::jmin(100.0f, p.duck + 5);
-  v[DelayFeedback] = p.feedback;
-  v[EQGain] =
-      p.role == 0 ? 2.5f : (p.role == 3 ? 3.2f : (p.role == 5 ? .8f : 1.3f));
-  v[GateThreshold] = p.role == 0 ? -48.0f : -52.0f;
-  v[CompGain] = p.role == 5 ? .5f : 2;
-  v[TuneSpeed] = p.role == 3 ? 10.0f : (p.role == 0 ? 40.0f : 65.0f);
-  v[ReverbDecay] = p.role == 3 ? 2.6f : (p.role == 4 ? 2.2f : 1.4f);
-  v[ReverbSize] = p.role == 3 ? 72.0f : (p.role == 4 ? 66.0f : 48.0f);
-  v[DelayNote] = p.role == 3 ? 3.0f : 1.0f;
-  v[DelayTone] = p.air < 30 ? 3500.0f : 6500.0f;
-  v[Width] = (p.role == 1 || p.role == 4) ? 125.0f : 100.0f;
-  v[NoiseOn] = p.role == 5 ? 0.0f : 1.0f;
-  v[AirShimmer] = p.role == 3 ? 35.0f : 15.0f;
-  v[WarmTone] = (p.air - 45) * .035f;
-  v[EQFreq] = p.role == 2 ? 2100.0f : 3200.0f;
-  v[Spread] = p.role == 1 ? 25.0f : (p.role == 4 ? 20.0f : 8.0f);
-  v[ModMix] =
-      (p.role == 1 || p.role == 4) ? 9.0f : (p.role == 3 ? 14.0f : 0.0f);
-  v[ModRate] = .35f + float(index % 7) * .13f;
-  v[ModDepth] = 15.0f + float(index % 6) * 5;
-  v[ReverbOn] = p.verb > 0 ? 1.0f : 0.0f;
-  v[DelayOn] = p.delay > 0 ? 1.0f : 0.0f;
-  v[ModOn] = v[ModMix] > 0 ? 1.0f : 0.0f;
-  if (p.role == 3 && index % 3 == 0)
-    v[ModType] = 1;
-  if (index == 35)
-    v[ModType] = 2;
-  if (index == 11) {
-    v[ReverbOn] = 0;
-    v[DelayOn] = 0;
-    v[NoiseAmount] = 80;
+  index = juce::jlimit(0, presetCount - 1, index);
+  const auto &p = presets()[size_t(index)];
+  int r = p.role, g = p.genre, v = p.variation % 6;
+  auto x = defaults();
+  x[VoiceType] = float(r);
+  x[Sino] = index < 14 ? 0.0f : float(20 + g * 4 + v * 3);
+  x[WarmDrive] = float(30 + g * 5 + v * 6);
+  x[WarmBias] = float(20 + v * 8);
+  x[PreampStyle] = float(v % 6);
+  x[WarmTone] = float(g - 2) * .5f;
+  x[AirAmount] = float(26 + v * 6 + g * 2);
+  x[AirGain] = .5f + v * .25f;
+  x[CompReduction] = float(28 + r * 4 + v * 3);
+  x[CompRatio] = 2.2f + r * .45f + v * .12f;
+  x[CompGain] = r == 5 ? .5f : 1.5f;
+  x[NoiseOn] = r == 5 ? 0.0f : 1.0f;
+  x[NoiseAmount] = float(35 + v * 6);
+  x[TuneOn] = r == 5 ? 0.0f : 1.0f;
+  x[TuneAmount] = float(55 + v * 8);
+  x[TuneSpeed] = r == 3 ? 7.0f : float(20 + v * 8);
+  x[PitchStyle] = g == 1 && v < 3 ? 1.0f : 0.0f;
+  x[PitchFormant] = (v == 3 ? -.8f : (v == 4 ? .6f : 0));
+  x[EQGain] = r == 5 ? .6f : float(12 + v * 3) * .1f;
+  x[EQFreq] = float(2300 + g * 160 + v * 90);
+  x[EQQ] = .8f + v * .12f;
+  x[GateThreshold] = float(-54 + v);
+  x[GateRange] = r == 5 ? 10.0f : 22.0f;
+  x[ReverbMix] = r == 5 ? 3.0f : float(5 + g + v * 2 + (r == 4 ? 5 : 0));
+  x[ReverbDecay] = .8f + g * .16f + v * .19f;
+  x[ReverbStyle] = float((v + g) % 3);
+  x[ReverbSize] = float(30 + v * 9);
+  x[ReverbPredelay] = float(12 + v * 5);
+  x[ReverbDuck] = float(65 + v * 5);
+  x[ReverbShimmer] = r == 4 && v > 2 ? float(8 + v * 5) : 0.0f;
+  x[DelayMix] = r == 5 ? 1.0f : float(3 + v * 2 + (r == 3 ? 8 : 0));
+  x[DelayNote] = float((g + v) % 6);
+  x[DelayFeedback] = float(18 + v * 6);
+  x[DelayDuck] = float(72 + v * 4);
+  x[DelayTone] = float(3600 + v * 620);
+  x[DelayStyle] = float(v % 3);
+  x[Width] = r == 0 ? 100.0f : float(104 + v * 5);
+  x[Spread] = (r == 1 || r == 4) ? float(15 + v * 4) : 5.0f;
+  x[ModMix] = (r == 1 || r == 3 || r == 4) ? float(5 + v * 2) : 0.0f;
+  x[ModRate] = .2f + v * .12f;
+  x[ModDepth] = float(15 + v * 6);
+  x[ModType] = float(v % 3);
+  x[ModOn] = x[ModMix] > 0 ? 1.0f : 0.0f;
+  x[DereverbOn] = r == 5 ? 0.0f : 1.0f;
+  x[DereverbAmount] = float(15 + v * 4);
+  x[DereverbTail] = float(180 + g * 40 + v * 25);
+  x[ResonanceOn] = 1;
+  x[ResonanceAmount] = float(18 + g * 3 + v * 4);
+  x[ResonanceFocus] = 1.4f + v * .35f;
+  x[SaturationOn] = 1;
+  x[SatLow] = float(12 + v * 5);
+  x[SatMid] = float(18 + g * 3 + v * 4);
+  x[SatHigh] = float(8 + v * 3);
+  x[SatCrossLow] = float(180 + g * 20 + v * 13);
+  x[SatCrossHigh] = float(2800 + g * 210 + v * 190);
+  x[FetOn] = r == 5 ? 0.0f : 1.0f;
+  x[FetThreshold] = float(-14 - v);
+  x[FetRatio] = 4 + v * .6f;
+  x[FetAttack] = .35f + v * .18f;
+  x[FetRelease] = float(55 + v * 17);
+  x[HarmonyOn] = r == 4 ? 1.0f : 0.0f;
+  x[HarmonyMix] = r == 4 ? float(18 + v * 5) : 0.0f;
+  x[HarmonyPattern] = float(v % 4);
+  x[HarmonyDetune] = float(4 + v * 2);
+  x[HarmonyFormant] = v == 4 ? 1.0f : 0.0f;
+  if (index < 14) {
+    x[Sino] =
+        index == 0 ? 90.0f : (index == 1 ? 45.0f : (index == 2 ? 75.0f : 0));
+    if (index == 2) {
+      x[PitchStyle] = 1;
+      x[TuneAmount] = 100;
+      x[TuneSpeed] = 5;
+    }
+    if (index >= 3 && index <= 6) {
+      x[HarmonyOn] = 1;
+      x[HarmonyMix] = 34;
+      x[HarmonyPattern] =
+          float(index == 3 ? 2 : (index == 4 ? 1 : (index == 5 ? 0 : 3)));
+      x[ReverbShimmer] = index == 6 ? 45.0f : 0;
+    }
+    if (index == 7) {
+      x[PreampStyle] = 0;
+      x[WarmDrive] = 80;
+      x[SatLow] = 55;
+    }
+    if (index == 8) {
+      x[PreampStyle] = 1;
+      x[WarmDrive] = 65;
+      x[WarmBias] = 65;
+    }
+    if (index == 9) {
+      x[PreampStyle] = 2;
+      x[WarmDrive] = 35;
+      x[FetRatio] = 8;
+    }
+    if (index == 10) {
+      x[ReverbMix] = 24;
+      x[ReverbDecay] = 3.4f;
+      x[ReverbShimmer] = 18;
+    }
+    if (index == 11) {
+      x[DelayMix] = 28;
+      x[DelayFeedback] = 62;
+      x[DelayStyle] = 1;
+    }
+    if (index == 12) {
+      x[Sino] = 0;
+      x[WarmDrive] = 20;
+      x[SatLow] = 8;
+      x[SatMid] = 10;
+      x[SatHigh] = 5;
+      x[CompRatio] = 1.8f;
+    }
+    if (index == 13) {
+      x[EngineMode] = 0;
+      x[Sino] = 0;
+      x[NoiseOn] = x[TuneOn] = x[DereverbOn] = x[ResonanceOn] = x[HarmonyOn] =
+          0;
+      x[ReverbMix] = x[DelayMix] = x[ModMix] = 0;
+      x[ReverbOn] = x[DelayOn] = x[ModOn] = 0;
+      x[Spread] = 0;
+    }
   }
-  if (index == 32) {
-    v[AirFilter] = 10500;
-    v[EQGain] = -2;
-    v[WarmTone] = -3;
+  x[PreampGain] = float((g + v) % 4);
+  x[PreampImpedance] = float(800 + (v % 6) * 450);
+  x[CompParallel] = float(65 + (v % 6) * 5);
+  x[SatParallel] = float(55 + (v % 6) * 7);
+  x[EQParallel] = float(78 + (v % 6) * 4);
+  x[EQDirty] = float((v % 6) * 4);
+  x[SatStyle] = float(v % 5);
+  x[Punch] = (g == 1 || g == 2) && r != 5 ? 1.0f : 0.0f;
+  x[GodSpace] = index == 0 ? 1.0f : 0.0f;
+  x[VerbAMix] = float(7 + v % 5);
+  x[VerbBMix] = float(5 + v % 4);
+  x[VerbCMix] = r == 4 ? float(5 + v % 5) : 3.0f;
+  x[VerbADecay] = .24f + (v % 5) * .035f;
+  x[VerbBDecay] = 1.1f + (v % 5) * .2f;
+  x[VerbCDecay] = 4.2f + (v % 5) * .45f;
+  x[VerbAFilter] = float(6000 + (v % 5) * 600);
+  x[VerbBFilter] = float(4200 + (v % 5) * 700);
+  x[VerbCFilter] = float(3500 + (v % 5) * 500);
+  x[DelayStyle] = r == 3 ? 1.0f : (v % 3 == 0 ? 2.0f : 3.0f);
+  x[DelayDrive] = float(15 + (v % 6) * 7);
+  x[SlapTime] = float(90 + (v % 6) * 9);
+  x[SculptorOn] = 1;
+  x[SculptorAmount] = float(20 + (v % 6) * 4);
+  x[SculptorBody] = .5f + (g % 3) * .3f;
+  x[SculptorTilt] = -1.0f - (g % 3) * .3f;
+  if (index >= 230) {
+    int e = index - 230, group = e / 5, k = e % 5;
+    x[Sino] = 0;
+    x[HarmonyOn] = 0;
+    x[ModOn] = 0;
+    x[GodSpace] = 0;
+    x[ReverbMix] = 8;
+    x[DelayMix] = 8;
+    if (group == 0) {
+      x[PitchStyle] = 1;
+      x[TuneAmount] = 100;
+      x[TuneSpeed] = 5;
+      x[PitchFormant] = float(k - 2) * 1.1f;
+    }
+    if (group == 1) {
+      x[ModOn] = 1;
+      x[ModType] = float(k % 3);
+      x[ModMix] = float(35 + k * 12);
+      x[ModRate] = .4f + k * .6f;
+      x[ModDepth] = float(45 + k * 10);
+    }
+    if (group == 2) {
+      x[SaturationOn] = 1;
+      x[SatStyle] = float(k);
+      x[SatLow] = 55;
+      x[SatMid] = 75;
+      x[SatHigh] = 45;
+      x[SatParallel] = float(35 + k * 10);
+      x[WarmDrive] = 70;
+    }
+    if (group == 3) {
+      x[HarmonyOn] = 1;
+      x[HarmonyPattern] = 0;
+      x[HarmonyMix] = float(28 + k * 7);
+      x[HarmonyFormant] = float(k - 2);
+    }
+    if (group == 4) {
+      x[HarmonyOn] = 1;
+      x[HarmonyPattern] = 3;
+      x[HarmonyMix] = float(25 + k * 6);
+      x[VerbCMix] = float(12 + k * 4);
+      x[VerbCDecay] = 5.0f + k;
+      x[ReverbShimmer] = float(30 + k * 6);
+      x[ReverbMix] = 18;
+    }
+    if (group == 5) {
+      x[PreampStyle] = 5;
+      x[WarmDrive] = float(65 + k * 7);
+      x[PhantomModel] = k % 2 ? 1.0f : 0.0f;
+      x[PreampImpedance] = float(400 + k * 250);
+      x[AirFilter] = float(6000 + k * 600);
+    }
+    if (group == 6) {
+      x[DelayStyle] = 1;
+      x[DelayMix] = float(20 + k * 4);
+      x[DelayFeedback] = float(32 + k * 7);
+      x[DelayNote] = float(1 + k % 5);
+      x[ThrowSensitivity] = float(90 + k * 30);
+      x[DelayDuck] = 95;
+    }
+    if (group == 7) {
+      x[DelayStyle] = k % 2 ? 4.0f : 2.0f;
+      x[DelayMix] = float(20 + k * 4);
+      x[DelayFeedback] = float(30 + k * 7);
+      x[Width] = 135;
+      x[Spread] = 30;
+      x[ReverbMix] = 14;
+    }
+    if (group == 8) {
+      x[GateLowcut] = float(220 + k * 45);
+      x[AirFilter] = float(2600 + k * 400);
+      x[AirOn] = 1;
+      x[EQFreq] = 1700;
+      x[EQGain] = 5;
+      x[WarmDrive] = 80;
+      x[SculptorOn] = 0;
+      x[PreampStyle] = float(k);
+    }
+    if (group == 9) {
+      x[PitchStyle] = 1;
+      x[TuneAmount] = 100;
+      x[PitchFormant] = float(k - 2) * 1.5f;
+      x[HarmonyOn] = 1;
+      x[HarmonyPattern] = float(k % 4);
+      x[HarmonyMix] = 25;
+      x[ModOn] = 1;
+      x[ModType] = 1;
+      x[ModMix] = 30;
+      x[SatStyle] = float(k);
+      x[SatMid] = 65;
+      x[DelayStyle] = 4;
+      x[ReverbShimmer] = 35;
+    }
   }
-  if (index == 35) {
-    v[ReverbDecay] = 4.2f;
-    v[DelayNote] = 4;
-  }
-  if (p.role == 5) {
-    v[NoiseOn] = 0;
-    v[TuneOn] = 0;
-    v[CompRelease] = 220;
-    v[GateRange] = 12;
-  }
-  return v;
+  for (size_t i = 0; i < x.size(); ++i)
+    x[i] = juce::jlimit(specs()[i].min, specs()[i].max, x[i]);
+  return x;
 }
 } // namespace rack

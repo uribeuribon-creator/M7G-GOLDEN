@@ -1,0 +1,21 @@
+{
+  "training_data": "synthetic harmonic signals and a bounded DSP teacher policy; no commercial recordings",
+  "auto_mix": {
+    "architecture": "12 -> 16 tanh -> 8 linear",
+    "held_out_samples": 3000,
+    "mean_absolute_error": 0.0038600147236138582
+  },
+  "pitch_cnn": {
+    "architecture": "2x32 -> Conv1d(4,kernel=5,pad=2) tanh -> flatten -> dense12 tanh -> sigmoid",
+    "training_candidates": 12800,
+    "held_out_candidates": 3600,
+    "held_out_seed": 81991,
+    "balanced_accuracy": 0.9923582840664718
+  },
+  "limits": [
+    "Synthetic evaluation is not validation on real singers.",
+    "Auto-mix learns engineering targets, not professional aesthetic preferences.",
+    "CNN scores pitch candidates; it does not separate polyphonic notes."
+  ],
+  "license": "Own generated weights; RNNoise is separate and retains its original BSD license."
+}

@@ -1,41 +1,35 @@
-# M7G ALIEN VOICE — validación 0.3.0
+# V10 TRIPLE GOD ORIGIN — estado de validación
 
-## Publicación verificada
+## Implementación y procedencia
 
-El [workflow 40449723962](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40449723962) terminó correctamente el 27 de octubre de 2026 en Windows Server 2022. Compilación MSVC de VST3/Standalone, cuatro pruebas CTest y ciclo de instalación, migración, carga del módulo instalado y desinstalación aprobados. Las mediciones nativas coinciden con las locales indicadas abajo.
+VST3 Windows x64, C++20/JUCE 8.0.6; identificador separado `01EFCDAB8291EBFA4D37473754673130`. Interfaz de cabina con 26 módulos, análisis individual/global, 26 mezclas/envíos paralelos y 280 presets (50 de efectos). MLP y CNN propias entrenadas con datos sintéticos; scripts y pesos versionados, RNNoise existente con licencia BSD.
 
-El instalador publicado procede de esa compilación nativa, fuente `932899540c5dd34f94da3b165eb683374aaffed7`. Tamaño: 2 912 439 bytes. SHA-256: `babf16c425e405779d4302eb8b2db8fe577d0a2ceb5dfaa77e029da4be91a12e`.
+## Revisión local aprobada
 
-Se descargaron el instalador, su checksum y la captura PNG desde las URLs públicas de GitHub Releases, sin autenticación. HTTP 200 y `Content-Disposition: attachment`; tamaños y digests coinciden con GitHub y con el archivo SHA-256. Metadata del producto y bootstrap PE comprobados. Captura nativa: 1280 × 800 píxeles. La versión se mantiene como pre-release por la validación pendiente dentro del DAW.
+Las cinco pruebas Windows se ejecutaron bajo Wine con códigos de salida Windows explícitos. Todas aprobaron la revisión actual:
 
-## Comprobaciones locales completadas
+- **VocalDSP:** 54 combinaciones de perfiles/tasas/bloques, estado, mono y bloques variables. Arranque medido después de la latencia declarada.
+- **VST3Module:** fábrica del módulo real, nuevo nombre/CID, buses estéreo con sidechain opcional inactivo, proceso y descarga.
+- **AlienInterface:** 26 módulos y botones AI, 113 perillas, 26 barras paralelas, 280 presets, bypass enlazado y capturas de las tres páginas.
+- **AlienRack:** regresión de los doce bloques base, cincuenta presets del subconjunto original, ducking, trece rutas de análisis y persistencia A/B.
+- **TripleGodDSP:** 280 nombres/configuraciones distintos procesados; 50 efectos nuevos; salida finita, no silenciosa y techo de muestras. Corrección 223 → 220 Hz, quintas/octavas y ocho voces. Tres reverbs independientes con suma de error cuadrático 4.46e−19 y colas corta/media/larga diferenciadas. Tape ducking −20.4 dB; Throw silencioso durante voz continua y retorno después de la frase. Alineación de 25 ms encontrada con confianza 1 sobre el ejemplo sintético, error relativo 3.39e−15. Trece rutas adicionales de análisis de módulos avanzados.
 
-Compilación Windows x64 con Clang/LLVM 19 y SDK Microsoft. Los ejecutables Windows y el módulo VST3 real se ejecutaron bajo Wine 10. El controlador de pruebas comprueba el código de salida de Windows explícitamente, además del resultado de Wine.
+Impulso a 48 kHz: Monitor 0 muestras; Studio declaradas 7164 y pico 7165 (respuesta IIR); Linear declaradas y pico 7282. Bypass coincide exactamente con el retardo declarado. Las etapas de color usan 8× en Studio/Linear.
 
-- **VocalDSP:** 54 combinaciones de perfiles, tasas 44.1/48/96 kHz y bloques 64/256/1024; señal finita, no nula, retorno al silencio, estado, mono y bloques variables.
-- **AlienRack:** 50 presets con nombres y configuraciones diferentes; procesamiento de los 50 sin valores no finitos ni superación del techo de muestras. Pruebas aisladas de los doce módulos.
-- **Ducking:** reverb y delay redujeron su componente húmedo en 20.4 dB durante la señal de prueba; ambas colas recuperaron nivel al terminar la voz.
-- **Análisis:** doce rutas individuales y la ruta global midieron tres segundos de audio y cambiaron los parámetros seleccionados. Persistencia de las dos configuraciones A/B tras guardar y restaurar el estado.
-- **AlienInterface:** doce módulos, doce botones AI individuales y análisis global; 49 perillas enlazadas a parámetros, 50 entradas de preset y bypass funcional. Captura PNG renderizada desde el editor compilado, con tipografías incluidas.
-- **VST3Module:** carga de la DLL real, fábrica VST3, nombre **M7G ALIEN VOICE**, buses estéreo, procesamiento y descarga. Identificador conservado: `01EFCDAB8291EBFA4D374737476C6441`. Latencia declarada: 2006 muestras a 48 kHz.
-- **RNNoise:** reducción de ruido sintético de 9.08/8.93/8.85 dB a 44.1/48/96 kHz, tras cinco segundos de adaptación.
-- **De-esser y gate:** reducción de banda alta de 3.02 dB y atenuación de señal tenue de 23.53 dB en las pruebas aisladas.
-- **Saturación 4×:** reducción de 20.59 dB del producto de alias a 23 kHz en la prueba con un seno de 5 kHz.
-- **Afinador:** entrada de 223 Hz con objetivo 220 Hz; pico de salida de 220 Hz en AlienRack y 220.8 Hz en la prueba anterior. El perfil bus conserva las fundamentales simultáneas de un acorde.
+Reducción de ruido sintético: 9.08/8.93/8.85 dB a 44.1/48/96 kHz. De-esser 3.02 dB; expansión de señal tenue 23.53 dB. Reducción del producto de alias de 20.59 dB en la prueba existente. Bus de tres notas conserva sus fundamentales. Cadena Natural: pico 220.5 Hz para entrada de 223 Hz y objetivo 220 Hz.
 
-## Puerta de publicación en Windows nativo
+La compensación tonal evita atenuar uniformemente la voz y la protección armónica limita la reducción de parciales válidos. El shimmer transpone una proyección de la red sin reducir todo el campo de realimentación; las colas independientes se prueban por separado y juntas. La macro limita su ganancia automática de salida.
 
-El workflow `publish-alien-release.yml` solo publica el instalador generado por MSVC después de aprobar:
+## IA y alcance
 
-1. Compilación Windows x64, comprobación PE AMD64 y las cuatro pruebas CTest: VocalDSP, VST3Module, AlienInterface y AlienRack.
-2. Instalación silenciosa en la carpeta VST3 estándar; coincidencia SHA-256 del módulo instalado con el módulo probado.
-3. Retirada de los dos bundles antiguos, registro con nombre y versión nuevos y carga/procesamiento del módulo instalado.
-4. Desinstalación y retirada del módulo y de su entrada de registro.
+La CNN obtuvo 99.24 % de exactitud balanceada sobre 3600 candidatos sintéticos independientes, no sobre voces de cantantes reales. La MLP obtuvo MAE 0.00386 frente a la política DSP definida en 3000 ejemplos separados; no mide preferencia musical. Archivo: `Models/V8_METRICS.json`.
 
-La publicación incluye el instalador, su SHA-256 y una captura de la interfaz producida por el ejecutable Windows. El bootstrap NSIS es PE x86 Unicode; comprueba que Windows sea de 64 bits e instala el módulo AMD64, cuya arquitectura y carga se prueban por separado. El historial de GitHub Actions contiene los resultados nativos de cada publicación; las pruebas anteriores describen las mediciones locales, no sustituyen ese registro.
+La alineación compara envolventes contra el sidechain Lead reference, tiene rango ±60 ms y añade 80 ms compensados cuando se activa. No usa una referencia inexistente ni edita una línea temporal arbitraria.
 
-## Alcance pendiente
+Los seis previos y 48V/impedancia son modelos digitales, no control físico de una interfaz. Las referencias a fabricantes y artistas no certifican equivalencia ni participación. El limitador controla picos de muestras, no true-peak certificado.
 
-Studio One 7 es el DAW objetivo mediante VST3 Windows 10/11 x64, pistas mono/estéreo y buses. No se ha ejecutado Studio One 7 en este entorno. Siguen pendientes el escaneo, inserción, automatización y reapertura de sesiones dentro de ese DAW, y la evaluación perceptual con grabaciones vocales reales.
+## Puerta de publicación nativa
 
-El instalador no tiene firma digital. El limitador controla picos de muestras; no se ha certificado como true-peak. El afinador es monofónico y no separa coros. RNNoise es el modelo neuronal local incluido; el resto del análisis usa DSP adaptativo. No existe certificación de equivalencia con hardware/UAD ni evidencia de un resultado universal o del uso de los modelos más avanzados del mundo.
+El workflow `publish-v10-release.yml` debe compilar con MSVC en Windows 2022, aprobar las cinco pruebas CTest, instalar el VST3, comparar el módulo instalado por SHA-256, cargarlo/procesarlo y desinstalarlo conservando las versiones previas. Solo entonces publica el instalador, checksum y tres capturas de la interfaz.
+
+**Pendiente:** registrar el resultado final de esa ejecución y verificar descargas públicas. Studio One 7 y evaluación perceptual con voces reales siguen pendientes. El release se mantiene como pre-release y el instalador no tiene firma digital. No se afirma superioridad a UAD, iZotope, Soothe u otros productos ni una calidad universal de estudio.

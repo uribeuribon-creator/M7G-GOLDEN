@@ -14,7 +14,9 @@ int main() {
         p.apvts.getParameter("voicetype")
             ->setValueNotifyingHost(float(voice) / 5);
         double energy = 0;
-        for (int block = 0; block < 100; ++block) {
+        const int warmBlocks =
+            juce::jmax(100, int((p.getLatencySamples() + sr * .1) / size) + 4);
+        for (int block = 0; block < warmBlocks; ++block) {
           juce::AudioBuffer<float> b(2, size);
           for (int c = 0; c < 2; ++c)
             for (int i = 0; i < size; ++i)
@@ -31,8 +33,12 @@ int main() {
               energy += x * x;
             }
         }
-        if (energy < .001)
+        if (energy < .001) {
+          std::cerr << "No output: rate " << sr << " block " << size << " role "
+                    << voice << " energy " << energy << " latency "
+                    << p.getLatencySamples() << "\n";
           return 2;
+        }
       }
       const int tailBlocks = int(sr * 7 / size) + 1;
       for (int block = 0; block < tailBlocks; ++block) {
@@ -141,7 +147,7 @@ int main() {
   }
   const double aliasImprovement =
       10 * std::log10((nr * nr + ni * ni) / (ar * ar + ai * ai + 1e-25));
-  std::cout << "4x colour: alias reduction at 23 kHz " << aliasImprovement
+  std::cout << "8x colour: alias reduction at 23 kHz " << aliasImprovement
             << " dB versus direct waveshaping\n";
   if (aliasImprovement < 12)
     return 12;

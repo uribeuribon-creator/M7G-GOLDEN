@@ -6,11 +6,18 @@
 #include "RackLimiter.h"
 #include "SpaceProcessor.h"
 #include "StereoModulation.h"
+#include "V10Align.h"
+#include "V10Space.h"
+#include "V8Harmony.h"
+#include "V8PitchDetector.h"
+#include "V8Saturation.h"
+#include "V8Spectral.h"
 #include "VocalFinisher.h"
 #include <juce_audio_utils/juce_audio_utils.h>
-class M7GProcessor final : public juce::AudioProcessor {
+class M7GProcessor final : public juce::AudioProcessor, private juce::Timer {
 public:
   M7GProcessor();
+  ~M7GProcessor() override { stopTimer(); }
   using juce::AudioProcessor::processBlock;
   void prepareToPlay(double, int) override;
   void releaseResources() override {}
@@ -18,15 +25,18 @@ public:
   bool isBusesLayoutSupported(const BusesLayout &) const override;
   juce::AudioProcessorEditor *createEditor() override;
   bool hasEditor() const override { return true; }
-  const juce::String getName() const override { return "M7G ALIEN VOICE"; }
+  const juce::String getName() const override {
+    return "M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN";
+  }
   bool acceptsMidi() const override { return false; }
   bool producesMidi() const override { return false; }
   double getTailLengthSeconds() const override { return tailSeconds.load(); }
-  int getNumPrograms() override { return 50; }
+  int getNumPrograms() override { return rack::presetCount; }
   int getCurrentProgram() override { return program.load(); }
   void setCurrentProgram(int) override;
   const juce::String getProgramName(int i) override {
-    return rack::presets()[size_t(juce::jlimit(0, 49, i))].name;
+    return rack::presets()[size_t(juce::jlimit(0, rack::presetCount - 1, i))]
+        .name;
   }
   void changeProgramName(int, const juce::String &) override {}
   juce::AudioProcessorParameter *getBypassParameter() const override {
@@ -39,7 +49,15 @@ public:
   void selectCompare(int);
   int compareSlot() const { return activeCompare; }
   void copyCompare();
+  static constexpr int analysisAll = 26;
   void beginAnalysis(int module);
+  int engineMode() const { return activeMode; }
+  std::atomic<float> dereverbGR{0}, resonanceGR{0}, fetGR{0}, pitchNN{0},
+      sinoTrim{0};
+  std::atomic<int> harmonyVoices{0};
+  std::atomic<float> alignOffset{0}, alignConfidence{0};
+  std::atomic<bool> referencePresent{false};
+  float verbLayerDB(int i) const { return layerMeters[size_t(i)].load(); }
   bool applyAnalysis();
   int analysisTarget() const { return requestedModule.load(); }
   std::atomic<int> analysisState{0};
@@ -53,14 +71,25 @@ public:
   static const char *action(int);
 
 private:
+  void timerCallback() override { applyAnalysis(); }
+  std::array<juce::dsp::IIR::Filter<float>, 2> pitchAntiAlias;
   using Filter = juce::dsp::IIR::Filter<float>;
   std::array<Filter, 2> presence, air, airCut;
   AnalogColour analogue;
-  VocalFinisher cleaner;
+  VocalFinisher cleaner, gate;
   NeuralDenoiser neural;
   MusicalTuner tuner;
+  V8PitchDetector pitchDetector;
+  V8Spectral roomCleaner{true}, resonance{false};
+  V8Harmony leadTuner, harmony;
+  V8Saturation saturation;
+  V8FetCompressor fet;
   RackLimiter limiter;
-  SpaceProcessor space;
+  V10TripleSpace space;
+  V10Align aligner;
+  bool alignmentActive = false;
+  juce::AudioBuffer<float> eqDryDelay, referenceScratch;
+  std::array<std::atomic<float>, 3> layerMeters;
   StereoModulation stereo;
   std::array<std::atomic<float> *, rack::Count> parameter{};
   rack::Values settings = rack::defaults(), lastSettings = rack::defaults();
@@ -78,7 +107,7 @@ private:
   std::atomic<int> activeCompare{0};
   juce::CriticalSection compareLock;
   std::array<juce::ValueTree, 2> compare;
-  std::atomic<int> requestedModule{12};
+  std::atomic<int> requestedModule{analysisAll};
   std::atomic<bool> analysisRequest{false};
   int analysisSamples = 0;
   double analysisEnergy = 0, analysisHigh = 0;
@@ -86,6 +115,12 @@ private:
         analysisCrest = 0, analysisHiss = 0, analysisPrevious = 0,
         analysisProcessedDB = 0;
   std::atomic<double> tailSeconds{6};
+  std::atomic<int> activeMode{1};
+  int neuralClock = 0;
+  float previousBlockDB = -100, sinoMakeupDB = 0;
+  std::array<float, 8> autoTargets{};
+  void configureMode(int);
+  void applySino(rack::Values &, float);
   void refreshFilters();
   void meterFFT();
   juce::ValueTree parameterState();

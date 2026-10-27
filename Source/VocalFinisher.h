@@ -8,6 +8,7 @@ public:
     fullEnv = essEnv = bodyEnv = harshEnv = essReduction = 0;
     gateGain = 1;
     lastFreq = -1;
+    lastLowcut = -1;
     for (auto *bank : {&hp, &ess, &body, &harsh})
       for (auto &f : *bank)
         f.reset();
@@ -17,10 +18,11 @@ public:
     p = v;
     attack = std::exp(-1 / float(rate * v[rack::GateAttack] * .001));
     release = std::exp(-1 / float(rate * v[rack::GateRelease] * .001));
-    if (lastFreq != v[rack::DeessFreq]) {
+    if (lastFreq != v[rack::DeessFreq] || lastLowcut != v[rack::GateLowcut]) {
+      lastLowcut = v[rack::GateLowcut];
       lastFreq = v[rack::DeessFreq];
-      auto a = juce::dsp::IIR::ArrayCoefficients<float>::makeHighPass(rate, 60,
-                                                                      .707f);
+      auto a = juce::dsp::IIR::ArrayCoefficients<float>::makeHighPass(
+          rate, v[rack::GateLowcut], .707f);
       auto b = juce::dsp::IIR::ArrayCoefficients<float>::makeFirstOrderHighPass(
           rate, juce::jmin(double(lastFreq), rate * .4));
       auto c = juce::dsp::IIR::ArrayCoefficients<float>::makeBandPass(rate, 420,
@@ -105,6 +107,7 @@ private:
   using Filter = juce::dsp::IIR::Filter<float>;
   std::array<Filter, 2> hp, ess, body, harsh;
   rack::Values p = rack::defaults();
+  float lastLowcut = -1;
   double rate = 48000;
   float fullEnv = 0, essEnv = 0, bodyEnv = 0, harshEnv = 0, gateGain = 1,
         essReduction = 0, attack = 0, release = 0, lastFreq = -1;

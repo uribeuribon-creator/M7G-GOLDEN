@@ -1,0 +1,60 @@
+name: Build and publish V10 TRIPLE GOD ORIGIN
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/v10.0.0/**
+      - .github/workflows/publish-v10-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build, process audio and verify interface
+        shell: pwsh
+        run: ./BuildInstaller.ps1
+      - name: Preserve native binaries and test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-V10-Windows-validation
+          path: |
+            dist/*.exe
+            build-windows/Release/*.exe
+            build-windows/M7G_Golden_Voice_AI_artefacts/Release/VST3/**
+            build-windows/Testing/Temporary/*.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Test native installation, migration and removal
+        shell: pwsh
+        run: ./Tests/InstallerSmoke.ps1
+      - name: Render the compiled Windows interface
+        shell: pwsh
+        run: |
+          & ./build-windows/Release/AlienUI.exe "$PWD/dist/M7G-V10-interface.png"
+          if ($LASTEXITCODE -ne 0) { throw "UI render failed: $LASTEXITCODE" }
+      - name: Publish verified installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = 'dist/M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe'
+          $checksum = (Get-FileHash -Algorithm SHA256 $exe).Hash.ToLower() + '  M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe'
+          Set-Content -Encoding ascii "$exe.sha256" $checksum
+          gh release view v10.0.0 --json tagName
+          if ($LASTEXITCODE -ne 0) {
+            gh release create v10.0.0 --target $env:GITHUB_SHA --draft --prerelease --title 'M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN — 26 modules / 280 presets' --notes-file release-assets/v10.0.0/RELEASE_NOTES.md
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create the draft release' }
+          }
+          gh release upload v10.0.0 $exe "$exe.sha256" 'dist/M7G-V10-interface.png' 'dist/M7G-V10-interface-cabina.png' 'dist/M7G-V10-interface-intelligence.png' --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
+          gh release edit v10.0.0 --draft=false --prerelease
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }

@@ -3,15 +3,16 @@
 #include <vector>
 class RackLimiter {
 public:
-  void prepare(double sr) {
+  void prepare(double sr, bool monitor = false) {
     rate = sr;
-    look = juce::jmax(1, int(sr * .001));
+    look = monitor ? 0 : juce::jmax(1, int(sr * .001));
     for (auto &d : delay)
-      d.assign(size_t(look + 1), 0);
+      d.assign(size_t(juce::jmax(1,int(sr*.001))+1), 0);
     write = 0;
     gain = 1;
     hold = 0;
   }
+  void setMode(bool monitor){look=monitor?0:int(delay[0].size())-1;write=0;gain=1;hold=0;for(auto& d:delay)std::fill(d.begin(),d.end(),0);}
   int latency() const { return look; }
   void setControls(const rack::Values &values) {
     p = values;
@@ -44,7 +45,7 @@ public:
       gain = release * gain + (1 - release) * target;
     for (int c = 0; c < channels; ++c) {
       float d = delay[size_t(c)][size_t(read)];
-      x[c] = p[rack::LimitOn] > .5f ? juce::jlimit(-ceiling, ceiling, d * gain)
+      x[c] = p[rack::LimitOn] > .5f ? d+p[rack::LimitParallel]*.01f*(juce::jlimit(-ceiling, ceiling, d * gain)-d)
                                     : d;
     }
     write = (write + 1) % (look + 1);

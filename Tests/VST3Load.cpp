@@ -6,6 +6,7 @@
 #include <cstring>
 #include <fstream>
 #include <string>
+#include <vector>
 #include <windows.h>
 int main(int argc, char **argv) {
   using namespace Steinberg;
@@ -61,7 +62,12 @@ int main(int argc, char **argv) {
                                 reinterpret_cast<void **>(&audio)) != kResultOk)
     return 9;
   Vst::SpeakerArrangement stereo = Vst::SpeakerArr::kStereo;
-  if (audio->setBusArrangements(&stereo, 1, &stereo, 1) != kResultOk)
+  const int inputBusCount = component->getBusCount(Vst::kAudio, Vst::kInput);
+  std::vector<Vst::SpeakerArrangement> arrangements(size_t(inputBusCount),
+                                                    Vst::SpeakerArr::kEmpty);
+  arrangements[0] = stereo;
+  if (audio->setBusArrangements(arrangements.data(), inputBusCount, &stereo,
+                                1) != kResultOk)
     return 10;
   Vst::ProcessSetup setup{};
   setup.processMode = Vst::kRealtime;
@@ -78,7 +84,10 @@ int main(int argc, char **argv) {
   float in[2][256]{}, out[2][256]{};
   float *input[]{in[0], in[1]};
   float *output[]{out[0], out[1]};
-  Vst::AudioBusBuffers ib{}, ob{};
+  std::vector<Vst::AudioBusBuffers> inputBuses(
+      static_cast<size_t>(inputBusCount));
+  auto &ib = inputBuses[0];
+  Vst::AudioBusBuffers ob{};
   ib.numChannels = ob.numChannels = 2;
   ib.channelBuffers32 = input;
   ob.channelBuffers32 = output;
@@ -86,8 +95,9 @@ int main(int argc, char **argv) {
   data.processMode = Vst::kRealtime;
   data.symbolicSampleSize = Vst::kSample32;
   data.numSamples = 256;
-  data.numInputs = data.numOutputs = 1;
-  data.inputs = &ib;
+  data.numInputs = inputBusCount;
+  data.numOutputs = 1;
+  data.inputs = inputBuses.data();
   data.outputs = &ob;
   double energy = 0;
   for (int block = 0; block < 200; ++block) {

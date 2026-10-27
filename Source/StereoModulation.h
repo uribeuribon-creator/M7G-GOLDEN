@@ -59,8 +59,11 @@ public:
       if (p[rack::StereoOn] > .5f)
         side -= low[1];
       float pan = p[rack::StereoOn] > .5f ? p[rack::Pan] * .01f : 0;
+      float originalL=frame[0],originalR=frame[1];
       frame[0] = (mid + side) * std::sqrt(1 - juce::jmax(0.0f, pan));
       frame[1] = (mid - side) * std::sqrt(1 + juce::jmin(0.0f, pan));
+      frame[0]=originalL+p[rack::StereoParallel]*.01f*(frame[0]-originalL);
+      frame[1]=originalR+p[rack::StereoParallel]*.01f*(frame[1]-originalR);
       spreadWrite = (spreadWrite + 1) % sn;
     }
   }
