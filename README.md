@@ -5,7 +5,13 @@
 Windows x64 VST3 vocal processor: 26 modules, 360 presets, local processing,
 blue/gold spaceship cockpit, simple Spanish help. Builds with C++20/JUCE 8.0.6.
 
-[Windows releases](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases)
+[Descargar V11 Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v11.0.0/M7G-ALIEN-VOICE-V11-ALIEN-INTELLIGENCE-Windows-x64.exe)
+
+Native Windows validation: **six suites passed**, installation/reinstallation/
+uninstallation passed; public direct download and checksum verified. Engineering
+pre-release; actual Studio One 7 and physical-i5 CPU validation remain pending.
+
+[Ver cabina](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v11.0.0/M7G-V11-interface.png) · [Consumo medido](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v11.0.0/V11-performance.txt) · [All releases](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases)
 
 ## Using V11
 

@@ -1,5 +1,29 @@
 # V11 ALIEN INTELLIGENCE validation
 
+## Published native result
+
+* Release: https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/v11.0.0
+* Source: `a3362ce816d2b376d630fc5931c637e3cf46b810`.
+* Native Windows run: https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40557888864
+* MSVC x64: **6/6 CTest suites passed**, 109.30 seconds.
+* Installation, reinstall with existing licence preserved, installed DLL load,
+  coexistence with four earlier products and uninstall: passed.
+* Native UI: 26 modules, 55 knobs, 26 parallel sliders, 360 workflow presets;
+  all four screenshots downloaded and checked at 1280 x 900.
+* Direct installer download tested without authentication: HTTP 200, attachment,
+  3181677 bytes. SHA-256:
+  `1886ee109780246d0e0300a9690521e5adca5bffcb577d332a73a15011b24d7f`.
+* All eight public assets verified; checksum file matched the installer;
+  downloaded global licence passed RSA verification.
+* Ten-instance native callback benchmark, 48 kHz / 256 samples / two seconds:
+  Monitor 1.20899 seconds wall time (60.4495% one-core equivalent),
+  Studio/8x 4.9052 seconds (245.26% one-core equivalent). These are aggregate
+  single-core work measurements, not total CPU percentages on a user's i5.
+  Full-chain mode costs substantially more than Monitor; the requested <15%
+  physical-i5 target is not certified.
+* The large-block regression passes: a 65,536-sample callback after a
+  256-sample preparation does not read an unavailable reference buffer.
+
 ## Release gate
 
 The Windows workflow builds C++20/JUCE 8.0.6 with MSVC x64, runs six CTest
@@ -40,7 +64,7 @@ These are engineering checks, not singer/perceptual-quality ratings.
 All six Windows-PE suites passed under Wine for the V11 implementation. The
 UI check also exercises asynchronous search callbacks explicitly, navigation,
 random selection, favourite persistence and the separate AUTO/MANUAL control.
-The native Windows release gate remains required before publication.
+The native Windows gate above subsequently passed for the published release.
 
 ## Limits
 
