@@ -1,7 +1,7 @@
 #pragma once
 #include "RackParameters.h"
 namespace rack {
-inline constexpr int presetCount = 280;
+inline constexpr int presetCount = 360;
 struct Preset {
   juce::String name;
   int role = 0;
@@ -63,9 +63,35 @@ inline const std::array<Preset, presetCount> &presets() {
     for (int i = 0; i < 50; ++i)
       b[size_t(230 + i)] = {juce::String("FX | ") + effects[i],
                             i / 5 == 3 || i / 5 == 4 ? 4 : 3, 0, i};
+    const char *newNames[]{"Aurora",    "Galileo", "Tesla",    "Nebula",
+                           "Apollo",    "Olimpo",  "Atlantis", "Solaris",
+                           "Orion",     "Genesis", "Cosmos",   "Platinum",
+                           "Andromeda", "Infinity"};
+    const char *workflow[]{"Principal", "Doble",   "Refuerzo",
+                           "Adlib",     "Armonia", "FX"};
+    for (int i = 280; i < presetCount; ++i) {
+      int bank = (i - 280) % 6, k = (i - 280) / 6;
+      b[size_t(i)] = {juce::String(workflow[bank]) + " | Golden " +
+                          newNames[k] + " V11",
+                      bank == 5 ? 3 : bank, k % 6, 6 + k};
+    }
     return b;
   }();
   return bank;
+}
+inline int workflowBank(int index) {
+  if (index >= 280)
+    return (index - 280) % 6;
+  if (index >= 230)
+    return 5;
+  int role = presets()[size_t(juce::jlimit(0, presetCount - 1, index))].role;
+  return role == 5 ? 0 : role;
+}
+inline const char *bankName(int index) {
+  static const char *names[]{"VOCES PRINCIPALES", "DOBLES",
+                             "REFUERZOS",         "ADLIBS",
+                             "ARMONIAS",          "EFECTOS ESPECIALES"};
+  return names[juce::jlimit(0, 5, index)];
 }
 inline constexpr const char *presetCreator = "Makkine Seven Golden";
 inline Values presetValues(int index) {
@@ -221,7 +247,7 @@ inline Values presetValues(int index) {
   x[SculptorAmount] = float(20 + (v % 6) * 4);
   x[SculptorBody] = .5f + (g % 3) * .3f;
   x[SculptorTilt] = -1.0f - (g % 3) * .3f;
-  if (index >= 230) {
+  if (index >= 230 && index < 280) {
     int e = index - 230, group = e / 5, k = e % 5;
     x[AutoProducer] = 0;
     x[HarmonyOn] = 0;
@@ -315,6 +341,22 @@ inline Values presetValues(int index) {
       x[ReverbShimmer] = 35;
     }
   }
+  if (index >= 280) {
+    int k = (index - 280) / 6, bank = workflowBank(index);
+    x[AutoProducer] = bank == 5 ? 0.0f : float(35 + k * 3);
+    x[PreampGain] = .3f * k;
+    x[WarmBias] = float(23 + k * 3);
+    x[VerbBPredelay] = float(15 + k * 3);
+    x[DelayFeedback] = float(16 + k * 2);
+    x[PitchStyle] = bank == 5 && k % 3 == 0 ? 1.0f : 0.0f;
+    x[ModMix] = bank == 5 ? float(12 + k * 3) : x[ModMix];
+    x[ModOn] = x[ModMix] > 0 ? 1.0f : 0.0f;
+    x[PitchFormant] = bank == 5 ? (k % 7 - 3) * .6f : 0;
+    x[HarmonyOn] = bank == 4 || (bank == 5 && k % 3 == 1) ? 1.0f : 0.0f;
+    x[HarmonyMix] = x[HarmonyOn] > .5f ? float(20 + k) : 0.0f;
+  }
+  x[AlienAutomation] = x[AutoProducer] > 0 ? 1.0f : 0.0f;
+  x[KeepHuman] = x[PitchStyle] > .5f ? 0.0f : float(60 + v * 5);
   for (size_t i = 0; i < x.size(); ++i)
     x[i] = juce::jlimit(specs()[i].min, specs()[i].max, x[i]);
   return x;

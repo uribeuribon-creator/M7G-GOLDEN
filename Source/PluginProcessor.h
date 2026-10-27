@@ -8,6 +8,10 @@
 #include "StereoModulation.h"
 #include "V10Align.h"
 #include "V10Space.h"
+#include "V11Automation.h"
+#include "V11License.h"
+#include "V11NoiseLearn.h"
+#include "V11Pitch.h"
 #include "V8Harmony.h"
 #include "V8PitchDetector.h"
 #include "V8Saturation.h"
@@ -26,7 +30,7 @@ public:
   juce::AudioProcessorEditor *createEditor() override;
   bool hasEditor() const override { return true; }
   const juce::String getName() const override {
-    return "M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN";
+    return "M7G ALIEN VOICE V11 - ALIEN INTELLIGENCE";
   }
   bool acceptsMidi() const override { return false; }
   bool producesMidi() const override { return false; }
@@ -47,6 +51,30 @@ public:
   void setValue(rack::Param, float);
   float value(rack::Param) const;
   void selectCompare(int);
+  void controlTick();
+  bool automatic() const { return value(rack::AlienAutomation) > .5f; }
+  float effectiveValue(rack::Param k) const {
+    return effective[size_t(k)].load();
+  }
+  void learnNoise() {
+    noiseLearnRequest.store(true);
+    noiseLearnState.store(1);
+    noiseLearnProgress.store(0);
+  }
+  std::atomic<int> noiseLearnState{0};
+  std::atomic<float> noiseLearnProgress{0}, pitchCorrection{0},
+      rawInputDB{-100};
+  std::atomic<bool> sleeping{false}, licensed{false};
+  V11License license;
+  juce::String intelligenceText() const;
+  bool importLicense(const juce::File &file) {
+    bool ok = license.importFile(file);
+    licensed.store(ok);
+    return ok;
+  }
+  bool isFavourite(int) const;
+  void toggleFavourite(int);
+  std::atomic<int> automationUpdates{0};
   int compareSlot() const { return activeCompare; }
   void copyCompare();
   static constexpr int analysisAll = 26;
@@ -72,7 +100,23 @@ public:
   static const char *action(int);
 
 private:
-  void timerCallback() override { applyAnalysis(); }
+  void timerCallback() override { controlTick(); }
+  std::array<std::atomic<float>, rack::Count> effective;
+  std::array<std::atomic<float>, 8> modelTargets;
+  std::atomic<float> liveCrest{0}, liveBrightness{0}, learnedNoise{-100};
+  std::atomic<int> manualCommit{0};
+  rack::Values runtime = rack::defaults(), frozen = rack::defaults();
+  bool wasAutomatic = false, runtimeReady = false;
+  std::atomic<bool> runtimeReset{false};
+  double quietSamples = 0;
+  V11Pitch intelligentPitch;
+  V11NoiseLearn noiseLearner;
+  bool learning = false;
+  std::atomic<bool> noiseLearnRequest{false};
+  int controlClock = 0;
+  mutable juce::CriticalSection favouriteLock;
+  juce::StringArray favourites;
+  void persistFavourites();
   std::array<juce::dsp::IIR::Filter<float>, 2> pitchAntiAlias;
   using Filter = juce::dsp::IIR::Filter<float>;
   std::array<Filter, 2> presence, air, airCut;
@@ -118,7 +162,7 @@ private:
   std::atomic<double> tailSeconds{6};
   std::atomic<int> activeMode{1};
   int neuralClock = 0;
-  float previousBlockDB = -100, producerMakeupDB = 0;
+  float producerMakeupDB = 0;
   std::array<float, 8> autoTargets{};
   void configureMode(int);
   void applyAutoProducer(rack::Values &, float);

@@ -18,9 +18,9 @@ juce::Typeface::Ptr AlienSkin::graffitiTypeface() {
   return face;
 }
 namespace {
-const juce::Colour gold{0xffd5b66d}, bright{0xfff1dca5}, dark{0xff0c1011},
+const juce::Colour gold{0xffffd700}, bright{0xfff1dca5}, dark{0xff0a0f1e},
     muted{0xff9b926f};
-constexpr const char *titles[]{"GATE",
+constexpr const char *titles[]{"ALIEN NOISE GATE GOD",
                                "DE-ESS AI",
                                "UNISON COLOUR",
                                "PRESENCE EQ",
@@ -31,7 +31,7 @@ constexpr const char *titles[]{"GATE",
                                "DELAY",
                                "STEREO",
                                "MODULATION",
-                               "PITCH / THROAT",
+                               "ALIEN PITCH GOD",
                                "DE-REVERB",
                                "RESONANCE GUARD",
                                "MULTIBAND COLOUR",
@@ -297,7 +297,7 @@ void AlienSkin::drawComboBox(juce::Graphics &g, int w, int h, bool, int, int,
   g.fillPath(p);
 }
 RackKnob::RackKnob(M7GProcessor &p, rack::Param id, juce::String name)
-    : caption(std::move(name)) {
+    : caption(std::move(name)), processor(p), parameterID(id) {
   addAndMakeVisible(slider);
   slider.setColour(juce::Slider::textBoxOutlineColourId,
                    juce::Colours::transparentBlack);
@@ -314,8 +314,19 @@ RackKnob::RackKnob(M7GProcessor &p, rack::Param id, juce::String name)
                 id == rack::DelayStyle || id == rack::ReverbStyle;
   slider.setTextBoxStyle(juce::Slider::TextBoxBelow, choice, 85, 17);
   slider.setDoubleClickReturnValue(true, rack::specs()[size_t(id)].def);
-  slider.setTooltip(juce::String(rack::specs()[size_t(id)].name) +
-                    " • Doble clic: valor predeterminado");
+  slider.setTooltip(caption +
+                    ". Arrastra para cambiar. Doble clic: valor inicial. En "
+                    "AUTO el alien lo ajusta; MANUAL conserva tu ajuste.");
+  if (id == rack::TuneAmount)
+    slider.setTooltip("CUANTO CORRIGE: sube para acercar mas la nota al "
+                      "centro. Dentro de 15 cents no corrige.");
+  if (id == rack::KeepHuman)
+    slider.setTooltip(
+        "CONSERVAR HUMANO: sube para mantener vibrato, deslizamientos y "
+        "expresion. Baja para un efecto mas firme.");
+  if (id == rack::GateThreshold)
+    slider.setTooltip("CUANDO CIERRA: el ruido por debajo de este nivel se "
+                      "reduce. Pulsa LEARN sin cantar durante dos segundos.");
   attachment =
       std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
           p.apvts, rack::specs()[size_t(id)].id, slider);
@@ -328,6 +339,12 @@ RackKnob::RackKnob(M7GProcessor &p, rack::Param id, juce::String name)
     return v;
   };
   slider.updateText();
+}
+void RackKnob::tick() {
+  if (processor.automatic() && !slider.isMouseButtonDown() &&
+      !slider.hasKeyboardFocus(true))
+    slider.setValue(processor.effectiveValue(parameterID),
+                    juce::dontSendNotification);
 }
 void RackKnob::resized() {
   slider.setBounds(0, 12, getWidth(), getHeight() - 12);
@@ -377,177 +394,120 @@ RackModule::RackModule(M7GProcessor &p, int module)
   using namespace rack;
   switch (index) {
   case 0:
-    knob(GateThreshold, "THRESHOLD");
-    knob(GateRange, "RANGE");
-    knob(GateAttack, "ATTACK");
-    knob(GateRelease, "RELEASE");
-    knob(GateLowcut, "LOW CUT");
+    knob(GateThreshold, "CUANDO CIERRA");
+    addAndMakeVisible(learn);
+    learn.onClick = [this] { processor.learnNoise(); };
+    learn.setTooltip("APRENDER RUIDO: deja sonar solo el ruido de tu "
+                     "habitacion durante dos segundos, sin cantar.");
     break;
   case 1:
-    knob(DeessFreq, "FREQUENCY");
-    knob(DeessThreshold, "THRESHOLD");
-    knob(DeessAmount, "AMOUNT");
-    button(DeessListen, "LISTEN");
+    knob(DeessAmount, "QUITAR ESES");
+    knob(DeessFreq, "ZONA DE ESES");
+    button(DeessListen, "ESCUCHAR ESES");
     break;
   case 2:
-    knob(WarmDrive, "DRIVE");
-    knob(WarmBias, "BIAS");
-    knob(WarmTone, "TONE");
-    knob(WarmOutput, "OUTPUT");
+    knob(WarmDrive, "CALOR");
+    knob(WarmTone, "COLOR");
     break;
   case 3:
-    knob(EQFreq, "FREQUENCY");
-    knob(EQGain, "GAIN");
-    knob(EQQ, "Q");
-    knob(EQDirty, "DIRTY BLEND");
+    knob(EQGain, "PRESENCIA");
+    knob(EQFreq, "ZONA DE VOZ");
     break;
   case 4:
-    knob(AirAmount, "AIR");
-    knob(AirGain, "SHINE");
-    knob(AirShimmer, "HARMONICS");
-    knob(AirFilter, "FILTER");
+    knob(AirAmount, "AIRE");
+    knob(AirGain, "BRILLO");
     break;
   case 5:
-    knob(CompReduction, "PEAK REDUCTION");
-    knob(CompGain, "GAIN");
-    knob(CompRatio, "RATIO");
-    knob(CompRelease, "RECOVERY");
+    knob(CompReduction, "CONTROLAR PICOS");
+    knob(CompGain, "RECUPERAR NIVEL");
     break;
   case 6:
-    knob(LimitCeiling, "CEILING");
-    knob(LimitRelease, "RELEASE");
-    button(LimitFast, "FAST");
-    button(LimitLookahead, "LOOKAHEAD");
+    knob(LimitCeiling, "NIVEL MAXIMO");
+    knob(LimitRelease, "RECUPERACION");
     break;
   case 7:
-    knob(ReverbMix, "MASTER SEND");
-    knob(ReverbDecay, "TAIL SCALE");
-    knob(ReverbSize, "SIZE");
-    knob(ReverbShimmer, "SHIMMER");
-    knob(ReverbDuck, "DUCKING");
+    knob(ReverbDecay, "DURACION");
+    knob(ReverbDuck, "ESPACIO AL CANTAR");
     break;
   case 8:
-    knob(DelayMix, "SEND");
-    knob(DelayNote, "SYNC NOTE");
-    knob(DelayFeedback, "FEEDBACK");
-    knob(DelayTone, "TONE");
-    knob(DelayDuck, "DUCKING");
+    knob(DelayNote, "RITMO DEL ECO");
+    knob(DelayFeedback, "REPETICIONES");
     break;
   case 9:
-    knob(Width, "WIDTH");
-    knob(Pan, "PAN");
-    knob(StereoLow, "MONO BASS");
-    knob(Spread, "SPREAD");
+    knob(Width, "ANCHURA");
+    knob(Pan, "IZQUIERDA / DERECHA");
     break;
   case 10:
-    knob(ModRate, "RATE");
-    knob(ModDepth, "DEPTH");
-    knob(ModMix, "MIX");
-    knob(ModType, "TYPE");
+    knob(ModDepth, "MOVIMIENTO");
+    knob(ModRate, "VELOCIDAD");
     break;
   case 11:
-    knob(TuneAmount, "AMOUNT");
-    knob(TuneSpeed, "RETUNE");
-    knob(PitchKey, "KEY");
-    knob(PitchScale, "SCALE");
-    knob(PitchStyle, "CHARACTER");
-    knob(PitchFormant, "THROAT / FORMANT");
+    knob(TuneAmount, "CUANTO CORRIGE");
+    knob(KeepHuman, "CONSERVAR HUMANO");
     break;
   case 12:
-    knob(DereverbAmount, "AMOUNT");
-    knob(DereverbTail, "ROOM RECOVERY");
-    knob(TransientProtect, "TRANSIENTS");
+    knob(DereverbAmount, "QUITAR HABITACION");
+    knob(TransientProtect, "CUIDAR ATAQUES");
     break;
   case 13:
-    knob(ResonanceAmount, "REDUCTION");
-    knob(ResonanceFocus, "FOCUS");
-    knob(HarmonicProtect, "HARMONIC PROTECT");
-    knob(TransientProtect, "TRANSIENTS");
+    knob(ResonanceAmount, "SUAVIZAR");
+    knob(HarmonicProtect, "CUIDAR TIMBRE");
     break;
   case 14:
-    knob(SatLow, "LOW DRIVE");
-    knob(SatMid, "MID DRIVE");
-    knob(SatHigh, "HIGH DRIVE");
-    knob(SatStyle, "SATURATION LAW");
-    knob(SatCrossLow, "LOW CROSSOVER");
-    knob(SatCrossHigh, "HIGH CROSSOVER");
+    knob(SatMid, "ARMONICOS");
+    knob(SatStyle, "TIPO DE COLOR");
     break;
   case 15:
-    knob(HarmonyMix, "LEVEL");
-    knob(HarmonyPattern, "VOICING");
-    knob(HarmonyDetune, "HUMANIZE");
-    knob(HarmonyFormant, "FORMANTS");
+    knob(HarmonyPattern, "TIPO DE CORO");
+    knob(HarmonyDetune, "HUMANIZAR CORO");
     break;
   case 16:
-    knob(FetThreshold, "THRESHOLD");
-    knob(FetRatio, "RATIO");
-    knob(FetAttack, "ATTACK");
-    knob(FetRelease, "RELEASE");
-    knob(FetGain, "MAKEUP");
+    knob(FetThreshold, "CUANTO APRIETA");
+    knob(FetGain, "RECUPERAR NIVEL");
     break;
   case 17:
-    knob(NoiseAmount, "NEURAL BLEND");
+    knob(NoiseAmount, "QUITAR RUIDO");
+    knob(TransientProtect, "CUIDAR VOZ");
     break;
   case 18:
-    knob(PreampStyle, "PRE MODEL");
-    knob(PreampGain, "GAIN");
-    knob(PreampImpedance, "VIRTUAL IMPEDANCE");
-    button(PreampPad, "PAD -20 dB");
-    button(PhantomModel, "48V / VIRTUAL BIAS");
+    knob(PreampStyle, "TIPO DE PREVIO");
+    knob(PreampGain, "EMPUJE");
+    button(PreampPad, "BAJAR ENTRADA");
+    button(PhantomModel, "48V VIRTUAL");
     switches.back()->setTooltip(
-        "Cambia el rail virtual del modelo. No activa phantom ni cambia la "
-        "impedancia fisica de tu interfaz.");
+        "Cambia el color digital. No activa el phantom de tu interfaz.");
     break;
   case 19:
-    knob(CompParallel, "NEW YORK MIX");
-    knob(SatParallel, "SATURATION MIX");
-    knob(EQParallel, "EQ MIX");
-    knob(EQDirty, "CLEAN / DIRTY");
-    button(Punch, "PUNCH");
+    knob(SatParallel, "COLOR EN PARALELO");
+    knob(EQParallel, "EQ EN PARALELO");
+    button(Punch, "MAS PEGADA");
     break;
   case 20:
-    knob(VerbAMix, "LAYER MIX");
-    knob(VerbADecay, "DECAY");
-    knob(VerbAPredelay, "PRE-DELAY");
-    knob(VerbAFilter, "FILTER");
-    knob(VerbAMod, "MODULATION");
+    knob(VerbADecay, "DURACION CORTA");
+    knob(VerbAPredelay, "SEPARAR DE VOZ");
     break;
   case 21:
-    knob(VerbBMix, "LAYER MIX");
-    knob(VerbBDecay, "DECAY");
-    knob(VerbBPredelay, "PRE-DELAY");
-    knob(VerbBFilter, "FILTER");
-    knob(VerbBMod, "MODULATION");
+    knob(VerbBDecay, "DURACION MEDIA");
+    knob(VerbBPredelay, "SEPARAR DE VOZ");
     break;
   case 22:
-    knob(VerbCMix, "LAYER MIX");
-    knob(VerbCDecay, "DECAY");
-    knob(VerbCPredelay, "PRE-DELAY");
-    knob(VerbCFilter, "FILTER");
-    knob(VerbCMod, "MODULATION");
+    knob(VerbCDecay, "DURACION LARGA");
+    knob(VerbCPredelay, "SEPARAR DE VOZ");
     break;
   case 23:
-    knob(DelayStyle, "MODE");
-    knob(SlapTime, "SLAP TIME");
-    knob(DelayTime, "MANUAL TIME");
-    knob(DelayDrive, "SATURATION");
-    knob(ThrowSensitivity, "PHRASE GAP");
-    button(DelaySync, "TEMPO SYNC");
+    knob(DelayStyle, "TIPO DE ECO");
+    knob(DelayDuck, "BAJAR AL CANTAR");
+    button(DelaySync, "SEGUIR TEMPO DAW");
     break;
   case 24:
-    knob(SculptorAmount, "AMOUNT");
-    knob(SculptorTilt, "TILT");
-    knob(SculptorBody, "BODY");
-    knob(SculptorPresence, "PRESENCE");
-    knob(SculptorAir, "AIR");
-    knob(SculptorProtect, "TRANSIENT PROTECT");
+    knob(SculptorAmount, "EQUILIBRAR VOZ");
+    knob(SculptorTilt, "OSCURO / BRILLANTE");
     break;
   case 25:
-    knob(AlignAmount, "ALIGN STRENGTH");
-    knob(AlignRange, "SEARCH RANGE");
-    knob(AlignSpeed, "CROSSFADE");
-    analyse.setTooltip("Conecta la voz principal al sidechain Lead reference y "
-                       "reproduce ambas pistas");
+    knob(AlignAmount, "CUANTO ALINEA");
+    knob(AlignRange, "MARGEN DE TIEMPO");
+    analyse.setTooltip("Conecta tu voz principal a Lead reference del "
+                       "sidechain y reproduce ambas voces.");
     break;
   }
 }
@@ -557,20 +517,15 @@ void RackModule::resized() {
     c.setBounds(juce::roundToInt(x * sx), juce::roundToInt(y * sy),
                 juce::roundToInt(w * sx), juce::roundToInt(h * sy));
   };
-  place(enable, 8, 5, 146, 23);
-  place(analyse, 157, 7, 41, 19);
+  place(enable, 6, 5, 151, 23);
+  place(analyse, 163, 7, 34, 19);
   for (size_t i = 0; i < knobs.size(); ++i)
-    place(*knobs[i], 8 + int(i % 2) * 98, 35 + int(i / 2) * 72, 89, 70);
-  for (size_t i = 0; i < switches.size(); ++i) {
-    if (index == 18)
-      place(*switches[i], 12, 194 + int(i) * 27, 181, 23);
-    else if (index == 6)
-      place(*switches[i], 12, 124 + int(i) * 26, 181, 23);
-    else if (index == 1)
-      place(*switches[i], 102, 133, 95, 22);
-    else
-      place(*switches[i], 12, 255 + int(i) * 24, 181, 22);
-  }
+    place(*knobs[i], 8 + int(i) * 98, 47, 89, 111);
+  if (index == 0)
+    place(learn, 109, 77, 85, 36);
+  for (size_t i = 0; i < switches.size(); ++i)
+    place(*switches[i], 10 + int(i) * 98, 168, switches.size() == 1 ? 183 : 98,
+          22);
   place(parallel, 10, 294, 186, 20);
 }
 void RackModule::tick() {
@@ -584,8 +539,14 @@ void RackModule::tick() {
                   index == 17 || index == 24 || index == 25;
   bool available = !(windowed && processor.engineMode() == 0) && !bus;
   enable.setEnabled(available);
-  for (auto &k : knobs)
+  for (auto &k : knobs) {
     k->setEnabled(on && available);
+    k->tick();
+  }
+  if (processor.automatic() && !parallel.isMouseButtonDown())
+    parallel.setValue(processor.effectiveValue(parallels[index]),
+                      juce::dontSendNotification);
+  gateDoor += .2f * ((processor.gateGR.load() < 3 ? 1.0f : 0.0f) - gateDoor);
   for (auto &b : switches)
     b->setEnabled(on && available);
   parallel.setEnabled(on && available);
@@ -619,10 +580,11 @@ void RackModule::paint(juce::Graphics &g) {
   g.drawLine(9, 31, 195, 31);
   g.drawLine(9, 281, 195, 281);
   text(g,
-       "PARALLEL / " + juce::String(index == 7 || index == 8 || index == 15 ||
-                                            (index >= 20 && index <= 23)
-                                        ? "SEND"
-                                        : "DRY - WET"),
+       "MEZCLA PARALELA / " + juce::String(index == 7 || index == 8 ||
+                                                   index == 15 ||
+                                                   (index >= 20 && index <= 23)
+                                               ? "ENVIO"
+                                               : "SECO - EFECTO"),
        {10, 282, 185, 11}, 7.5f, cyan);
   if (knobs.size() > 4) {
     if (index == 20 || index == 21 || index == 22)
@@ -637,16 +599,76 @@ void RackModule::paint(juce::Graphics &g) {
   g.setColour(cyan.withAlpha(.2f));
   g.drawRoundedRectangle(graph, 3, 1);
   if (index == 5 || index == 16) {
-    vu(g, graph.reduced(4),
-       index == 5 ? processor.reductionDB.load() : processor.fetGR.load(),
-       true);
+    float reduction =
+        index == 5 ? processor.reductionDB.load() : processor.fetGR.load();
+    vu(g, graph.reduced(4).withTrimmedBottom(10), reduction, true);
+    g.setColour(cyan.withAlpha(.18f));
+    g.fillRect(graph.getX() + 5, graph.getBottom() - 8, graph.getWidth() - 10,
+               4);
+    g.setColour(cyan);
+    g.fillRect(
+        graph.getX() + 5, graph.getBottom() - 8,
+        (graph.getWidth() - 10) * juce::jlimit(0.0f, 1.0f, reduction / 18), 4);
+    return;
+  }
+  if (index == 0) {
+    g.setColour(gold.withAlpha(.5f));
+    float door = (1 - gateDoor) * graph.getWidth() * .48f;
+    g.fillRect(graph.withWidth(door));
+    g.fillRect(graph.withX(graph.getRight() - door).withWidth(door));
+    text(
+        g,
+        processor.noiseLearnState.load() == 1
+            ? "APRENDIENDO " +
+                  juce::String(int(processor.noiseLearnProgress.load() * 100)) +
+                  "%"
+        : gateDoor > .5f ? "PUERTA ABIERTA"
+                         : "RUIDO REDUCIDO",
+        graph.toNearestInt(), 9, cyan);
     return;
   }
   if (index == 11) {
+    float hz = processor.pitchHz.load(), target = processor.targetHz.load();
+    for (int n = 0; n < 12; ++n) {
+      float x = graph.getX() + 9 + n * 14;
+      g.setColour(cyan.withAlpha(.25f));
+      g.fillEllipse(x, graph.getY() + 16, 3, 3);
+    }
+    if (hz > 35 && target > 35) {
+      float note = std::fmod(69 + 12 * std::log2(target / 440) + 120, 12.0f);
+      float x = graph.getX() + 9 + note * 14;
+      g.setColour(gold);
+      g.fillEllipse(x - 3, graph.getY() + 13, 9, 9);
+      float drift =
+          juce::jlimit(-14.0f, 14.0f, processor.pitchCorrection.load() * .18f);
+      g.setColour(cyan);
+      g.drawLine(x + 1, graph.getY() + 17, x + 1, graph.getY() + 17 + drift, 2);
+    }
     text(g,
-         juce::String(processor.pitchHz.load(), 1) + " > " +
-             juce::String(processor.targetHz.load(), 1) + " Hz",
-         graph.toNearestInt(), 10, cyan);
+         juce::String(processor.pitchCorrection.load(), 0) +
+             " cents / EXPRESION VIVA",
+         {12, 262, 181, 15}, 8, muted);
+    return;
+  }
+  if (index == 3 || index == 24 || index == 13) {
+    juce::Path curve;
+    for (int k = 0; k < 32; ++k) {
+      float x = graph.getX() + k * graph.getWidth() / 31;
+      float y = graph.getBottom() - 6 -
+                juce::jlimit(0.0f, 1.0f,
+                             (processor.spectrum[size_t(k)].load() + 85) / 75) *
+                    (graph.getHeight() - 12);
+      if (k == 0)
+        curve.startNewSubPath(x, y);
+      else
+        curve.lineTo(x, y);
+    }
+    g.setColour(cyan.withAlpha(.15f));
+    g.strokePath(curve, juce::PathStrokeType(6));
+    g.setColour(cyan);
+    g.strokePath(curve, juce::PathStrokeType(1.6f));
+    text(g, "ESPECTRO REAL / VOZ EN EQUILIBRIO", {12, 262, 181, 15}, 7.8f,
+         muted);
     return;
   }
   if (index == 15) {
@@ -717,90 +739,172 @@ M7GEditor::M7GEditor(M7GProcessor &p) : AudioProcessorEditor(p), processor(p) {
     modules[size_t(i)] = std::make_unique<RackModule>(p, i);
     addAndMakeVisible(*modules[size_t(i)]);
   }
-  for (int i = 0; i < rack::presetCount; ++i) {
-    if (i == 0)
-      presetBox.addSectionHeading("TRIPLE GOD SIGNATURE");
-    if (i == 14)
-      presetBox.addSectionHeading("GENRE + VOCAL ROLE");
-    if (i == 230)
-      presetBox.addSectionHeading("50 CLASSIC / FUTURE VOICE FX");
-    presetBox.addItem(rack::presets()[size_t(i)].name, i + 1);
+  for (int i = 0; i < 6; ++i) {
+    auto &button = bankButtons[size_t(i)];
+    button.setButtonText(rack::bankName(i));
+    addAndMakeVisible(button);
+    button.onClick = [this, i] {
+      bank = i;
+      onlyFavourites = false;
+      filterPresets();
+    };
   }
-  presetBox.setSelectedId(p.getCurrentProgram() + 1,
-                          juce::dontSendNotification);
-  presetBox.onChange = [this] {
-    processor.setCurrentProgram(presetBox.getSelectedId() - 1);
-  };
-  presetBox.setTooltip(
-      "280 presets hechos por Makkine Seven Golden. Referencias de estilo; sin "
-      "participacion de los artistas.");
-  for (auto *c : std::array<juce::Component *, 14>{
-           &presetBox, &analyseAll, &compareA, &compareB, &menu, &bypass, &solo,
-           &autoLevel, &status, &classicTab, &engineTab, &tripleTab, &modeBox,
-           &godSpace})
+  for (auto *c : std::initializer_list<juce::Component *>{
+           &presetBox,    &analyseAll, &compareA,  &compareB,       &menu,
+           &bypass,       &solo,       &status,    &classicTab,     &engineTab,
+           &tripleTab,    &modeBox,    &godSpace,  &search,         &previous,
+           &next,         &random,     &favourite, &favouritesOnly, &automation,
+           &authorization})
     addAndMakeVisible(c);
+  presetBox.setComponentID("workflow-presets");
+  automation.setComponentID("alien-automation");
+  search.setComponentID("preset-search");
+  presetBox.onChange = [this] {
+    if (presetBox.getSelectedId() > 0)
+      processor.setCurrentProgram(presetBox.getSelectedId() - 1);
+  };
+  presetBox.setTooltip("Elige un punto de partida. Todos los presets fueron "
+                       "creados por Makkine Seven Golden.");
+  search.setTextToShowWhenEmpty("Buscar preset en este banco...", muted);
+  search.setColour(juce::TextEditor::backgroundColourId, dark);
+  search.setColour(juce::TextEditor::textColourId, bright);
+  search.setColour(juce::TextEditor::outlineColourId, gold.withAlpha(.4f));
+  search.setFont(
+      juce::Font(juce::FontOptions(AlienSkin::bodyTypeface()).withHeight(12)));
+  search.onTextChange = [this] { filterPresets(); };
+  search.setTooltip(
+      "Escribe una palabra para encontrar un preset en el banco seleccionado.");
+  previous.onClick = [this] { navigate(-1); };
+  next.onClick = [this] { navigate(1); };
+  random.onClick = [this] {
+    if (!visiblePresets.empty()) {
+      int index =
+          juce::Random::getSystemRandom().nextInt(int(visiblePresets.size()));
+      if (visiblePresets.size() > 1 &&
+          visiblePresets[size_t(index)] == processor.getCurrentProgram())
+        index = (index + 1) % int(visiblePresets.size());
+      processor.setCurrentProgram(visiblePresets[size_t(index)]);
+    }
+  };
+  favourite.onClick = [this] {
+    processor.toggleFavourite(processor.getCurrentProgram());
+    filterPresets();
+  };
+  favourite.setTooltip("Guarda o quita este preset de tus favoritos. Se "
+                       "conserva al cerrar el DAW.");
+  favouritesOnly.onClick = [this] {
+    onlyFavourites = !onlyFavourites;
+    filterPresets();
+  };
+  favouritesOnly.setTooltip("Muestra solo tus favoritos de este banco. Pulsa "
+                            "otra vez para ver todos.");
+  automation.setClickingTogglesState(true);
+  automationAttachment =
+      std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+          p.apvts, "alienautomation", automation);
+  automation.setTooltip(
+      "AUTO escucha y mueve los controles internos. MANUAL congela los ajustes "
+      "y te deja cambiarlos. El audio sigue procesandose en ambos modos.");
+  authorization.onClick = [this] { importLicense(); };
   analyseAll.onClick = [this] {
     processor.beginAnalysis(M7GProcessor::analysisAll);
   };
+  analyseAll.setTooltip("Mide tres segundos de voz y propone una mezcla. AUTO "
+                        "sigue adaptandola; MANUAL permite un ajuste puntual.");
   compareA.onClick = [this] { processor.selectCompare(0); };
   compareB.onClick = [this] { processor.selectCompare(1); };
+  compareA.setTooltip("Comparar mezcla A");
+  compareB.setTooltip("Comparar mezcla B. El menu permite copiar la mezcla "
+                      "actual al otro lado.");
   menu.onClick = [this] { showMenu(); };
   classicTab.onClick = [this] { showPage(0); };
   engineTab.onClick = [this] { showPage(1); };
   tripleTab.onClick = [this] { showPage(2); };
   modeBox.addItemList(
-      {"MONITOR / ZERO LATENCY", "STUDIO / 8x", "LINEAR / FIR 8x"}, 1);
+      {"MONITOR / SIN VENTANAS", "STUDIO / 8x", "LINEAR / FIR 8x"}, 1);
   modeAttachment =
       std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(
           p.apvts, "enginemode", modeBox);
-  modeBox.setTooltip(
-      "Deten el transporte al cambiar modo. Monitor omite neural, espectro, "
-      "pitch, armonias y alineacion; Linear usa reconstruccion FIR 8x.");
+  modeBox.setTooltip("Deten el transporte antes de cambiar. Monitor ahorra CPU "
+                     "y retardo; omite afinacion, armonias y limpieza "
+                     "espectral. Studio ofrece la cadena completa.");
   bypassAttachment =
       std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
           p.apvts, "bypass", bypass);
   soloAttachment =
       std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
           p.apvts, "solo", solo);
-  autoAttachment =
-      std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
-          p.apvts, "autogain", autoLevel);
   godAttachment =
       std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
           p.apvts, "godspace", godSpace);
-  input = std::make_unique<RackKnob>(p, rack::InputTrim, "INPUT");
-  mix = std::make_unique<RackKnob>(p, rack::Mix, "MIX");
-  output = std::make_unique<RackKnob>(p, rack::OutputTrim, "OUTPUT");
+  input = std::make_unique<RackKnob>(p, rack::InputTrim, "ENTRADA");
+  mix = std::make_unique<RackKnob>(p, rack::Mix, "VOZ / MEZCLA");
+  output = std::make_unique<RackKnob>(p, rack::OutputTrim, "SALIDA");
   producer =
-      std::make_unique<RackKnob>(p, rack::AutoProducer, "ALIEN AUTO PRODUCER");
+      std::make_unique<RackKnob>(p, rack::AutoProducer, "INTENCION ALIEN");
   for (auto *c : {input.get(), mix.get(), output.get(), producer.get()})
     addAndMakeVisible(c);
   producer->slider.setTooltip(
-      "Macro neuronal local. Analiza continuamente y mezcla objetivos de "
-      "nivel, color, espacio y armonias; los controles manuales son su punto "
-      "de partida.");
+      "CUANTO AYUDA EL ALIEN: intensidad del autoajuste en AUTO. En MANUAL "
+      "este control no cambia tus ajustes congelados.");
   status.setFont(
-      juce::Font(juce::FontOptions(AlienSkin::bodyTypeface()).withHeight(9)));
+      juce::Font(juce::FontOptions(AlienSkin::bodyTypeface()).withHeight(11)));
   status.setColour(juce::Label::textColourId, cyan);
-  status.setJustificationType(juce::Justification::centredRight);
+  status.setJustificationType(juce::Justification::centred);
   setResizable(true, false);
   setResizeLimits(1100, 775, 1920, 1350);
   setSize(1280, 900);
-  showPage(2);
-  startTimerHz(25);
+  filterPresets();
+  showPage(0);
+  startTimerHz(60);
   timerCallback();
 }
 M7GEditor::~M7GEditor() {
   stopTimer();
   setLookAndFeel(nullptr);
 }
+void M7GEditor::filterPresets() {
+  visiblePresets.clear();
+  presetBox.clear(juce::dontSendNotification);
+  for (int i = 0; i < rack::presetCount; ++i) {
+    auto name = rack::presets()[size_t(i)].name;
+    if (rack::workflowBank(i) == bank &&
+        name.containsIgnoreCase(search.getText()) &&
+        (!onlyFavourites || processor.isFavourite(i))) {
+      visiblePresets.push_back(i);
+      presetBox.addItem(name, i + 1);
+    }
+  }
+  presetBox.setTextWhenNothingSelected(visiblePresets.empty()
+                                           ? "Sin coincidencias en este banco"
+                                           : "Selecciona un preset");
+  if (std::find(visiblePresets.begin(), visiblePresets.end(),
+                processor.getCurrentProgram()) != visiblePresets.end())
+    presetBox.setSelectedId(processor.getCurrentProgram() + 1,
+                            juce::dontSendNotification);
+  for (int i = 0; i < 6; ++i)
+    bankButtons[size_t(i)].setToggleState(i == bank,
+                                          juce::dontSendNotification);
+  favouritesOnly.setToggleState(onlyFavourites, juce::dontSendNotification);
+}
+void M7GEditor::navigate(int direction) {
+  if (visiblePresets.empty())
+    return;
+  auto it = std::find(visiblePresets.begin(), visiblePresets.end(),
+                      processor.getCurrentProgram());
+  int at = it == visiblePresets.end() ? (direction > 0 ? -1 : 0)
+                                      : int(it - visiblePresets.begin());
+  int count = int(visiblePresets.size());
+  processor.setCurrentProgram(
+      visiblePresets[size_t((at + direction + count) % count)]);
+}
 void M7GEditor::showPage(int selected) {
   page = selected;
   for (int i = 0; i < 26; ++i)
     modules[size_t(i)]->setVisible(
-        page == 0 ? i < 12
-                  : (page == 1 ? (i >= 12 && i < 18) || i >= 24
-                               : (i >= 18 && i < 24)));
+        page == 0
+            ? i < 12
+            : (page == 1 ? (i >= 12 && i < 18) || i >= 24 : i >= 18 && i < 24));
   classicTab.setToggleState(page == 0, juce::dontSendNotification);
   engineTab.setToggleState(page == 1, juce::dontSendNotification);
   tripleTab.setToggleState(page == 2, juce::dontSendNotification);
@@ -815,20 +919,29 @@ void M7GEditor::resized() {
   };
   for (int i = 0; i < 26; ++i) {
     int slot = i < 12 ? i : (i < 18 ? i - 12 : (i < 24 ? i - 18 : i - 18));
-    place(*modules[size_t(i)], 10 + (slot % 6) * 211, 120 + (slot / 6) * 324,
-          205, 318);
+    place(*modules[size_t(i)], 10 + (slot % 6) * 211, 192 + (slot / 6) * 282,
+          205, 274);
   }
-  place(presetBox, 520, 14, 430, 29);
-  place(compareA, 963, 14, 30, 29);
-  place(compareB, 998, 14, 30, 29);
-  place(analyseAll, 1040, 14, 160, 29);
-  place(menu, 1208, 14, 60, 29);
-  place(autoLevel, 1038, 50, 108, 25);
-  place(godSpace, 1155, 50, 113, 25);
-  place(classicTab, 520, 80, 151, 26);
-  place(engineTab, 681, 80, 166, 26);
-  place(tripleTab, 857, 80, 126, 26);
-  place(status, 986, 78, 282, 29);
+  place(automation, 542, 27, 226, 34);
+  place(status, 510, 64, 754, 31);
+  place(analyseAll, 1050, 20, 210, 34);
+  place(menu, 988, 20, 48, 34);
+  place(authorization, 1018, 91, 243, 17);
+  for (int i = 0; i < 6; ++i)
+    place(bankButtons[size_t(i)], 10 + i * 211, 116, 205, 25);
+  place(presetBox, 10, 150, 357, 29);
+  place(previous, 374, 150, 27, 29);
+  place(next, 406, 150, 27, 29);
+  place(random, 440, 150, 68, 29);
+  place(favourite, 514, 150, 64, 29);
+  place(favouritesOnly, 584, 150, 76, 29);
+  place(search, 667, 150, 200, 29);
+  place(compareA, 880, 150, 31, 29);
+  place(compareB, 915, 150, 31, 29);
+  place(classicTab, 960, 148, 102, 33);
+  place(engineTab, 1069, 148, 101, 33);
+  place(tripleTab, 1177, 148, 91, 33);
+  place(godSpace, 800, 25, 176, 34);
   place(*input, 14, 787, 85, 83);
   place(*mix, 320, 787, 85, 83);
   place(*producer, 429, 768, 119, 109);
@@ -838,85 +951,84 @@ void M7GEditor::resized() {
   place(modeBox, 1095, 851, 173, 26);
 }
 void M7GEditor::paint(juce::Graphics &g) {
-  g.fillAll(juce::Colour(0xff060b15));
+  g.fillAll(dark);
   juce::Graphics::ScopedSaveState save(g);
   g.addTransform(juce::AffineTransform::scale(float(getWidth()) / 1280,
                                               float(getHeight()) / 900));
-  g.setGradientFill(juce::ColourGradient(juce::Colour(0xff183345), 640, 70,
-                                         juce::Colour(0xff080b16), 640, 900,
-                                         false));
+  g.setGradientFill(juce::ColourGradient(juce::Colour(0xff182b47), 640, 0, dark,
+                                         640, 900, false));
   g.fillRect(0, 0, 1280, 900);
-  for (int y = 120; y < 760; y += 28) {
+  // Static cockpit struts and instrumentation; animations reuse scalar meters.
+  for (int x = 0; x < 1280; x += 80) {
     g.setColour(cyan.withAlpha(.035f));
-    g.drawLine(0, float(y), 1280, float(y));
+    g.drawLine(640, 175, float(x), 760);
   }
-  for (int x = 0; x < 1280; x += 64) {
-    g.setColour(violet.withAlpha(.04f));
-    g.drawLine(640, 80, float(x), 780);
-  }
-  g.setColour(gold.withAlpha(.65f));
-  g.drawLine(12, 112, 1268, 112);
-  g.drawLine(12, 764, 1268, 764);
-  g.setColour(cyan.withAlpha(.3f));
-  g.drawLine(12, 889, 1268, 889);
-  alien(g, {24, 17, 48, 62}, gold);
-  g.setColour(bright);
+  g.setColour(gold.withAlpha(.55f));
+  g.drawLine(10, 184, 1268, 184);
+  g.drawLine(10, 764, 1268, 764);
+  g.setColour(cyan.withAlpha(.22f));
+  g.drawEllipse(12, 11, 66, 66, 1);
+  g.drawEllipse(21, 20, 48, 48, 1);
+  g.drawLine(45, 44, 45 + std::cos(radarAngle) * 33,
+             44 + std::sin(radarAngle) * 33, 1.5f);
+  alien(g, {21, 15, 48, 62}, gold);
   g.setFont(juce::Font(
       juce::FontOptions(AlienSkin::graffitiTypeface()).withHeight(27)));
-  g.drawFittedText("M7G ALIEN VOICE V10", {92, 12, 414, 38},
+  g.setColour(gold);
+  g.drawFittedText("M7G ALIEN VOICE V11", {90, 10, 411, 37},
                    juce::Justification::centredLeft, 1);
-  text(g, "TRIPLE GOD ORIGIN", {95, 48, 410, 19}, 12, cyan,
+  text(g, "ALIEN INTELLIGENCE / GOLDEN EDITION", {94, 48, 408, 19}, 10, cyan,
        juce::Justification::centredLeft);
   g.setFont(juce::Font(
-      juce::FontOptions(AlienSkin::graffitiTypeface()).withHeight(17)));
+      juce::FontOptions(AlienSkin::graffitiTypeface()).withHeight(16)));
   g.setColour(gold);
-  g.drawFittedText("LAS MAKKINAS PRODUCEN SOLAS", {95, 72, 412, 30},
+  g.drawFittedText("LAS MAKKINAS PRODUCEN SOLAS", {93, 67, 410, 26},
                    juce::Justification::centredLeft, 1);
-  text(g, "HECHOS POR MAKKINE SEVEN GOLDEN", {520, 47, 430, 23}, 9, muted,
-       juce::Justification::centredLeft);
-  if (page == 2) {
-    auto r = juce::Rectangle<float>(35, 470, 1210, 260);
-    juce::Path ship;
-    ship.startNewSubPath(50, 670);
-    ship.lineTo(280, 495);
-    ship.lineTo(640, 460);
-    ship.lineTo(1000, 495);
-    ship.lineTo(1230, 670);
-    ship.lineTo(980, 635);
-    ship.lineTo(800, 730);
-    ship.lineTo(480, 730);
-    ship.lineTo(300, 635);
-    ship.closeSubPath();
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff142d3a), 640, 470,
-                                           juce::Colour(0xff080b18), 640, 730,
-                                           false));
-    g.fillPath(ship);
-    g.setColour(cyan.withAlpha(.3f));
-    g.strokePath(ship, juce::PathStrokeType(1.4f));
-    alien(g, {615, 670, 40, 52}, cyan);
-    text(g, "TRIPLE GOD / FLIGHT SYSTEMS", {400, 636, 480, 26}, 16, gold);
-    for (int i = 0; i < 3; ++i) {
-      float x = 130 + i * 260;
-      float db = processor.verbLayerDB(i);
+  text(g, "PRESETS HECHOS POR MAKKINE SEVEN GOLDEN", {94, 93, 409, 15}, 7.8f,
+       muted, juce::Justification::centredLeft);
+  text(g, "ALIEN AUTOMATION", {542, 7, 226, 18}, 10, gold);
+  if (page != 0) {
+    // Voice-driven radar in the free flight deck of the extended pages.
+    float cx = page == 2 ? 640.0f : 1058.0f, cy = 607;
+    float radius = page == 2 ? 108.0f : 87.0f;
+    g.setColour(cyan.withAlpha(.10f));
+    for (int i = 1; i <= 4; ++i)
+      g.drawEllipse(cx - radius * i / 4, cy - radius * i / 4, radius * i / 2,
+                    radius * i / 2, 1);
+    g.drawLine(cx - radius, cy, cx + radius, cy);
+    g.drawLine(cx, cy - radius, cx, cy + radius);
+    float signal =
+        juce::jlimit(0.0f, 1.0f, (processor.rawInputDB.load() + 60) / 45);
+    g.setColour(cyan.withAlpha(.2f + signal * .7f));
+    g.drawLine(cx, cy, cx + std::cos(radarAngle) * radius,
+               cy + std::sin(radarAngle) * radius, 2);
+    alien(g, {cx - 16, cy - 20, 32, 41}, gold.withAlpha(.5f + signal * .5f));
+    text(
+        g, "VOCAL RADAR / ESCUCHANDO",
+        {int(cx - radius - 40), int(cy + radius + 8), int(radius * 2 + 80), 19},
+        9, cyan);
+    if (page == 2) {
+      for (int i = 0; i < 3; ++i) {
+        float y = 540 + i * 53;
+        float db = processor.verbLayerDB(i);
+        text(g,
+             juce::String("ESPACIO ") +
+                 juce::String::charToString(juce::juce_wchar('A' + i)),
+             {160, int(y) - 16, 210, 18}, 10, gold);
+        g.setColour(cyan.withAlpha(.12f));
+        g.fillRect(150.0f, y + 7, 230.0f, 8.0f);
+        g.setColour(cyan);
+        g.fillRect(150.0f, y + 7,
+                   230 * juce::jlimit(0.0f, 1.0f, (db + 80) / 65), 8.0f);
+      }
+      text(g, "ECO INTELIGENTE", {860, 537, 310, 25}, 15, gold);
       text(g,
-           juce::String("VERB ") +
-               juce::String::charToString(juce::juce_wchar('A' + i)),
-           {int(x), 527, 170, 24}, 11, cyan);
-      g.setColour(cyan.withAlpha(.12f));
-      g.fillRect(x, 566.0f, 170.0f, 9.0f);
-      g.setColour(cyan);
-      g.fillRect(x, 566.0f, 170 * juce::jlimit(0.0f, 1.0f, (db + 70) / 60),
-                 9.0f);
-      text(g, juce::String(db, 1) + " dBFS", {int(x), 584, 170, 20}, 10, muted);
+           "Bajando al cantar: " + juce::String(processor.delDuckDB.load(), 1) +
+               " dB",
+           {860, 575, 310, 25}, 12, cyan);
+      text(g, "360 PRESETS / UNA SOLA LICENCIA", {860, 630, 310, 25}, 10,
+           muted);
     }
-    text(g,
-         "SMART DELAY / DUCK -" + juce::String(processor.delDuckDB.load(), 1) +
-             " dB",
-         {905, 527, 275, 40}, 12, gold);
-    text(g,
-         "AUTO PRODUCER LEVEL " +
-             juce::String(processor.producerTrim.load(), 1) + " dB",
-         {905, 578, 275, 35}, 11, cyan);
   }
   auto meter = [&](int x, int y, int w, float db) {
     for (int i = 0; i < 36; ++i) {
@@ -931,53 +1043,86 @@ void M7GEditor::paint(juce::Graphics &g) {
   meter(951, 815, 125, processor.outputDB.load());
   vu(g, {568, 800, 121, 58}, processor.outputChannels[0].load());
   vu(g, {703, 800, 121, 58}, processor.outputChannels[1].load());
-  text(g, "OUTPUT / 0 VU = -18 dBFS", {568, 863, 256, 13}, 8, muted);
+  text(g, "SALIDA / 0 VU = -18 dBFS", {568, 863, 256, 13}, 8, muted);
   double sr = processor.getSampleRate(),
          latency = sr > 0 ? processor.getLatencySamples() * 1000 / sr : 0;
   text(g,
-       "M7G / V10.0.0 / " + juce::String(sr / 1000, 1) + " kHz / " +
+       "V11.0.0 / " + juce::String(sr / 1000, 1) + " kHz / " +
            juce::String(latency, 1) + " ms",
-       {12, 890, 620, 10}, 7.5f, muted, juce::Justification::centredLeft);
-  text(g, "280 PRESETS / 26 AI MODULES / LOCAL PROCESSING", {720, 890, 548, 10},
-       7.5f, muted, juce::Justification::centredRight);
+       {12, 889, 620, 11}, 8, muted, juce::Justification::centredLeft);
+  text(g,
+       processor.licensed.load() ? "AUTHORIZED: M7G GOLDEN / TODOS LOS MODULOS"
+                                 : "SIN LICENCIA / PASO DIRECTO",
+       {710, 889, 558, 11}, 8, gold, juce::Justification::centredRight);
 }
 void M7GEditor::timerCallback() {
-  processor.applyAnalysis();
-  int state = processor.analysisState.load(),
-      target = processor.analysisTarget();
-  juce::String label;
-  if (state == 1)
-    label = "ANALIZANDO " +
-            juce::String(int(processor.analysisProgress.load() * 100)) +
-            "% / REPRODUCE VOZ";
-  else if (state == -2)
-    label = "CONECTA LEAD REFERENCE AL SIDECHAIN";
-  else if (state < 0)
-    label = "SIN SENAL / REPRODUCE LA VOZ";
-  else
-    label = processor.engineMode() == 0
-                ? "MONITOR: PITCH / NEURAL / ALIGN OFF"
-                : "280 PRESETS / " + juce::String(M7GProcessor::action(int(
-                                         processor.value(rack::VoiceType))));
-  status.setText(label, juce::dontSendNotification);
-  presetBox.setSelectedId(processor.getCurrentProgram() + 1,
-                          juce::dontSendNotification);
+  // The processor owns the 20 Hz control timer, including when this editor is
+  // closed.
+  float level = processor.rawInputDB.load();
+  int wantedRate = level > -60 || processor.outputDB.load() > -75 ? 60 : 15;
+  if (wantedRate != animationRate) {
+    animationRate = wantedRate;
+    startTimerHz(animationRate);
+  }
+  if (level > -60)
+    radarAngle += (0.5f + juce::jlimit(0.0f, 1.0f, (level + 60) / 45)) /
+                  float(animationRate);
+  status.setText(
+      processor.analysisState.load() == 1
+          ? "ANALIZANDO VOZ " +
+                juce::String(int(processor.analysisProgress.load() * 100)) + "%"
+          : processor.intelligenceText(),
+      juce::dontSendNotification);
+  automation.setButtonText(processor.automatic() ? "AUTO  |  manual"
+                                                 : "auto  |  MANUAL");
+  authorization.setButtonText(processor.licensed.load()
+                                  ? "AUTHORIZED: M7G GOLDEN"
+                                  : "IMPORTAR M7G.license");
+  int program = processor.getCurrentProgram();
+  if (program != lastProgram) {
+    if (rack::workflowBank(program) != bank) {
+      bank = rack::workflowBank(program);
+      filterPresets();
+    }
+    presetBox.setSelectedId(program + 1, juce::dontSendNotification);
+    lastProgram = program;
+  }
+  favourite.setToggleState(processor.isFavourite(program),
+                           juce::dontSendNotification);
   compareA.setToggleState(processor.compareSlot() == 0,
                           juce::dontSendNotification);
   compareB.setToggleState(processor.compareSlot() == 1,
                           juce::dontSendNotification);
-  analyseAll.setToggleState(state == 1 && target == M7GProcessor::analysisAll,
-                            juce::dontSendNotification);
   for (auto &m : modules)
-    m->tick();
+    if (m->isVisible())
+      m->tick();
+  for (auto *knob : {input.get(), mix.get(), output.get(), producer.get()})
+    knob->tick();
   repaint();
+}
+void M7GEditor::importLicense() {
+  licenseChooser = std::make_unique<juce::FileChooser>(
+      "Selecciona tu licencia global M7G.license", juce::File(), "*.license");
+  juce::Component::SafePointer<M7GEditor> safe(this);
+  licenseChooser->launchAsync(
+      juce::FileBrowserComponent::openMode |
+          juce::FileBrowserComponent::canSelectFiles,
+      [safe](const juce::FileChooser &chooser) {
+        if (!safe || chooser.getResult() == juce::File())
+          return;
+        bool ok = safe->processor.importLicense(chooser.getResult());
+        juce::AlertWindow::showMessageBoxAsync(
+            juce::MessageBoxIconType::InfoIcon, "M7G GOLDEN",
+            ok ? "Licencia valida. Todos los modulos autorizados para siempre."
+               : "Archivo no valido. Selecciona el M7G.license firmado que "
+                 "recibiste.");
+      });
 }
 void M7GEditor::showMenu() {
   juce::PopupMenu m;
   m.addItem(1, "Restaurar preset");
-  m.addItem(2, "Copiar al otro slot A/B");
-  m.addSeparator();
-  m.addItem(3, "Acerca de M7G TRIPLE GOD");
+  m.addItem(2, "Copiar al otro lado A/B");
+  m.addItem(3, "Acerca de V11 / ayuda");
   juce::Component::SafePointer<M7GEditor> safe(this);
   m.showMenuAsync(
       juce::PopupMenu::Options().withTargetComponent(&menu),
@@ -992,14 +1137,13 @@ void M7GEditor::showMenu() {
         if (result == 3)
           juce::AlertWindow::showMessageBoxAsync(
               juce::MessageBoxIconType::InfoIcon,
-              "M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN",
-              "Hecho por Makkine Seven Golden.\nRNNoise local + MLP de "
-              "autoajuste y CNN de candidatos de pitch entrenadas con senales "
-              "sinteticas.\nDSP original; sin motores propietarios ni "
-              "certificacion de equivalencia.\n48V e impedancia son modelos "
-              "digitales, no control de tu interfaz.\nMonitor omite "
-              "operaciones con ventana. Alineacion requiere "
-              "sidechain.\nEvaluacion de voces reales y Studio One 7 "
-              "pendientes.");
+              "M7G ALIEN VOICE V11 - ALIEN INTELLIGENCE",
+              "Hecho por Makkine Seven Golden.\nAUTO adapta; MANUAL congela "
+              "los ajustes sin desactivar el audio.\nLEARN: dos segundos de "
+              "ruido sin cantar.\nAlineacion: conecta la principal a Lead "
+              "reference.\nProcesamiento local, sin subir tu voz.\n48V es un "
+              "modelo digital.\nModelos entrenados con senales sinteticas; sin "
+              "equivalencia certificada con motores propietarios.\nPruebas de "
+              "escucha y Studio One 7 pendientes.");
       });
 }

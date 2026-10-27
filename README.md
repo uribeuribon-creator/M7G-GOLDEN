@@ -1,73 +1,113 @@
-# M7G ALIEN VOICE V10 — TRIPLE GOD ORIGIN
+# M7G ALIEN VOICE V11 — ALIEN INTELLIGENCE
 
-Cabina vocal VST3 para Windows 10/11 x64, C++20 y JUCE 8.0.6. Interfaz de nave espacial negra/dorada/cian, iconos alien, tipografía graffiti y lema **LAS MAKKINAS PRODUCEN SOLAS**. Banco de **280 presets hechos por Makkine Seven Golden**: 230 de producción vocal y 50 de efectos clásicos/futuristas.
+**LAS MAKKINAS PRODUCEN SOLAS.** Presets hechos por **Makkine Seven Golden**.
 
-[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe) · [GitHub Releases](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/v10.0.0)
+Windows x64 VST3 vocal processor: 26 modules, 360 presets, local processing,
+blue/gold spaceship cockpit, simple Spanish help. Builds with C++20/JUCE 8.0.6.
 
-Publicado como **pre-release v10.0.0**, con cinco pruebas CTest, instalación/carga/desinstalación en Windows nativo y descarga pública/checksum verificados. [Registro de pruebas](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40529656454) · [SHA-256](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe.sha256) · [Ver cabina](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-V10-interface.png).
+[Windows releases](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases)
 
-Consultar `VALIDATION.md` para resultados y límites. Siguen pendientes la prueba directa en Studio One 7 y la evaluación perceptual con grabaciones reales.
+## Using V11
 
-## Cabina y procesamiento
+1. Close Studio One 7, install the Windows `.exe`, reopen and rescan VST3.
+2. Choose a workflow bank and preset. **AUTO | ESPECTACULAR** starts in AUTO.
+3. Play your recorded voice. AUTO adapts internal settings continuously; optional
+   **ANALIZAR TODO** measures three seconds for an initial adjustment.
+4. Switch **ALIEN AUTOMATION** to **MANUAL** to freeze effective settings and
+   edit normally. Processing continues. **BYPASS** is a separate control.
+5. **LEARN 2s**: play only the room noise for two seconds without singing.
+   The measured noise profile persists in the session. Repeat if rejected.
 
-Las tres páginas muestran **Cabina Vocal**, **Alien Intelligence** y **Triple God**. Hay 26 módulos, análisis individual con icono alien, **Analizar todo**, automatización, A/B persistente, Mix, Input/Output y Bypass con latencia alineada. Cada módulo incluye una sección paralela: en reverb/delay/armonías controla el envío; en los demás mezcla ramas seca y procesada. El limitador conserva un techo final de seguridad cuando está activado, incluso con su mezcla reducida.
+Each module has at most two main knobs and one parallel mix slider. AUTO's
+moving knobs display effective internal settings, not host automation lanes.
+Manual/host values are base settings while AUTO is on. On switching to MANUAL,
+the current effective values and makeup are captured and normal edits resume.
+Routing, musical intent, enable switches and algorithm choices remain yours.
 
-- Gate con low-cut, de-esser con Listen, presencia y Air con armónicos.
-- Seis previos originales **M7G UNISON DRIVE**: Iron 73, Punch 512, Edge 4K, Air 737, Velvet Box y Dirty TG. Ganancia dependiente del perfil, carga estimada de fuente, respuesta filtrada, estado magnético y no linealidad. PAD reduce 20 dB antes del modelo. **48V y la impedancia son controles virtuales: no encienden phantom ni modifican eléctricamente una interfaz.**
-- Compresión óptica y FET en serie, New York paralelo y Punch. Saturación de tres bandas con leyes Tube, Tape, Transistor, Transformer y Crush, y mezcla propia. EQ paralelo limpio/sucio.
-- **EQ Sculptor** tonal amplio y acotado, con compensación de nivel de la curva. **Resonance Guard** usa máscara estéreo enlazada, persistencia temporal y protección de armónicos/transitorios. No identifica de forma infalible qué resonancias son musicalmente indeseables.
-- Afinación monofónica **Natural/Robot**, selección automática o manual de tonalidad/escala y modificación de envolvente/formantes. El detector combina YIN, autocorrelación y una CNN de candidatos. La tonalidad inferida es tentativa: una voz aislada no define siempre la armonía de la canción.
-- **Harmony God** genera ocho voces con vocoder de fase, envolvente cepstral, paneos y microafinación: octavas, quintas, coro y modo angelical. No separa notas de un coro de entrada ni incorpora el motor licenciado Elastique.
-- **Triple Verb** ejecuta tres redes independientes simultáneamente: cámara corta A, espacio medio B y catedral larga C con shimmer. Mezcla, pre-delay, decay, filtro y modulación propios; GOD SPACE activa tres capas. El envío y los ajustes comunes de reverb también afectan a las capas. Los interruptores de las capas reflejan el encendido del motor común; su envío individual permite silenciar una capa cuando se trabaja manualmente, con Auto Producer y GOD SPACE desactivados.
-- **Smart Delay**: Slap, Throw al final de frase, Ping-Pong, Tape Ducking y Ping-Pong → Reverb. Tempo del host o tiempo manual, tono, saturación y ducking. Slap usa su tiempo de 80–150 ms. Throw mide actividad vocal y espera la pausa ajustable antes de abrir el efecto. La sincronía usa 120 BPM si el host no informa un tempo válido.
-- **Vocal Align** mide correlación de envolventes con una principal enviada al sidechain **Lead reference**, y ajusta hasta ±60 ms mediante lectura cruzada de retardos. Requiere referencia; no edita una línea temporal ni corrige frases arbitrariamente separadas. Su anticipación añade 80 ms compensados cuando se activa.
+Six banks: **Voces principales, Dobles, Refuerzos, Adlibs, Armonias,
+Efectos especiales**. Search filters the selected bank. Previous/next/random
+use that list. **FAV** saves the current preset; **VER FAV** filters favourites.
+Favourites persist under the user's M7G application-data directory. A/B is
+stored with the session; the menu copies the current side to the other side.
 
-**BUS VOCAL** evita afinación monofónica, generación de armonías y salida neuronal sobre notas simultáneas.
+**Pitch:** adjustable correction and KEEP HUMAN, stable note hysteresis,
+15-cent dead band, slow centre tracking with preservation of faster vibrato,
+streaming phase-vocoder with cepstral formant compensation. This is an original
+monophonic engine, not Melodyne DNA or Elastique. Polyphonic buses avoid lead
+correction/generated harmonies. No guarantee of flawless automatic key inference.
 
-## ALIEN AUTO PRODUCER / ESPECTACULAR
+**Space:** three simultaneous FDN reverbs, per-layer wet sends, smart delay with
+tempo sync and ducking/phrase throw. Layer power shares the master reverb enable;
+use layer mix to mute independently. GOD SPACE imposes minimum layer sends.
+For fully manual layer settings, choose MANUAL and turn GOD SPACE off.
 
-Macro 0–100 % automatizable. Analiza continuamente nivel, espectro y periodicidad; una MLP local combina objetivos de limpieza, color, dinámica y espacio con los ajustes manuales. Al 80–100 % activa GOD SPACE y una combinación de las tres reverbs con delay ducked. La selección de previo y tonalidad manual sigue disponible. La macro gestiona su nivel y compensa pérdidas de salida de forma gradual, con ganancia limitada y un objetivo aproximado de −18 dBFS RMS antes del trim de salida.
+**Alignment:** connect the principal vocal to the optional **Lead reference**
+sidechain. Finite envelope/onset matching with 80 ms lookahead; no reference
+means no automatic alignment. It is not an offline word-editing system.
 
-**Analizar todo** y los botones por módulo miden tres segundos de audio reproducido y aplican recomendaciones. Si no hay señal, se indica. La alineación necesita audio en el sidechain. Cambiar preset cancela el análisis. Los resultados se aplican también si se cierra el editor. En Auto Producer activo, los parámetros manuales son el punto de partida de la macro; Auto Producer a cero permite control manual completo.
+## Licence
 
-No se promete una mezcla terminada de ingeniería universal ni un máster apto para Spotify a partir de cualquier grabación. La voz procesada sigue formando parte de una mezcla musical con otras pistas, niveles y decisiones artísticas.
+One RSA-signed **M7G.license** grants all modules permanently. The installer
+provides a valid signed distribution licence in `%ProgramData%\M7G` and preserves
+existing files. Import another signed file with the authorization button; it is
+stored in the current user's application-data M7G folder. A valid signature is
+required before **AUTHORIZED: M7G GOLDEN** appears. Missing/invalid licences pass
+aligned dry audio, with no beeps, silence or per-module locks.
 
-## IA local y procedencia
+This release includes a distribution key; it is not a customer sales/account
+service. The private signing key is outside the repository/binaries. The owner
+can issue more licences with `Tools/issue-license.py --private <private.pem>
+--owner <name> --output M7G.license`. Keep the same private key and preserve it
+securely. Public signature verification runs at load/import, never in audio.
+The licence file does not supersede JUCE or third-party licence obligations.
 
-- RNNoise v0.1.1, modelo neuronal de Xiph.Org, con sus pesos originales y avisos BSD.
-- MLP propia 12 → 16 → 8, entrenada con objetivos de una política DSP acotada sobre características sintéticas. Error absoluto medio en 3000 ejemplos separados: 0.00386. Aprende esos objetivos técnicos; no gustos estéticos de ingenieros.
-- CNN propia de evaluación de candidatos de pitch, entrenada con señales armónicas/ruido sintéticas. Exactitud balanceada en 3600 candidatos de otra semilla: 99.24 %. **Esta cifra no es precisión de afinación sobre cantantes reales.**
+## CPU and latency
 
-Pesos en `Source/V8ModelWeights.h`, entrenamiento reproducible en `Tools/train-v8-models.py`, métricas y límites en `Models/V8_METRICS.json`. El prefijo interno V8 conserva la procedencia del trabajo que evolucionó a V10. El binario no necesita Python, GPU, claves ni servicios de Internet. Los botones de análisis usan modelos pequeños y reglas/mediciones DSP; no son 26 modelos neuronales distintos.
+AUTO uses bounded, smoothed DSP rules. The small auto-mix MLP runs on the 20 Hz
+control timer (inference twice a second), including when the editor is closed.
+Pitch uses YIN/autocorrelation plus the existing small candidate CNN. RNNoise
+is local. No large language/generative model, Python runtime, GPU or cloud API
+is required to use the installed plug-in.
 
-El DSP es propio sobre JUCE y RNNoise permitido por su licencia. Las funciones de Neve/API/SSL/Avalon/Manley/Chandler, Melodyne, Antares, Saturn, Lexicon/Bricasti, Studer, Soothe, RX o C-Suite son referencias de requisitos, no motores incorporados ni emulaciones certificadas. No existe evidencia de superioridad universal frente a esas marcas. Las referencias a artistas en presets describen estilos, no participación, aprobación o clonación vocal.
+Heavy processing suspends after input below -60 dBFS and output tails below
+-90 dBFS have stayed quiet. It resumes on input and never suspends a lesson or
+analysis. Very quiet signals below -60 dBFS can be treated as silence. Monitor
+omits neural output, spectral/pitch/harmony/align windows, oversampling and
+lookahead. Studio runs the full 8x chain; Linear uses FIR reconstruction.
+Stop transport before changing mode. Full-chain latency is about 150 ms at
+48 kHz, plus 80 ms with alignment. The DAW must compensate during playback.
+This is not zero-latency full-chain correction.
 
-## Modos y latencia
+The interface uses JUCE software rendering: 60 Hz with audio, 15 Hz while idle,
+visible modules only. Animations reflect measured signals. A 10-instance native
+Windows benchmark is attached to the release; **under 15% CPU on a physical i5
+is not certified**. CPU percentages depend on hardware, mode, preset, buffer,
+sample rate, active harmonies and open editors.
 
-| Modo | Comportamiento |
-|---|---|
-| Monitor | Cero muestras declaradas y comprobables por impulso. Omite RNNoise de salida, de-reverb/espectro, pitch, armonías, alineación, lookahead y sobremuestreo. Conserva procesamiento causal y efectos de envío. |
-| Studio | Etapas de color no lineales a 8× con reconstrucción IIR; ventanas espectrales y voces activas con compensación de latencia. |
-| Linear | Reconstrucción FIR 8× y EQ espectral. «Fase lineal» se refiere a esos filtros; una cadena no lineal completa no es un filtro de fase lineal. |
+## Build and validation
 
-Detener el transporte al cambiar modo o activar alineación. Studio/Linear son modos de mezcla, con anticipación apreciable; no son modos de monitorización sin retardo con toda la cadena activa. El DAW recibe el retardo para su compensación. Dry/wet, paralelo y bypass se alinean. El limitador controla picos de muestras: no es un limitador true-peak certificado.
+On Windows with Visual Studio 2022 C++ tools, CMake, Git and NSIS installed:
 
-## Instalar y usar en Studio One 7
+```powershell
+./BuildInstaller.ps1
+./Tests/InstallerSmoke.ps1
+```
 
-1. Cerrar Studio One y ejecutar **M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe**.
-2. Buscar **M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN** en Efectos VST3. Si no aparece, restablecer bloqueados y volver a escanear los VST3 en las opciones de Studio One.
-3. Elegir el preset según función y género, reproducir la voz y usar Analizar todo o Auto Producer. Comparar a nivel equivalente con A/B.
-4. Para alinear dobles/armonías: insertar V10 en esa pista, activar su sidechain, enviar la principal a **Lead reference**, activar Vocal Align y analizar reproduciendo ambas pistas. El envío de referencia no es una salida audible del plugin.
-5. Para grabar, usar Monitor; para mezclar con la cadena completa, usar Studio/Linear y compensación del DAW.
+CMake fetch is explicit: the build script clones pinned JUCE 8.0.6 if absent.
+RNNoise source/model are included (BSD). Embedded fonts retain their licences.
+CMake produces VST3, standalone and tests. CI compiles x64, runs six suites,
+loads the actual VST3 DLL, tests installation/coexistence/uninstall, renders
+three cockpit pages, benchmarks ten instances and publishes a pre-release.
+`Docs/V11_ENGINEERING.md` and `VALIDATION.md` describe scope and results.
 
-Carpeta: `C:\Program Files\Common Files\VST3\M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN.vst3`. V10 tiene identificador y registro de desinstalación propios y conserva la versión anterior. No se ha probado dentro de Studio One 7 en este entorno. Instalador sin firma digital.
+V11 has a new class ID and coexists with V10/0.3/earlier products. The installer
+is unsigned. Studio One 7 itself and real-vocal perceptual quality need direct
+evaluation; automated signal tests do not prove the best sound in the world.
+48V, impedance and analogue topologies are digital models, not interface
+hardware control or calibrated replicas. Limiting is sample-peak, not certified
+true-peak. Original models were trained on synthetic data: see
+`Models/V8_METRICS.json`; those metrics are not real-singer accuracy claims.
 
-## Compilar y validar
-
-Windows: Visual Studio 2022 Desktop C++, CMake ≥3.22, Git y NSIS 3. Ejecutar `BuildInstaller.ps1`; compila VST3/Standalone, ejecuta CTest y empaqueta. NSIS usa bootstrap Unicode x86, exige Windows x64 y copia el módulo AMD64 a las carpetas/registro de 64 bits.
-
-Linux/cloud: `bash Tools/setup-cloud.sh` y `bash Tools/build-windows-cloud.sh`. JUCE fijado a 8.0.6 (`51a8a6d7aeae7326956d747737ccf1575e61e209`). El SDK Microsoft se obtiene con xwin y el binario se compila con Clang/LLVM. El workflow `publish-v10-release.yml` usa MSVC en Windows nativo y publica únicamente después de las pruebas de instalación y carga.
-
-Para reproducir entrenamiento: Python, NumPy y scikit-learn; `OPENBLAS_NUM_THREADS=2 OMP_NUM_THREADS=2 python3 Tools/train-v8-models.py`. No se requiere para compilar los pesos ya incluidos.
-
-Revisar la licencia JUCE antes de distribuir un producto cerrado. Se incluyen avisos BSD de RNNoise y licencias de las tipografías DejaVu, Liberation y Rubik Wet Paint. El instalador también incluye la ficha de los modelos.
+JUCE is dual-licensed AGPLv3/commercial. Review the applicable JUCE licence before
+closed-source commercial distribution. No new licence for the user's own code
+is implied. No proprietary UAD/iZotope/Antares/Elastique/other engines are copied.

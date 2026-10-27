@@ -164,9 +164,9 @@ int main(int argc, char **argv) {
         throw std::runtime_error("Silent preset");
       }
     }
-    require(names.size() == 280 && values.size() == 280,
+    require(names.size() == presetCount && values.size() == presetCount,
             "Preset names/settings are not distinct");
-    std::cout << "PASS: 280 distinct presets rendered; 50 classic/future FX; "
+    std::cout << "PASS: 360 distinct presets rendered; 50 classic/future FX; "
                  "finite non-silent output and ceiling\n";
     for (int mode = 0; mode < 3; ++mode) {
       for (bool bypass : {false, true}) {

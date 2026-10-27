@@ -1,5 +1,98 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+void M7GProcessor::controlTick() {
+  if (manualCommit.load() == 1 && !automatic()) {
+    for (size_t i = 0; i < rack::Count; ++i) {
+      auto k = static_cast<rack::Param>(i);
+      if (k != rack::AlienAutomation && k != rack::Bypass && k != rack::Solo)
+        setValue(k, effective[i].load());
+    }
+    manualCommit.store(2);
+  }
+  if (noiseLearnState.load() == 2) {
+    float profile = learnedNoise.load();
+    if (profile > -99) {
+      setValue(rack::NoiseProfile, profile);
+      setValue(rack::GateThreshold,
+               juce::jlimit(-80.0f, -15.0f,
+                            profile + effectiveValue(rack::InputTrim) + 8));
+      noiseLearnProgress.store(1);
+      noiseLearnState.store(0);
+    } else
+      noiseLearnState.store(-1);
+  }
+  if (++controlClock >= 10 && automatic()) {
+    controlClock = 0;
+    std::array<float, 12> measured{};
+    measured[0] = juce::jlimit(0.0f, 1.0f, (rawInputDB.load() + 60) / 60);
+    measured[1] = liveCrest.load() / 30;
+    measured[2] = liveBrightness.load();
+    float total = 0;
+    for (int i = 0; i < 6; ++i) {
+      for (int k = i * 5; k < juce::jmin(32, i * 5 + 5); ++k)
+        measured[size_t(i + 3)] +=
+            juce::Decibels::decibelsToGain(spectrum[size_t(k)].load());
+      total += measured[size_t(i + 3)];
+    }
+    for (int i = 3; i < 9; ++i)
+      measured[size_t(i)] /= total + 1e-12f;
+    measured[9] = pitchNN.load();
+    measured[10] = .2f;
+    measured[11] = measured[7] + measured[8];
+    const auto result = v8::autoMix(measured);
+    for (size_t i = 0; i < 8; ++i)
+      modelTargets[i].store(modelTargets[i].load() * .65f + result[i] * .35f);
+  }
+  applyAnalysis();
+}
+juce::String M7GProcessor::intelligenceText() const {
+  if (!licensed.load())
+    return "Importa M7G.license para activar todos los modulos";
+  if (noiseLearnState.load() == 1)
+    return "Escuchando el ruido: espera dos segundos sin cantar";
+  if (noiseLearnState.load() < 0)
+    return "Perfil no valido: repite LEARN sin cantar, con ruido audible";
+  if (!automatic())
+    return "MANUAL: valores congelados. Tu controlas la mezcla";
+  if (sleeping.load())
+    return "En silencio: motores en reposo, listo para tu voz";
+  if (gateGR.load() > 8 && rawInputDB.load() < -40)
+    return "Detecte un nivel bajo: cerrando la puerta de ruido";
+  if (std::abs(pitchCorrection.load()) > 1)
+    return "Centro de nota desviado " +
+           juce::String(std::abs(pitchCorrection.load()), 0) +
+           " cents: afinando y conservando expresion";
+  if (reductionDB.load() > 2)
+    return "La voz subio de volumen: comprimiendo con suavidad";
+  if (resonanceGR.load() > 1)
+    return "Suavizando resonancias sin quitar el cuerpo de tu voz";
+  if (delDuckDB.load() > 3)
+    return "Estas cantando: bajo el eco para que se entienda la voz";
+  return juce::String("Perfil ") + action(int(value(rack::VoiceType))) +
+         ": equilibrando voz, color y espacio";
+}
+bool M7GProcessor::isFavourite(int index) const {
+  const juce::ScopedLock lock(favouriteLock);
+  return favourites.contains(
+      rack::presets()[size_t(juce::jlimit(0, rack::presetCount - 1, index))]
+          .name);
+}
+void M7GProcessor::persistFavourites() {
+  auto file =
+      juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+          .getChildFile("M7G/V11-favourites.txt");
+  file.getParentDirectory().createDirectory();
+  file.replaceWithText(favourites.joinIntoString("\n"));
+}
+void M7GProcessor::toggleFavourite(int index) {
+  const juce::ScopedLock lock(favouriteLock);
+  auto name = getProgramName(index);
+  if (favourites.contains(name))
+    favourites.removeString(name);
+  else
+    favourites.add(name);
+  persistFavourites();
+}
 M7GProcessor::M7GProcessor()
     : AudioProcessor(
           BusesProperties()
@@ -16,7 +109,17 @@ M7GProcessor::M7GProcessor()
     x.store(-100);
   for (auto &x : layerMeters)
     x.store(-100);
+  license.reload();
+  licensed.store(license.authorized);
+  auto favouriteFile =
+      juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+          .getChildFile("M7G/V11-favourites.txt");
+  favourites.addLines(favouriteFile.loadFileAsString());
+  for (auto &v : modelTargets)
+    v.store(.35f);
   setCurrentProgram(0);
+  for (size_t i = 0; i < rack::Count; ++i)
+    effective[i].store(value(static_cast<rack::Param>(i)));
   compare[0] = parameterState();
   compare[1] = parameterState();
   startTimerHz(20);
@@ -38,6 +141,7 @@ void M7GProcessor::setCurrentProgram(int i) {
   for (size_t k = 0; k < v.size(); ++k)
     setValue(static_cast<rack::Param>(k), v[k]);
   program.store(i);
+  runtimeReset.store(true);
 }
 bool M7GProcessor::isBusesLayoutSupported(const BusesLayout &l) const {
   auto in = l.getMainInputChannelSet(), out = l.getMainOutputChannelSet();
@@ -59,6 +163,14 @@ const char *M7GProcessor::action(int i) {
 }
 void M7GProcessor::prepareToPlay(double sr, int block) {
   rate = sr;
+  runtimeReady = false;
+  wasAutomatic = automatic();
+  manualCommit.store(0);
+  quietSamples = 0;
+  sleeping.store(false);
+  intelligentPitch.reset();
+  learning = false;
+  noiseLearnState.store(0);
   decimation = juce::jmax(1, int(sr / 22050));
   decimatePos = pitchPos = pitchCount = pitchHop = write = fftPos =
       filterClock = neuralClock = 0;
@@ -170,16 +282,10 @@ void M7GProcessor::applyAutoProducer(rack::Values &p, float rawDB) {
   blend(rack::HarmonyMix, bus ? 0 : 3 + autoTargets[7] * 7);
   blend(rack::DelayDuck, 90);
   blend(rack::ReverbDuck, 85);
-  p[rack::WarmOn] = p[rack::CompOn] = p[rack::FetOn] = p[rack::SaturationOn] =
-      p[rack::SculptorOn] = p[rack::ResonanceOn] = 1;
-  p[rack::DereverbOn] = p[rack::NoiseOn] = p[rack::TuneOn] =
-      p[rack::HarmonyOn] = bus ? 0 : 1;
-  if (s >= .8f) {
-    p[rack::GodSpace] = p[rack::ReverbOn] = p[rack::DelayOn] = 1;
-    p[rack::VerbAMix] = juce::jmax(8.0f, p[rack::VerbAMix]);
-    p[rack::VerbBMix] = juce::jmax(7.0f, p[rack::VerbBMix]);
-    p[rack::VerbCMix] = juce::jmax(4.0f, p[rack::VerbCMix]);
-  }
+  if (bus || p[rack::HarmonyOn] < .5f)
+    p[rack::HarmonyMix] = 0;
+  if (bus)
+    p[rack::TuneOn] = p[rack::NoiseOn] = 0;
   float manual = p[rack::InputTrim];
   float target =
       rawDB > -60 ? juce::jlimit(-12.0f, 12.0f, -18 - rawDB) : manual;
@@ -277,39 +383,104 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   }
   float rawDB = juce::Decibels::gainToDecibels(
       float(std::sqrt(inputEnergy / channels)), -100.0f);
-  if (neuralClock <= 0) {
-    std::array<float, 12> x{};
-    x[0] = juce::jlimit(0.0f, 1.0f, (rawDB + 60) / 60);
-    float peak = 0;
-    for (int c = 0; c < channels; ++c)
-      peak = juce::jmax(peak, b.getMagnitude(c, 0, n));
-    x[1] = juce::jlimit(
-        0.0f, 1.0f,
-        (juce::Decibels::gainToDecibels(peak, -100.0f) - rawDB) / 24);
-    x[2] = juce::jlimit(0.0f, 1.0f, analysisHiss * .3f);
-    float total = 0;
-    for (int i = 0; i < 6; ++i) {
-      float e = 0;
-      for (int k = i * 5; k < juce::jmin(32, i * 5 + 5); ++k)
-        e += juce::Decibels::decibelsToGain(spectrum[size_t(k)].load());
-      x[size_t(3 + i)] = e;
-      total += e;
-    }
-    for (int i = 3; i < 9; ++i)
-      x[size_t(i)] /= total + 1e-12f;
-    x[9] = pitchHz.load() > 35 ? pitchDetector.confidence : 0;
-    x[10] = rawDB < previousBlockDB
-                ? juce::jlimit(0.0f, 1.0f, (previousBlockDB - rawDB) / 18)
-                : 0;
-    x[11] = x[6] * .4f + x[7] * .7f + x[8];
-    auto target = v8::autoMix(x);
-    for (size_t i = 0; i < 8; ++i)
-      autoTargets[i] = .65f * autoTargets[i] + .35f * target[i];
-    previousBlockDB = rawDB;
-    neuralClock = int(rate * .5);
+  rawInputDB.store(rawDB);
+  float peak = 0;
+  for (int c = 0; c < channels; ++c)
+    peak = juce::jmax(peak, b.getMagnitude(c, 0, n));
+  float crest = juce::jlimit(
+      0.0f, 30.0f, juce::Decibels::gainToDecibels(peak, -100.0f) - rawDB);
+  liveCrest.store(crest);
+  float low = 0, high = 0;
+  for (int k = 0; k < 32; ++k) {
+    float e = juce::Decibels::decibelsToGain(spectrum[size_t(k)].load());
+    if (k >= 21)
+      high += e;
+    else
+      low += e;
   }
-  neuralClock -= n;
-  applyAutoProducer(settings, rawDB);
+  float brightness = high / (low + high + 1e-12f);
+  liveBrightness.store(brightness);
+  bool autoOn = settings[rack::AlienAutomation] > .5f;
+  if (runtimeReset.exchange(false)) {
+    runtimeReady = false;
+    wasAutomatic = autoOn;
+    manualCommit.store(0);
+  }
+  if (!runtimeReady) {
+    runtime = settings;
+    runtimeReady = true;
+  }
+  if (wasAutomatic && !autoOn) {
+    frozen = runtime;
+    frozen[rack::AlienAutomation] = 0;
+    frozen[rack::OutputTrim] =
+        juce::jlimit(-24.0f, 12.0f,
+                     frozen[rack::OutputTrim] +
+                         producerMakeupDB * frozen[rack::AutoProducer] * .01f);
+    for (size_t k = 0; k < rack::Count; ++k) {
+      const auto &spec = rack::specs()[k];
+      frozen[k] = juce::jlimit(
+          spec.min, spec.max,
+          spec.min +
+              std::round((frozen[k] - spec.min) / spec.step) * spec.step);
+    }
+    producerMakeupDB = 0;
+    manualCommit.store(1);
+  }
+  if (autoOn) {
+    manualCommit.store(0);
+    for (size_t i = 0; i < 8; ++i)
+      autoTargets[i] = modelTargets[i].load();
+    auto base = settings;
+    applyAutoProducer(settings, rawDB);
+    v11::propose(settings, base, rawDB, crest, brightness, correlation.load(),
+                 autoTargets);
+    float a = 1 - std::exp(-float(n) / float(rate * .7));
+    for (size_t k = 0; k < rack::Count; ++k) {
+      auto key = static_cast<rack::Param>(k);
+      if (!v11::isIntent(key))
+        runtime[k] += a * (settings[k] - runtime[k]);
+      else
+        runtime[k] = settings[k];
+    }
+    settings = runtime;
+    automationUpdates.fetch_add(1);
+  } else if (manualCommit.load() == 1) {
+    settings = frozen;
+    // Global intent switches remain available during the short control handoff.
+    settings[rack::Bypass] = value(rack::Bypass);
+    settings[rack::Solo] = value(rack::Solo);
+  } else
+    runtime = settings;
+  wasAutomatic = autoOn;
+  for (size_t k = 0; k < rack::Count; ++k)
+    effective[k].store(settings[k]);
+  if (noiseLearnRequest.exchange(false)) {
+    noiseLearner.start(rate);
+    learning = true;
+    noiseLearnState.store(1);
+  }
+  // Suspend only after BOTH source and rendered tails are quiet. Never cut a
+  // reverb/delay simply because its source stopped, or skip a noise lesson.
+  if (rawDB < -60 && outputDB.load() < -90 && !learning &&
+      analysisState.load() != 1 && peak < .001f)
+    quietSamples += n;
+  else
+    quietSamples = 0;
+  bool idle = quietSamples > rate * .7;
+  sleeping.store(idle);
+  if (idle && settings[rack::Bypass] < .5f) {
+    for (int c = 0; c < channels; ++c)
+      b.clear(c, 0, n);
+    inputDB.store(rawDB);
+    outputDB.store(-100);
+    pitchHz.store(0);
+    targetHz.store(0);
+    pitchCorrection.store(0);
+    for (auto &v : outputChannels)
+      v.store(-100);
+    return;
+  }
   const auto &p = settings;
   int voice = juce::jlimit(0, 5, int(p[rack::VoiceType]));
   if (filterClock <= 0 || p[rack::EQOn] != lastSettings[rack::EQOn] ||
@@ -344,14 +515,15 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   harmony.setControls(harmonySettings, 1,
                       pitchHz.load() * ratioSmooth.getCurrentValue(),
                       pitchDetector.confidence);
-  if (rawDB > -55)
+  if (autoOn && rawDB > -55)
     autoGainDB += (1 - std::exp(-float(n) / float(rate))) *
                   (juce::jlimit(-12.0f, 12.0f, -18 - rawDB) - autoGainDB);
   float automatic = p[rack::AutoGain] > .5f ? autoGainDB : 0;
   inputSmooth.setTargetValue(
       juce::Decibels::decibelsToGain(p[rack::InputTrim] + automatic));
   outputSmooth.setTargetValue(juce::Decibels::decibelsToGain(
-      p[rack::OutputTrim] + producerMakeupDB * p[rack::AutoProducer] * .01f));
+      p[rack::OutputTrim] +
+      (autoOn ? producerMakeupDB * p[rack::AutoProducer] * .01f : 0)));
   mixSmooth.setTargetValue(p[rack::Mix] * .01f);
   bypassSmooth.setTargetValue(p[rack::Bypass]);
   if (analysisRequest.exchange(false)) {
@@ -370,6 +542,14 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       dryDelay.setSample(c, write, original[c]);
       mono += original[c] / float(channels);
     }
+    if (learning && noiseLearner.push(mono, pitchDetector.confidence > .85f &&
+                                                pitchHz.load() > 70)) {
+      learnedNoise.store(noiseLearner.profile());
+      learning = false;
+      noiseLearnState.store(2);
+    }
+    if (learning)
+      noiseLearnProgress.store(noiseLearner.progress());
     leftEnergy += original[0] * original[0];
     rightEnergy += original[channels - 1] * original[channels - 1];
     cross += original[0] * original[channels - 1];
@@ -421,7 +601,8 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       pitchCount = juce::jmin(2048, pitchCount + 1);
       pitchHop = juce::jmin(512, pitchHop + 1);
     }
-    if (activeMode != 0 && pitchHop >= 512 && pitchCount == 2048) {
+    if ((activeMode != 0 || learning) && pitchHop >= 512 &&
+        pitchCount == 2048) {
       pitchHop = 0;
       std::array<float, 2048> ordered{};
       for (int k = 0; k < 2048; ++k)
@@ -436,8 +617,12 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       targetHz.store(target);
       float correction = 1;
       if (target > 35 && voice != 5 && p[rack::TuneOn] > .5f && f > 35)
-        correction = juce::jlimit(
-            .90f, 1.12f, 1 + (target / f - 1) * p[rack::TuneAmount] * .01f);
+        correction = intelligentPitch.ratio(
+            f, target, pitchDetector.confidence,
+            512 / (float(rate) / decimation), p[rack::TuneAmount],
+            p[rack::KeepHuman], p[rack::PitchStyle] > .5f);
+      pitchCorrection.store(target > 35 && f > 35 ? 1200 * std::log2(correction)
+                                                  : 0);
       float current = ratioSmooth.getCurrentValue();
       ratioSmooth.setCurrentAndTargetValue(current);
       ratioSmooth.reset(
@@ -450,9 +635,11 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
     }
 
     float denoised[2]{frame[0], frame[channels - 1]};
-    neural.processFrame(
-        denoised, channels,
-        p[rack::NoiseOn] > .5f && voice != 5 ? p[rack::NoiseAmount] * .01f : 0);
+    if (activeMode != 0)
+      neural.processFrame(denoised, channels,
+                          p[rack::NoiseOn] > .5f && voice != 5
+                              ? p[rack::NoiseAmount] * .01f
+                              : 0);
     if (activeMode != 0) {
       for (int c = 0; c < channels; ++c)
         frame[c] = denoised[c];
@@ -518,7 +705,7 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       for (int c = 0; c < channels; ++c)
         frame[c] = juce::jlimit(-ceiling, ceiling, frame[c]);
     }
-    float bypass = bypassSmooth.getNextValue();
+    float bypass = licensed.load() ? bypassSmooth.getNextValue() : 1.0f;
     int bypassIndex = (write + 32768 - getLatencySamples()) & 32767;
     for (int c = 0; c < channels; ++c) {
       float x =
@@ -537,14 +724,14 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
       float(std::sqrt(inEnergy / (n * channels))), -100.0f));
   outputDB.store(juce::Decibels::gainToDecibels(
       float(std::sqrt(outEnergy / (n * channels))), -100.0f));
-  if (p[rack::AutoProducer] > .01f && p[rack::Bypass] < .5f && rawDB > -50 &&
-      outputDB.load() > -60) {
+  if (autoOn && p[rack::AutoProducer] > .01f && p[rack::Bypass] < .5f &&
+      rawDB > -50 && outputDB.load() > -60) {
     float error = -18 - (outputDB.load() - p[rack::OutputTrim]);
     producerMakeupDB =
         juce::jlimit(-6.0f, 12.0f,
                      producerMakeupDB +
                          (1 - std::exp(-float(n) / float(rate * .8))) * error);
-  } else if (p[rack::AutoProducer] < .01f)
+  } else if (autoOn && p[rack::AutoProducer] < .01f)
     producerMakeupDB *= std::exp(-float(n) / float(rate * .3));
   reductionDB.store(p[rack::CompOn] > .5f ? analogue.gainReduction() : 0);
   fetGR.store(fet.gainReduction());
@@ -587,6 +774,7 @@ void M7GProcessor::selectCompare(int slot) {
   auto next = compare[size_t(slot)].createCopy();
   program.store(int(next.getProperty("program", 0)));
   apvts.replaceState(next);
+  runtimeReset.store(true);
   activeCompare = slot;
 }
 void M7GProcessor::copyCompare() {
@@ -622,6 +810,7 @@ void M7GProcessor::setStateInformation(const void *data, int bytes) {
   program.store(juce::jlimit(0, rack::presetCount - 1,
                              int(state.getProperty("program", 0))));
   apvts.replaceState(state);
+  runtimeReset.store(true);
 }
 void M7GProcessor::beginAnalysis(int module) {
   analysisReferenceSeen.store(false);

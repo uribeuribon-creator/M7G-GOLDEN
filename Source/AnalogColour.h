@@ -16,6 +16,9 @@ public:
     iron.fill(0);
     loaded.fill(0);
     rate = sr;
+    compFastPole = std::exp(-1 / float(sr * .008));
+    compSlowPole = std::exp(-1 / float(sr * .15));
+    compMemoryPole = std::exp(-1 / float(sr * .7));
     oversampling.initProcessing(1);
     oversampling.reset();
     linear.initProcessing(1);
@@ -74,6 +77,9 @@ public:
     impedancePole =
         std::exp(-juce::MathConstants<float>::twoPi * cutoffs[style] *
                  std::sqrt(z / (z + 350)) / float(rate * (mode ? 8 : 1)));
+    constexpr float recovery[]{.002f, .0004f, .0003f, .001f, .003f, .004f};
+    magneticPole =
+        std::exp(-1 / float(rate * (mode ? 8 : 1) * recovery[style]));
     magneticLoad = juce::jlimit(.6f, 2.0f, 1 + .12f * (1600 / z - 1));
     drive.setTargetValue(1 + 2.6f * p[rack::WarmDrive] * .01f);
     bias.setTargetValue(.003f * p[rack::WarmBias]);
@@ -95,19 +101,17 @@ public:
             wet = warmMix.getNextValue();
       for (size_t c = 0; c < 2; ++c) {
         float dry = up.getSample(int(c), int(i));
-        float shaped = (std::tanh(d * dry + b) - offset) * norm;
-        if (!legacy) {
+        float shaped = 0;
+        if (legacy)
+          shaped = (std::tanh(d * dry + b) - offset) * norm;
+        else {
           constexpr float extra[]{1.25f, 1.6f, 1.1f, 1, 1.4f, 2};
           constexpr float biases[]{.7f, .2f, .35f, 1.1f, 1.5f, 1.9f};
           constexpr float magnetic[]{.15f, .06f, .02f, .03f, .08f, .3f};
-          constexpr float recovery[]{.002f, .0004f, .0003f,
-                                     .001f, .003f,  .004f};
           float x = dry * inputGain * load;
           loaded[c] = impedancePole * loaded[c] + (1 - impedancePole) * x;
           x = loaded[c] / rail;
-          float m =
-              std::exp(-1 / float(rate * (mode ? 8 : 1) * recovery[style]));
-          iron[c] = m * iron[c] + (1 - m) * x;
+          iron[c] = magneticPole * iron[c] + (1 - magneticPole) * x;
           float k = d * extra[style], bb = b * biases[style], o = std::tanh(bb),
                 mag = magnetic[style] * magneticLoad;
           if (style == 3 || style == 4) {
@@ -145,8 +149,7 @@ public:
     for (int c = 0; c < channels; ++c)
       power += frame[c] * frame[c];
     power /= float(channels);
-    float a = std::exp(-1 / float(rate * .008)),
-          s = std::exp(-1 / float(rate * .15));
+    float a = compFastPole, s = compSlowPole;
     fast = a * fast + (1 - a) * power;
     slow = s * slow + (1 - s) * power;
     float level =
@@ -157,7 +160,7 @@ public:
       wanted = factor * excess;
     else if (excess > -knee * .5f)
       wanted = factor * std::pow(excess + knee * .5f, 2) / (2 * knee);
-    float m = std::exp(-1 / float(rate * .7));
+    float m = compMemoryPole;
     memory = m * memory + (1 - m) * wanted;
     float seconds =
         wanted > reduction
@@ -187,7 +190,9 @@ private:
   int mode = 1, style = 0;
   bool legacy = false;
   std::array<float, 2> iron{}, loaded{};
-  float inputGain = 1, load = 1, rail = 1, impedancePole = 0, magneticLoad = 1;
+  float inputGain = 1, load = 1, rail = 1, impedancePole = 0, magneticLoad = 1,
+        magneticPole = 0, compFastPole = 0, compSlowPole = 0,
+        compMemoryPole = 0;
   juce::SmoothedValue<float> drive, bias, warmMix;
   std::array<juce::dsp::IIR::Filter<float>, 2> tone, exciter;
   std::array<float, 2> dcX{}, dcY{};

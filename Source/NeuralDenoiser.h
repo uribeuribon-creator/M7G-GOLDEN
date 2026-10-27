@@ -65,9 +65,10 @@ public:
       ++event;
       if (fill == 480) {
         for (int c = 0; c < channels; ++c)
-          rnnoise_process_frame(state[static_cast<size_t>(c)].get(),
-                                output[static_cast<size_t>(c)].data(),
-                                input[static_cast<size_t>(c)].data());
+          if (strength > .00001f)
+            rnnoise_process_frame(state[static_cast<size_t>(c)].get(),
+                                  output[static_cast<size_t>(c)].data(),
+                                  input[static_cast<size_t>(c)].data());
         ++frames;
         fill = 0;
         for (size_t i = 0; i < 480; ++i) {

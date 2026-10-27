@@ -48,6 +48,16 @@ public:
     gHigh /= 1 + gHigh;
     pole = std::exp(-1 / (sr * .002f));
     dcPole = std::exp(-juce::MathConstants<float>::twoPi * 8 / sr);
+    const rack::Param ids[]{rack::SatLow, rack::SatMid, rack::SatHigh};
+    for (int k = 0; k < 3; ++k) {
+      amounts[size_t(k)] = p[rack::SaturationOn] > .5f ? p[ids[k]] * .01f : 0;
+      drives[size_t(k)] = 1 + amounts[size_t(k)] * 5;
+      biases[size_t(k)] = .12f * amounts[size_t(k)];
+      offsets[size_t(k)] = std::tanh(biases[size_t(k)]);
+      norms[size_t(k)] = 1 / (drives[size_t(k)] *
+                              (1 - offsets[size_t(k)] * offsets[size_t(k)]));
+      quantizers[size_t(k)] = std::pow(2.0f, 16 - 12 * amounts[size_t(k)]);
+    }
   }
   void process(float *frame, int channels, const float *eqDry = nullptr) {
     float samples[4]{frame[0], channels == 2 ? frame[1] : frame[0],
@@ -82,17 +92,16 @@ private:
     float b = (x - high[c]) * gHigh, h = b + high[c];
     high[c] = h + b;
     float band[]{l, h - l, x - h}, result = 0;
-    const rack::Param ids[]{rack::SatLow, rack::SatMid, rack::SatHigh};
     for (int k = 0; k < 3; ++k) {
-      float amount = p[rack::SaturationOn] > .5f ? p[ids[k]] * .01f : 0,
-            drive = 1 + amount * 5, bias = .12f * amount;
+      float amount = amounts[size_t(k)], drive = drives[size_t(k)],
+            bias = biases[size_t(k)];
       float &state = tape[size_t(k)][c];
       state = pole * state + (1 - pole) * band[k];
       float wet = band[k];
       switch (int(p[rack::SatStyle])) {
       case 0:
-        wet = (std::tanh(drive * band[k] + bias) - std::tanh(bias)) /
-              (drive * (1 - std::pow(std::tanh(bias), 2)));
+        wet = (std::tanh(drive * band[k] + bias) - offsets[size_t(k)]) *
+              norms[size_t(k)];
         break;
       case 1:
         wet =
@@ -105,7 +114,7 @@ private:
         wet = std::tanh(drive * (band[k] + .4f * state)) / drive - .4f * state;
         break;
       case 4: {
-        float steps = std::pow(2.0f, 16 - 12 * amount);
+        float steps = quantizers[size_t(k)];
         wet = std::round(band[k] * steps) / steps;
         break;
       }
@@ -132,6 +141,8 @@ private:
   int mode = 1;
   juce::dsp::Oversampling<float> iir, fir;
   std::array<float, 2> low{}, high{}, memory{};
+  std::array<float, 3> amounts{}, drives{}, biases{}, offsets{}, norms{},
+      quantizers{};
   std::array<std::array<float, 2>, 3> tape{};
   std::array<float, 2> dcX{}, dcY{};
   float dcPole = 0;

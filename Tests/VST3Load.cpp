@@ -42,6 +42,13 @@ int main(int argc, char **argv) {
     PClassInfo cls{};
     factory->getClassInfo(i, &cls);
     if (std::strcmp(cls.category, "Audio Module Class") == 0) {
+      const unsigned char expected[]{0x01, 0xEF, 0xCD, 0xAB, 0x82, 0x91,
+                                     0xEB, 0xFA, 0x4D, 0x37, 0x47, 0x37,
+                                     0x41, 0x69, 0x31, 0x31};
+      if (std::strcmp(cls.name, "M7G ALIEN VOICE V11 - ALIEN INTELLIGENCE") !=
+              0 ||
+          std::memcmp(cls.cid, expected, 16) != 0)
+        return 17;
       std::printf("VST3 name: %s; class ID: ", cls.name);
       for (auto byte : cls.cid)
         std::printf("%02X", static_cast<unsigned char>(byte));

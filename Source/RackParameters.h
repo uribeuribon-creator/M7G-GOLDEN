@@ -161,6 +161,9 @@ enum Param {
   SculptorParallel,
   AlignParallel,
   GateLowcut,
+  AlienAutomation,
+  KeepHuman,
+  NoiseProfile,
   Count
 };
 struct Spec {
@@ -339,7 +342,11 @@ inline const std::array<Spec, Count> &specs() {
        {"fetparallel", "FET parallel", 0, 100, 100, .1f, " %"},
        {"sculptorparallel", "Sculptor parallel", 0, 100, 100, .1f, " %"},
        {"alignparallel", "Alignment parallel", 0, 100, 100, .1f, " %"},
-       {"gatelowcut", "Input low cut", 20, 600, 60, 1, " Hz", false, .5f}}};
+       {"gatelowcut", "Input low cut", 20, 600, 60, 1, " Hz", false, .5f},
+       {"alienautomation", "Alien Automation AUTO", 0, 1, 0, 1, "", true},
+       {"keephuman", "Conservar expresion", 0, 100, 70, .1f, " %"},
+       {"noiseprofile", "Perfil de ruido aprendido", -100, -20, -100, .1f,
+        " dB"}}};
   return s;
 }
 using Values = std::array<float, Count>;

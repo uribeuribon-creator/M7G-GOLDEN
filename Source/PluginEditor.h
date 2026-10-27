@@ -34,10 +34,13 @@ public:
   RackKnob(M7GProcessor &, rack::Param, juce::String);
   void resized() override;
   void paint(juce::Graphics &) override;
+  void tick();
   juce::Slider slider;
 
 private:
   juce::String caption;
+  M7GProcessor &processor;
+  rack::Param parameterID;
   std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment>
       attachment;
 };
@@ -53,7 +56,8 @@ private:
   int index;
   rack::Param enabledParameter;
   juce::ToggleButton enable;
-  juce::TextButton analyse{"AI"};
+  juce::TextButton analyse{"AI"}, learn{"LEARN 2s"};
+  float gateDoor = 1;
   std::vector<std::unique_ptr<RackKnob>> knobs;
   std::vector<std::unique_ptr<juce::ToggleButton>> switches;
   std::vector<
@@ -78,9 +82,26 @@ private:
   AlienSkin skin;
   std::array<std::unique_ptr<RackModule>, 26> modules;
   juce::ComboBox presetBox, modeBox;
-  juce::TextButton classicTab{"CABINA VOCAL"}, engineTab{"ALIEN INTELLIGENCE"},
-      tripleTab{"TRIPLE GOD"};
-  int page = 2;
+  juce::TextButton classicTab{"CADENA VOCAL"}, engineTab{"LIMPIEZA / ARMONIAS"},
+      tripleTab{"ESPACIO / COLOR"};
+  int page = 0, bank = 0;
+  std::array<juce::TextButton, 6> bankButtons;
+  juce::TextEditor search;
+  juce::TextButton previous{"<"}, next{">"}, random{"RANDOM"},
+      favourite{juce::String::fromUTF8("FAV \xe2\x99\xa5")},
+      favouritesOnly{"VER FAV"}, automation{"AUTO"},
+      authorization{"AUTORIZACION"};
+  std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment>
+      automationAttachment;
+  std::unique_ptr<juce::FileChooser> licenseChooser;
+  std::vector<int> visiblePresets;
+  int lastProgram = -1;
+  float radarAngle = 0;
+  int animationRate = 60;
+  bool onlyFavourites = false;
+  void filterPresets();
+  void navigate(int);
+  void importLicense();
   void showPage(int);
   juce::ToggleButton godSpace{"GOD SPACE"};
   std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment>

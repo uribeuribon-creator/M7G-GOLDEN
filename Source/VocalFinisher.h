@@ -5,6 +5,8 @@ class VocalFinisher {
 public:
   void prepare(double sr, int) {
     rate = sr;
+    fastEnvelope = std::exp(-1 / float(sr * .002));
+    slowEnvelope = std::exp(-1 / float(sr * .09));
     fullEnv = essEnv = bodyEnv = harshEnv = essReduction = 0;
     gateGain = 1;
     lastFreq = -1;
@@ -55,7 +57,7 @@ public:
     }
     auto env = [&](float &e, float x) {
       x /= float(channels);
-      float a = std::exp(-1 / float(rate * (x > e ? .002 : .09)));
+      float a = x > e ? fastEnvelope : slowEnvelope;
       e = a * e + (1 - a) * x;
     };
     env(fullEnv, sum);
@@ -107,7 +109,7 @@ private:
   using Filter = juce::dsp::IIR::Filter<float>;
   std::array<Filter, 2> hp, ess, body, harsh;
   rack::Values p = rack::defaults();
-  float lastLowcut = -1;
+  float lastLowcut = -1, fastEnvelope = 0, slowEnvelope = 0;
   double rate = 48000;
   float fullEnv = 0, essEnv = 0, bodyEnv = 0, harshEnv = 0, gateGain = 1,
         essReduction = 0, attack = 0, release = 0, lastFreq = -1;
