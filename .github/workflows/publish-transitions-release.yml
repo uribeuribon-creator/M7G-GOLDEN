@@ -1,0 +1,65 @@
+name: Build and publish ALIEN TRANSITIONS GOD V1
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/transitions-v1.0.0/**
+      - .github/workflows/publish-transitions-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build JUCE 7 VST3, render all 150 recipes and test UI
+        shell: pwsh
+        run: ./Transitions/Build-Windows.ps1
+      - name: Preserve native validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Transitions-V1-Windows-validation
+          path: |
+            Transitions/dist/**
+            build-transitions-windows/Release/*.exe
+            build-transitions-windows/M7G_Transitions_artefacts/Release/VST3/**
+            build-transitions-windows/Testing/Temporary/*.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Install, preserve Alien Voice and licence, reinstall and uninstall
+        shell: pwsh
+        run: ./Transitions/Tests/InstallerSmoke.ps1
+      - name: Render actual interface and synthetic-vowel demo
+        shell: pwsh
+        run: |
+          & ./build-transitions-windows/Release/TransitionsUI.exe "$PWD/Transitions/dist/M7G-Transitions-V1.png"
+          if ($LASTEXITCODE -ne 0) { throw 'Interface rendering failed' }
+          & ./build-transitions-windows/Release/TransitionsDSP.exe --render "$PWD/Transitions/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Audio demo failed' }
+          & ./build-transitions-windows/Release/TransitionsBenchmark.exe | Tee-Object -FilePath Transitions/dist/Transitions-V1-performance.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Benchmark failed' }
+      - name: Publish verified Windows installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $name = 'M7G-ALIEN-TRANSITIONS-GOD-V1-Windows-x64.exe'
+          $exe = "Transitions/dist/$name"
+          $checksum = (Get-FileHash -Algorithm SHA256 $exe).Hash.ToLower() + "  $name"
+          Set-Content -Encoding ascii "$exe.sha256" $checksum
+          gh release view transitions-v1.0.0 --json tagName
+          if ($LASTEXITCODE -ne 0) {
+            gh release create transitions-v1.0.0 --target $env:GITHUB_SHA --draft --prerelease --title 'M7G ALIEN TRANSITIONS GOD V1 — 150 FX' --notes-file release-assets/transitions-v1.0.0/RELEASE_NOTES.md
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
+          }
+          gh release upload transitions-v1.0.0 $exe "$exe.sha256" 'Transitions/dist/M7G-Transitions-V1.png' 'Transitions/dist/M7G-Transitions-V1-cambio.png' 'Transitions/dist/M7G-Transitions-V1-salida.png' 'Transitions/dist/M7G-Transitions-V1-Demo.wav' 'Transitions/dist/M7G-Transitions-V1-Demo.txt' 'Transitions/dist/Transitions-V1-performance.txt' 'Licensing/M7G.license' --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Asset upload failed' }
+          gh release edit transitions-v1.0.0 --draft=false --prerelease
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
