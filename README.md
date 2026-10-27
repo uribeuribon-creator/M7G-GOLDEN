@@ -4,7 +4,9 @@ Cabina vocal VST3 para Windows 10/11 x64, C++20 y JUCE 8.0.6. Interfaz de nave e
 
 [Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe) · [GitHub Releases](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/v10.0.0)
 
-La publicación se condiciona a pruebas de audio, interfaz, instalación, carga del módulo instalado y desinstalación en Windows. Consultar `VALIDATION.md` para resultados, artefactos y límites. Se publica como pre-release mientras falten la prueba directa en Studio One 7 y la evaluación perceptual con grabaciones reales.
+Publicado como **pre-release v10.0.0**, con cinco pruebas CTest, instalación/carga/desinstalación en Windows nativo y descarga pública/checksum verificados. [Registro de pruebas](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40529656454) · [SHA-256](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe.sha256) · [Ver cabina](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v10.0.0/M7G-V10-interface.png).
+
+Consultar `VALIDATION.md` para resultados y límites. Siguen pendientes la prueba directa en Studio One 7 y la evaluación perceptual con grabaciones reales.
 
 ## Cabina y procesamiento
 
@@ -16,7 +18,7 @@ Las tres páginas muestran **Cabina Vocal**, **Alien Intelligence** y **Triple G
 - **EQ Sculptor** tonal amplio y acotado, con compensación de nivel de la curva. **Resonance Guard** usa máscara estéreo enlazada, persistencia temporal y protección de armónicos/transitorios. No identifica de forma infalible qué resonancias son musicalmente indeseables.
 - Afinación monofónica **Natural/Robot**, selección automática o manual de tonalidad/escala y modificación de envolvente/formantes. El detector combina YIN, autocorrelación y una CNN de candidatos. La tonalidad inferida es tentativa: una voz aislada no define siempre la armonía de la canción.
 - **Harmony God** genera ocho voces con vocoder de fase, envolvente cepstral, paneos y microafinación: octavas, quintas, coro y modo angelical. No separa notas de un coro de entrada ni incorpora el motor licenciado Elastique.
-- **Triple Verb** ejecuta tres redes independientes simultáneamente: cámara corta A, espacio medio B y catedral larga C con shimmer. Mezcla, pre-delay, decay, filtro y modulación propios; GOD SPACE activa tres capas. El envío y los ajustes comunes de reverb también afectan a las capas.
+- **Triple Verb** ejecuta tres redes independientes simultáneamente: cámara corta A, espacio medio B y catedral larga C con shimmer. Mezcla, pre-delay, decay, filtro y modulación propios; GOD SPACE activa tres capas. El envío y los ajustes comunes de reverb también afectan a las capas. Los interruptores de las capas reflejan el encendido del motor común; su envío individual permite silenciar una capa cuando se trabaja manualmente, con Auto Producer y GOD SPACE desactivados.
 - **Smart Delay**: Slap, Throw al final de frase, Ping-Pong, Tape Ducking y Ping-Pong → Reverb. Tempo del host o tiempo manual, tono, saturación y ducking. Slap usa su tiempo de 80–150 ms. Throw mide actividad vocal y espera la pausa ajustable antes de abrir el efecto. La sincronía usa 120 BPM si el host no informa un tempo válido.
 - **Vocal Align** mide correlación de envolventes con una principal enviada al sidechain **Lead reference**, y ajusta hasta ±60 ms mediante lectura cruzada de retardos. Requiere referencia; no edita una línea temporal ni corrige frases arbitrariamente separadas. Su anticipación añade 80 ms compensados cuando se activa.
 

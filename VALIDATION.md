@@ -1,5 +1,13 @@
 # V10 TRIPLE GOD ORIGIN — estado de validación
 
+## Release nativo publicado y descarga verificada
+
+El [workflow 40529656454](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40529656454) terminó correctamente en Windows 2022: MSVC, cinco pruebas CTest aprobadas, instalación, conservación de productos anteriores, comparación SHA-256 del módulo instalado, carga/proceso y desinstalación. La prueba adicional verificó sidechain mono con salida estéreo y referencia conservada durante la pausa final de la frase. La interfaz usa **ALIEN AUTO PRODUCER**, según la aclaración del usuario.
+
+Fuente del binario: `e2627be0f62e0ccf3c9dd6ef4f16857f0edfe42b`. Instalador: `M7G-ALIEN-VOICE-V10-TRIPLE-GOD-ORIGIN-Windows-x64.exe`, 3 152 395 bytes. SHA-256: `fbf210d093f6f1d1bf3cc375581ba63df8a4710ed14a68fb3ad34a93720ce0dd`.
+
+Se descargaron sin autenticación el instalador, su checksum y las tres capturas nativas desde GitHub Releases: HTTP 200, Content-Disposition attachment, tamaños/digests coincidentes y archivo SHA-256 correcto. Bootstrap PE x86 y nombre del producto comprobados; el módulo instalado es AMD64 según BuildInstaller y la prueba de carga. Las tres capturas miden 1280 × 900.
+
 ## Implementación y procedencia
 
 VST3 Windows x64, C++20/JUCE 8.0.6; identificador separado `01EFCDAB8291EBFA4D37473754673130`. Interfaz de cabina con 26 módulos, análisis individual/global, 26 mezclas/envíos paralelos y 280 presets (50 de efectos). MLP y CNN propias entrenadas con datos sintéticos; scripts y pesos versionados, RNNoise existente con licencia BSD.
@@ -32,4 +40,4 @@ Los seis previos y 48V/impedancia son modelos digitales, no control físico de u
 
 El workflow `publish-v10-release.yml` debe compilar con MSVC en Windows 2022, aprobar las cinco pruebas CTest, instalar el VST3, comparar el módulo instalado por SHA-256, cargarlo/procesarlo y desinstalarlo conservando las versiones previas. Solo entonces publica el instalador, checksum y tres capturas de la interfaz.
 
-**Pendiente:** registrar el resultado final de esa ejecución y verificar descargas públicas. Studio One 7 y evaluación perceptual con voces reales siguen pendientes. El release se mantiene como pre-release y el instalador no tiene firma digital. No se afirma superioridad a UAD, iZotope, Soothe u otros productos ni una calidad universal de estudio.
+**Pendiente:** Studio One 7 y evaluación perceptual con voces reales. El release se mantiene como pre-release y el instalador no tiene firma digital. No se afirma superioridad a UAD, iZotope, Soothe u otros productos ni una calidad universal de estudio.
