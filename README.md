@@ -2,6 +2,10 @@
 
 Plugin vocal VST3 y Standalone para Windows x64, C++17 / JUCE 8.0.6. Interfaz negra y dorada de 12 módulos, 50 presets de fábrica y análisis automático por módulo o para toda la cadena. Está orientado a Studio One 7 mediante el formato VST3 estándar.
 
+**[Descargar instalador Windows x64 (.exe)](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v0.3.0/M7G-ALIEN-VOICE-Setup-Windows-x64.exe)** · [Ver interfaz compilada](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v0.3.0/M7G-ALIEN-VOICE-interface.png) · [SHA-256](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/v0.3.0/M7G-ALIEN-VOICE-Setup-Windows-x64.exe.sha256)
+
+La versión 0.3.0 está publicada como pre-release. Compilación MSVC, cuatro pruebas de audio/interfaz y ciclo de instalación/actualización/desinstalación aprobados en Windows 2022; la prueba dentro de Studio One 7 sigue pendiente.
+
 ## Los 12 módulos
 
 | Módulo | Controles y función |

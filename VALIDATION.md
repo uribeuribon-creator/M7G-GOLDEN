@@ -1,5 +1,13 @@
 # M7G ALIEN VOICE — validación 0.3.0
 
+## Publicación verificada
+
+El [workflow 40449723962](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40449723962) terminó correctamente el 27 de octubre de 2026 en Windows Server 2022. Compilación MSVC de VST3/Standalone, cuatro pruebas CTest y ciclo de instalación, migración, carga del módulo instalado y desinstalación aprobados. Las mediciones nativas coinciden con las locales indicadas abajo.
+
+El instalador publicado procede de esa compilación nativa, fuente `932899540c5dd34f94da3b165eb683374aaffed7`. Tamaño: 2 912 439 bytes. SHA-256: `babf16c425e405779d4302eb8b2db8fe577d0a2ceb5dfaa77e029da4be91a12e`.
+
+Se descargaron el instalador, su checksum y la captura PNG desde las URLs públicas de GitHub Releases, sin autenticación. HTTP 200 y `Content-Disposition: attachment`; tamaños y digests coinciden con GitHub y con el archivo SHA-256. Metadata del producto y bootstrap PE comprobados. Captura nativa: 1280 × 800 píxeles. La versión se mantiene como pre-release por la validación pendiente dentro del DAW.
+
 ## Comprobaciones locales completadas
 
 Compilación Windows x64 con Clang/LLVM 19 y SDK Microsoft. Los ejecutables Windows y el módulo VST3 real se ejecutaron bajo Wine 10. El controlador de pruebas comprueba el código de salida de Windows explícitamente, además del resultado de Wine.
