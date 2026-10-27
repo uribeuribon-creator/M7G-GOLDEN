@@ -19,6 +19,18 @@ jobs:
       - name: Build, process audio and verify interface
         shell: pwsh
         run: ./BuildInstaller.ps1
+      - name: Preserve native binaries and test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-ALIEN-VOICE-Windows-validation
+          path: |
+            dist/*.exe
+            build-windows/Release/*.exe
+            build-windows/M7G_Golden_Voice_AI_artefacts/Release/VST3/**
+            build-windows/Testing/Temporary/*.log
+          if-no-files-found: warn
+          retention-days: 7
       - name: Test native installation, migration and removal
         shell: pwsh
         run: ./Tests/InstallerSmoke.ps1

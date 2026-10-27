@@ -1,5 +1,7 @@
 Unicode True
-Target amd64-unicode
+; Official Windows NSIS ships the Unicode x86 bootstrap. It installs only the
+; x64 payload, uses the 64-bit folders/registry and rejects 32-bit Windows.
+Target x86-unicode
 !include "MUI2.nsh"
 !include "x64.nsh"
 !include "WinVer.nsh"

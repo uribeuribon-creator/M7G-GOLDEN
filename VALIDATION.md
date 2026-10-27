@@ -24,7 +24,7 @@ El workflow `publish-alien-release.yml` solo publica el instalador generado por 
 3. Retirada de los dos bundles antiguos, registro con nombre y versión nuevos y carga/procesamiento del módulo instalado.
 4. Desinstalación y retirada del módulo y de su entrada de registro.
 
-La publicación incluye el instalador, su SHA-256 y una captura de la interfaz producida por el ejecutable Windows. El historial de GitHub Actions contiene los resultados nativos de cada publicación; las pruebas anteriores describen las mediciones locales, no sustituyen ese registro.
+La publicación incluye el instalador, su SHA-256 y una captura de la interfaz producida por el ejecutable Windows. El bootstrap NSIS es PE x86 Unicode; comprueba que Windows sea de 64 bits e instala el módulo AMD64, cuya arquitectura y carga se prueban por separado. El historial de GitHub Actions contiene los resultados nativos de cada publicación; las pruebas anteriores describen las mediciones locales, no sustituyen ese registro.
 
 ## Alcance pendiente
 

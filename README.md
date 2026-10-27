@@ -58,7 +58,7 @@ Se instala en `C:\Program Files\Common Files\VST3\M7G ALIEN VOICE.vst3`. El inst
 
 ## Compilar
 
-Windows: Visual Studio 2022 Desktop C++, CMake ≥3.22, Git y NSIS 3. `BuildInstaller.ps1` compila, ejecuta las pruebas y genera el instalador. Se incluye compatibilidad de arrays de pila de RNNoise para MSVC.
+Windows: Visual Studio 2022 Desktop C++, CMake ≥3.22, Git y NSIS 3. `BuildInstaller.ps1` compila, ejecuta las pruebas y genera el instalador. Se incluye compatibilidad de arrays de pila de RNNoise para MSVC. El bootstrap NSIS es Unicode x86, compatible con la distribución oficial de NSIS; exige Windows x64 e instala el módulo VST3 AMD64 en las carpetas y registro de 64 bits.
 
 Linux: dependencias JUCE habituales (ALSA, X11, Xrandr, Xinerama, Xcursor, FreeType, Fontconfig, OpenGL), CMake y C++17.
 
