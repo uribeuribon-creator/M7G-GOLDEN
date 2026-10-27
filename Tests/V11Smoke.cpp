@@ -177,6 +177,24 @@ int main() {
     render(*idle, 50, .12f);
     check(!idle->sleeping.load() && idle->outputDB.load() > -80,
           "DSP did not wake on voice");
+    auto large = std::make_unique<M7GProcessor>();
+    large->setValue(EngineMode, 0);
+    large->setValue(AlienAutomation, 0);
+    large->prepareToPlay(48000, 256);
+    juce::AudioBuffer<float> oversized(2, 65536);
+    juce::MidiBuffer emptyMidi;
+    for (int c = 0; c < 2; ++c)
+      for (int i = 0; i < oversized.getNumSamples(); ++i)
+        oversized.setSample(
+            c, i,
+            .08f * std::sin(float(i * 220 * juce::MathConstants<double>::twoPi /
+                                  48000)));
+    large->processBlock(oversized, emptyMidi);
+    check(!large->referencePresent.load() &&
+              std::isfinite(oversized.getRMSLevel(0, 0, 65536)) &&
+              oversized.getRMSLevel(0, 0, 65536) > .001f,
+          "Oversized host block read an unavailable sidechain or lost audio");
+    std::cout << "PASS: 65536-sample host block after 256-sample prepare\n";
     std::array<int, 6> banks{};
     for (int i = 0; i < presetCount; ++i)
       ++banks[size_t(workflowBank(i))];

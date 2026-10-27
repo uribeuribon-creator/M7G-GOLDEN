@@ -378,8 +378,8 @@ void M7GProcessor::processBlock(juce::AudioBuffer<float> &b,
   }
   aligner.setControls(settings);
   auto &reference = referenceScratch;
-  bool hasReference =
-      reference.getNumChannels() > 0 && reference.getRMSLevel(0, 0, n) > .0005f;
+  bool hasReference = referenceFits && referenceInput.getNumChannels() > 0 &&
+                      reference.getRMSLevel(0, 0, n) > .0005f;
   referencePresent.store(hasReference);
   if (analysisState.load() == 1 && hasReference)
     analysisReferenceSeen.store(true);
