@@ -1,0 +1,69 @@
+name: Build and publish ALIEN TUNE GOD V1
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/tune-v1.0.0/**
+      - .github/workflows/publish-tune-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build JUCE 7 VST3, test tuning, 100 presets, real ONNX and UI
+        shell: pwsh
+        run: ./Tune/Build-Windows.ps1
+      - name: Preserve native validation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Tune-V1-Windows-validation
+          path: |
+            Tune/dist/**
+            build-tune-windows/Release/*.exe
+            build-tune-windows/M7G_Tune_artefacts/Release/VST3/**
+            build-tune-windows/Testing/Temporary/*.log
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Install, preserve existing products and licence, reinstall and uninstall
+        shell: pwsh
+        run: ./Tune/Tests/InstallerSmoke.ps1
+      - name: Render actual interface and synthetic-vowel demo
+        shell: pwsh
+        run: |
+          & ./build-tune-windows/Release/TuneUI.exe "$PWD/Tune/dist/M7G-Tune-V1.png" 54
+          if ($LASTEXITCODE -ne 0) { throw 'Choir screenshot failed' }
+          & ./build-tune-windows/Release/TuneUI.exe "$PWD/Tune/dist/M7G-Tune-V1-natural.png" 0
+          if ($LASTEXITCODE -ne 0) { throw 'Natural screenshot failed' }
+          & ./build-tune-windows/Release/TuneUI.exe "$PWD/Tune/dist/M7G-Tune-V1-robot.png" 25
+          if ($LASTEXITCODE -ne 0) { throw 'Interface rendering failed' }
+          & ./build-tune-windows/Release/TuneDSP.exe --render "$PWD/Tune/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Audio demo failed' }
+          & ./build-tune-windows/Release/TuneBenchmark.exe | Tee-Object -FilePath Tune/dist/Tune-V1-performance.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Benchmark failed' }
+      - name: Publish verified Windows installer
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $name = 'M7G-ALIEN-TUNE-GOD-V1-Windows-x64.exe'
+          $exe = "Tune/dist/$name"
+          $checksum = (Get-FileHash -Algorithm SHA256 $exe).Hash.ToLower() + "  $name"
+          Set-Content -Encoding ascii "$exe.sha256" $checksum
+          gh release view tune-v1.0.0 --json tagName
+          if ($LASTEXITCODE -ne 0) {
+            gh release create tune-v1.0.0 --target $env:GITHUB_SHA --draft --prerelease --title 'M7G ALIEN TUNE GOD V1 — Afinacion / armonias / 100 presets' --notes-file release-assets/tune-v1.0.0/RELEASE_NOTES.md
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
+          }
+          gh release upload tune-v1.0.0 $exe "$exe.sha256" 'Tune/dist/M7G-Tune-V1.png' 'Tune/dist/M7G-Tune-V1-natural.png' 'Tune/dist/M7G-Tune-V1-robot.png' 'Tune/dist/M7G-Tune-V1-Demo.wav' 'Tune/dist/M7G-Tune-V1-Demo.txt' 'Tune/dist/Tune-V1-performance.txt' 'Licensing/M7G.license' 'Tune/Models/METRICS.json' --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Asset upload failed' }
+          gh release edit tune-v1.0.0 --draft=false --prerelease
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }

@@ -11,3 +11,6 @@ __pycache__/
 /JUCE7/
 /Transitions/build*/
 /Transitions/dist/
+/Tune/Dependencies/
+/Tune/dist/
+/Tune/build*/

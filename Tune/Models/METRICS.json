@@ -1,0 +1,32 @@
+{
+  "pitch": {
+    "architecture": "2x32 -> Conv1d(4,kernel=5,pad=2) tanh -> flatten -> dense12 tanh -> sigmoid",
+    "training_candidates": 12800,
+    "held_out_candidates": 3600,
+    "held_out_seed": 81991,
+    "balanced_accuracy": 0.9923582840664718
+  },
+  "profile": {
+    "architecture": "12 -> 20 tanh -> 4 linear, clamped at runtime",
+    "held_out_samples": 3000,
+    "mean_absolute_error": 0.011419716291129589,
+    "targets": [
+      "low register",
+      "high register",
+      "air/breath feature",
+      "roughness feature"
+    ],
+    "training": "Synthetic feature-policy distillation, not recorded real voices; not sex/gender/genre or anatomical-register inference."
+  },
+  "limits": [
+    "Pitch CNN scores YIN candidates; not CREPE and not polyphonic transcription.",
+    "Five tuning profiles are different DSP control curves, not five independently trained generative voice models.",
+    "Harmonies/doubles use original spectral resynthesis; not generative singers or genuine additional takes.",
+    "Synthetic held-out scores do not establish accuracy on real singers."
+  ],
+  "onnxruntime": "CPU 1.20.1, on a bounded worker thread; no inference on audio callback",
+  "sha256": {
+    "AlienVoiceProfile.onnx": "c35103ca700f8f39f3c83786b9ff1dc41e0e182d493bc4c23c7cb81cd8d12d02",
+    "AlienPitchCandidate.onnx": "cd39565666c55c8b715707b178638be8da225f96cbee1dd20fd1b1f1a7235faf"
+  }
+}
