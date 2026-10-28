@@ -6,7 +6,7 @@ $module = 'Makkine Engineer 5X - AI Vocal Tuner Evolution.vst3/Contents/x86_64-w
 $builtModule = Join-Path $PWD "build-engineer-windows/Engineer5X_artefacts/Release/VST3/$module"
 $vstRoot = Join-Path $env:CommonProgramFiles 'VST3'
 $installedModule = Join-Path $vstRoot $module
-$entry = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\M7GEngineer5X300'
+$entry = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\MakkineEngineer5X'
 # Disposable CI fixtures exercise the two previous product names.
 $legacy = @('M7G Golden Voice AI.vst3', 'MAKKINE VOICE 7.vst3', 'M7G ALIEN VOICE.vst3', 'M7G ALIEN VOICE V10 TRIPLE GOD ORIGIN.vst3', 'M7G ALIEN VOICE V11 - ALIEN INTELLIGENCE.vst3', 'M7G ALIEN TRANSITIONS GOD V1.vst3', 'M7G ALIEN TUNE GOD V1.vst3', 'WORD SCRATCHER PRO - 300.vst3')
 foreach ($name in $legacy) {
