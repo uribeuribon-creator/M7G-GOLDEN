@@ -1,0 +1,154 @@
+name: Build and publish Makkine Engineer 5X
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/engineer5x-v1.0.0/**
+      - .github/workflows/publish-engineer5x-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - name: Prepare offline source project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          if ($LASTEXITCODE -ne 0) { throw 'JUCE source clone failed' }
+          python Engineer5X/Tools/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Offline source packaging failed' }
+          Expand-Archive Engineer5X/dist/Makkine-Engineer-5X-Source.zip "$env:RUNNER_TEMP/EngineerSource"
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build and test from the exact published source archive
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP/EngineerSource/Engineer5XProject/Engineer5X/Build-Windows.ps1" -BuildRoot "$PWD"'
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-Windows-validation
+          path: |
+            build-engineer-windows/Testing/Temporary/**
+            build-engineer-windows/Release/*.exe
+            build-engineer-windows/Engineer5X_artefacts/Release/VST3/**
+          retention-days: 7
+      - name: Test install, reinstall, licence and earlier products, then uninstall
+        shell: pwsh
+        run: ./Engineer5X/Tests/InstallerSmoke.ps1
+      - name: Render actual interface and all five aligned vocal versions
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          & ./build-engineer-windows/Release/EngineerUI.exe "$PWD/Engineer5X/dist/Makkine-Engineer-5X.png"
+          if ($LASTEXITCODE -ne 0) { throw 'UI failed' }
+          & ./build-engineer-windows/Release/EngineerDSP.exe --render "$PWD/Engineer5X/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Five vocal renders and audio tests failed' }
+          Compress-Archive -Path 'build-engineer-windows/Engineer5X_artefacts/Release/VST3/*' -DestinationPath Engineer5X/dist/Makkine-Engineer-5X-Windows-VST3.zip
+          Copy-Item Licensing/M7G.license Engineer5X/dist
+          Copy-Item "$env:RUNNER_TEMP/EngineerSource/Engineer5XProject/SOURCE-MANIFEST.json" Engineer5X/dist/Makkine-Engineer-5X-Windows-source-manifest.json
+          Get-ChildItem Engineer5X/dist -File | Where-Object {$_.Name -notlike '*.sha256'} | ForEach-Object { ((Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower() + '  ' + $_.Name) | Set-Content -Encoding ascii ($_.FullName+'.sha256') }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-release-Windows
+          path: Engineer5X/dist/*
+          retention-days: 7
+  macos:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - name: Prepare and extract offline source project
+        run: |
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          python3 Engineer5X/Tools/package-source.py
+          mkdir -p "$RUNNER_TEMP/EngineerSource"
+          unzip -q Engineer5X/dist/Makkine-Engineer-5X-Source.zip -d "$RUNNER_TEMP/EngineerSource"
+      - name: Build universal AU and VST3 and run native tests from source archive
+        run: bash "$RUNNER_TEMP/EngineerSource/Engineer5XProject/Engineer5X/Build-macOS.sh" "$PWD"
+      - name: Preserve native validation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-macOS-validation
+          path: build-engineer-macos/Testing/Temporary/**
+          retention-days: 7
+      - name: Validate both architectures, install AU, run auval and remove test bundles
+        run: bash Engineer5X/Tests/MacSmoke.sh
+      - name: Package macOS bundles and native evidence
+        run: |
+          set -euo pipefail
+          ./build-engineer-macos/EngineerUI "$PWD/Engineer5X/dist/Makkine-Engineer-5X-macOS.png"
+          mkdir -p "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS"
+          cp -R 'build-engineer-macos/Engineer5X_artefacts/Release/AU/Makkine Engineer 5X - AI Vocal Tuner Evolution.component' "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/"
+          cp -R 'build-engineer-macos/Engineer5X_artefacts/Release/VST3/Makkine Engineer 5X - AI Vocal Tuner Evolution.vst3' "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/"
+          cp Engineer5X/README.md Engineer5X/COPYING Engineer5X/NOTICES.md Licensing/M7G.license "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/"
+          mkdir -p "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices"
+          cp Engineer5X/ThirdParty/rubberband/COPYING "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices/RubberBand-COPYING.txt"
+          cp JUCE7/LICENSE.md "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices/JUCE7-LICENSE.md"
+          cp Assets/Fonts/*LICENSE.txt "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices/"
+          cp JUCE7/modules/juce_audio_processors/format_types/VST3_SDK/LICENSE.txt "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices/VST3-LICENSE.txt"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS" Engineer5X/dist/Makkine-Engineer-5X-macOS-universal.zip
+          cp "$RUNNER_TEMP/EngineerSource/Engineer5XProject/SOURCE-MANIFEST.json" Engineer5X/dist/Makkine-Engineer-5X-macOS-source-manifest.json
+          rm Engineer5X/dist/Makkine-Engineer-5X-Source.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for f in Path('Engineer5X/dist').iterdir():
+              if f.is_file() and f.suffix!='.sha256':
+                  f.with_name(f.name+'.sha256').write_text(hashlib.sha256(f.read_bytes()).hexdigest()+'  '+f.name+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-release-macOS
+          path: Engineer5X/dist/*
+          retention-days: 7
+  publish:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Makkine-Engineer-5X-release-*
+          path: release-files
+          merge-multiple: true
+      - name: Verify published source, provenance and all download hashes
+        env:
+          ENGINEER_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import hashlib,json,os,zipfile
+          from pathlib import Path
+          root=Path('release-files')
+          manifest=json.loads((root/'Makkine-Engineer-5X-Windows-source-manifest.json').read_text())
+          assert manifest['source_commit']==os.environ['ENGINEER_SOURCE_SHA']
+          mac=json.loads((root/'Makkine-Engineer-5X-macOS-source-manifest.json').read_text())
+          assert mac['source_commit']==manifest['source_commit']
+          assert mac['juce']==manifest['juce'] and mac['rubberband']==manifest['rubberband']
+          for name,value in manifest['sha256'].items():
+              if name.startswith(('Engineer5X/','Source/','Assets/')): assert mac['sha256'][name]==value,name
+          with zipfile.ZipFile(root/'Makkine-Engineer-5X-Source.zip') as z:
+              assert json.loads(z.read('Engineer5XProject/SOURCE-MANIFEST.json'))==manifest
+              for name,digest in manifest['sha256'].items():
+                  assert hashlib.sha256(z.read('Engineer5XProject/'+name)).hexdigest()==digest,name
+          for checksum in root.glob('*.sha256'):
+              digest,name=checksum.read_text().strip().split('  ',1)
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest,name
+          print('PASS: exact packaged source, build commit and every published checksum')
+          PYCODE
+      - name: Publish verified Windows VST3 and macOS AU/VST3 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view engineer5x-v1.0.0 --json tagName || gh release create engineer5x-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'Makkine Engineer 5X - AI Vocal Tuner Evolution / VST3 + AU' --notes-file release-assets/engineer5x-v1.0.0/RELEASE_NOTES.md
+          gh release upload engineer5x-v1.0.0 release-files/* --clobber
+          gh release edit engineer5x-v1.0.0 --draft=false --prerelease

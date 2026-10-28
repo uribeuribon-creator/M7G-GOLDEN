@@ -16,3 +16,6 @@ __pycache__/
 /Tune/build*/
 /WordScratcher/build*/
 /WordScratcher/dist/
+
+/Engineer5X/dist/
+/Engineer5X/build*/
