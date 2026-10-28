@@ -50,6 +50,7 @@ private:
   std::map<juce::ARAAudioSource *, Reader> readers;
 };
 struct PreviewState {
+  std::atomic<const void *> controlOwner{nullptr};
   ResultStore results;
   std::atomic<bool> active{false}, raw{false}, mute{false};
   std::atomic<double> position{0}, seekTo{0};

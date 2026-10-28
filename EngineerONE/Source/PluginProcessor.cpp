@@ -65,7 +65,8 @@ one::Controller *OneProcessor::araController() const {
 void OneProcessor::stop() {
   playing.store(false);
   if (auto *c = araController())
-    c->preview.active.store(false);
+    if (c->preview.controlOwner.load() == this)
+      c->preview.active.store(false);
 }
 void OneProcessor::queue(Job next) {
   if (auto *c = araController())
@@ -135,6 +136,7 @@ void OneProcessor::play(bool raw) {
       seek(0);
     if (auto *c = araController())
       if (c->editorRenderers.load() > 0 && region) {
+        c->preview.controlOwner.store(this);
         c->preview.results.publish(p);
         c->preview.modification.store(
             region->getAudioModification<one::Modification>());
@@ -153,7 +155,7 @@ void OneProcessor::play(bool raw) {
     setMessage("Pulsa IA para crear una version afinada.");
 }
 void OneProcessor::seek(double seconds) {
-  if (auto *c = araController()) {
+  if (auto *c = araController(); c && c->preview.controlOwner.load() == this) {
     c->preview.seekTo.store(std::max(0., seconds));
     c->preview.seekSerial.fetch_add(1);
   }
@@ -333,7 +335,7 @@ void OneProcessor::run() {
   }
 }
 void OneProcessor::timerCallback() {
-  if (auto *c = araController()) {
+  if (auto *c = araController(); c && c->preview.controlOwner.load() == this) {
     c->preview.mute.store(mute.load());
     c->preview.raw.store(original.load());
     if (c->preview.active.load())
@@ -351,7 +353,7 @@ void OneProcessor::timerCallback() {
     mod->apply(ready);
   }
   results.collect();
-  if (!busy.load() && !inputSnapshot() && araAvailable()) {
+  if (!busy.load() && !inputSnapshot() && isEditorView()) {
     if (!region) {
       if (auto *renderer = getPlaybackRenderer()) {
         auto regions = renderer->getPlaybackRegions();
@@ -360,7 +362,9 @@ void OneProcessor::timerCallback() {
       }
       if (!region)
         if (auto *view = getEditorView()) {
-          const auto &regions = view->getViewSelection().getPlaybackRegions();
+          const auto &regions =
+              view->getViewSelection()
+                  .getEffectivePlaybackRegions<juce::ARAPlaybackRegion>();
           if (!regions.empty())
             attach(static_cast<juce::ARAPlaybackRegion *>(regions.front()));
         }
@@ -405,7 +409,9 @@ void OneProcessor::didUpdatePlaybackRegionProperties(
 bool OneProcessor::captureARA() {
   juce::ARAPlaybackRegion *selected = nullptr;
   if (auto *view = getEditorView()) {
-    const auto &selectedRegions = view->getViewSelection().getPlaybackRegions();
+    const auto &selectedRegions =
+        view->getViewSelection()
+            .getEffectivePlaybackRegions<juce::ARAPlaybackRegion>();
     if (!selectedRegions.empty())
       selected =
           static_cast<juce::ARAPlaybackRegion *>(selectedRegions.front());
@@ -419,7 +425,7 @@ bool OneProcessor::captureARA() {
   if (!selected) {
     setMessage(
         "Selecciona un evento en Studio One para capturarlo mediante ARA.");
-    return false;
+    return true;
   }
   attach(selected);
   auto *source = selected->getAudioModification()->getAudioSource();

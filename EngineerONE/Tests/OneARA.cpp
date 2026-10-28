@@ -250,6 +250,18 @@ int main() {
         }
         check(energy > .05, "ARA preview is silent when editor view and audio "
                             "renderer are separate instances");
+        p.play(true);
+        dispatch(250);
+        auto *shared = juce::ARADocumentControllerSpecialisation::
+            getSpecialisedDocumentController<one::Controller>(
+                p.getDocumentController());
+        check(shared->preview.raw.load(),
+              "Other ARA instances overwrite the editor A/B selection");
+        p.mute.store(true);
+        dispatch(250);
+        check(shared->preview.mute.load(),
+              "Other ARA instances overwrite preview mute");
+        p.mute.store(false);
         p.stop();
         for (int i = 0; i < 30; ++i) {
           block.clear();

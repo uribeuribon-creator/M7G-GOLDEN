@@ -4,8 +4,17 @@ on:
   push:
     branches: [main]
     paths:
+      - EngineerONE/Source/**
+      - EngineerONE/Tests/**
+      - EngineerONE/Tools/**
+      - EngineerONE/Installer/**
+      - EngineerONE/CMakeLists.txt
+      - EngineerONE/Build-Windows.ps1
       - release-assets/engineer-one-v1.0.0/**
       - .github/workflows/publish-engineer-one-release.yml
+concurrency:
+  group: engineer-one-release
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
