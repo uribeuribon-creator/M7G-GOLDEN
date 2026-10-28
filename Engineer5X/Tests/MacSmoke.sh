@@ -10,7 +10,7 @@ mkdir -p "$HOME/Library/Audio/Plug-Ins/Components" "$HOME/Library/Audio/Plug-Ins
 for engineer_bundle in "$engineer_au" "$engineer_vst"; do
  /usr/bin/codesign --force --deep --sign - "$engineer_bundle"
  /usr/bin/codesign --verify --deep --strict "$engineer_bundle"
- /usr/bin/lipo -verify_arch arm64 x86_64 "$engineer_bundle/Contents/MacOS/$engineer_name"
+ /usr/bin/lipo "$engineer_bundle/Contents/MacOS/$engineer_name" -verify_arch arm64 x86_64
 done
 cp -R "$engineer_au" "$HOME/Library/Audio/Plug-Ins/Components/"
 cp -R "$engineer_vst" "$HOME/Library/Audio/Plug-Ins/VST3/"

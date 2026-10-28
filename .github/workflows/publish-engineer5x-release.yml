@@ -78,7 +78,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Makkine-Engineer-5X-macOS-validation
-          path: build-engineer-macos/Testing/Temporary/**
+          path: |
+            build-engineer-macos/Testing/Temporary/**
+            build-engineer-macos/Engineer5X_artefacts/Release/AU/**
+            build-engineer-macos/Engineer5X_artefacts/Release/VST3/**
           retention-days: 7
       - name: Validate both architectures, install AU, run auval and remove test bundles
         run: bash Engineer5X/Tests/MacSmoke.sh
