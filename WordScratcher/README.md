@@ -2,14 +2,17 @@
 
 **300 presets · 10 categorias · Makkine Seven Golden**
 
+[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Windows-x64.exe) · [Codigo completo con dependencias](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Source.zip) · [Validacion](VALIDATION.md)
+
 Scratch real para palabras/audio, con JUCE 7.0.12 y Rubber Band 3.3.0 incluido
-en codigo fuente. VST3 Windows x64 y VST3/AU macOS universal. Proyecto independiente:
+en codigo fuente. Entrega VST3 Windows x64. Proyecto independiente:
 conserva Alien Voice, Transitions y Tune. Misma licencia global M7G incluida.
 
 ## Empezar
 
 1. Inserta el plugin en una pista vocal y elige un preset. **AUTO SCRATCH** viene
-   activado: reproduce una voz; captura y procesa fragmentos cuando terminan.
+   activado: reproduce una voz; al reunir 80 ms de una palabra nueva inicia el
+   scratch de ese audio. Al terminar y detectar la pausa captura el fragmento completo.
 2. La onda dorada es el fragmento capturado. El vinilo y su aguja representan
    la posicion real de lectura. Arrastra el disco para scratch manual.
 3. CAPTURAR guarda la ultima palabra o fragmento; SCRATCH reproduce el gesto del
@@ -60,7 +63,8 @@ feedback limitado; salida con proteccion de picos de muestra, no true-peak.
 seca, vinilo y time-stretch. A 44.1 kHz: 3968 / 89.98 ms; a 96 kHz: 8320 / 86.67 ms.
 El DAW debe compensar durante mezcla/reproduccion. No es un sistema de monitoreo
 DJ de latencia cero. Permite preroll despues de iniciar o mover la reproduccion.
-La captura automatica se oye despues del fragmento y de su pausa de deteccion;
+El primer gesto usa los primeros 80 ms de audio nuevo, mas la latencia declarada.
+El gesto del fragmento completo se oye despues de su pausa de deteccion;
 los nombres Intro/Outro/Middle se refieren al recorrido/cue, no a predecir palabras.
 
 El fader silencia el bus procesado; la voz seca puede seguir segun MEZCLA,
@@ -72,15 +76,16 @@ personales en el estado XML. Al reabrir una sesion, reproduce para recapturar.
 
 Windows 10/11 x64: cierra Studio One, ejecuta el .exe y vuelve a escanear VST3.
 Instala `WORD SCRATCHER PRO - 300.vst3` en la carpeta comun VST3.
-macOS 11+: los bundles universales incluyen AU y VST3. Copia `.component` a
+El codigo incluye objetivos AU/VST3 para compilar en macOS 11+ con SDK 14;
+no se publica un binario Mac validado en esta entrega. Copia `.component` a
 `~/Library/Audio/Plug-Ins/Components` y `.vst3` a `~/Library/Audio/Plug-Ins/VST3`.
 La licencia va en `~/Library/M7G/M7G.license`; se conserva la existente.
-Paquetes sin firma de distribuidor/notarizacion Apple; consulta las comprobaciones
-publicadas. Las firmas ad-hoc de los bundles Mac solo verifican integridad local.
+El instalador Windows no tiene firma de distribuidor. JUCE 7 fijado necesita
+un SDK Mac compatible: SDK 15 retiro una API de captura de pantalla del framework.
 
 El archivo Source.zip incluye Source, Rubber Band, JUCE 7, fuentes, licencia y
 scripts. Prerrequisitos: CMake, Python 3 para empaquetar, Git si falta JUCE, VS 2022
-C++/NSIS en Windows; Xcode C++/Ninja en Mac. Desde la raiz del proyecto:
+C++/NSIS en Windows; Xcode C++ con SDK 14/Ninja en Mac. Desde la raiz del proyecto:
 
 ```powershell
 ./WordScratcher/Build-Windows.ps1
@@ -104,7 +109,7 @@ La activacion global M7G no concede licencias de terceros ni cambia otros produc
 Pruebas de interpolacion, ring de cinco segundos, movimiento/reversa reales,
 relacion velocidad/tono de VINYL y retencion de tono DIGITAL, 300 renders distintos
 y sustanciales, fader/eco/cues, rechazo de ruido aprendido, estado/A-B/favoritos,
-latencia/bypass/rates/seek/buffers, UI real, carga VST3, instalador y AU/auval.
+latencia/bypass/rates/seek/buffers, UI real, carga VST3 e instalador Windows. AU/auval Mac pendiente.
 La publicacion incluye capturas, CPU medida, checksum y demos de senal vocal y
 habla sinteticas, claramente identificadas: no son grabaciones de cantantes.
 Escucha con grabaciones del usuario y prueba directa en Studio One quedan

@@ -74,6 +74,47 @@ void digitalPitch() {
   std::cout << "PASS: real forward/reverse speed-following VINYL and Rubber "
                "Band pitch-preserving DIGITAL\n";
 }
+void incomingWords() {
+  for (bool digital : {false, true}) {
+    auto e = std::make_unique<scratch::VinylEngine>();
+    e->prepare(48000);
+    auto p = scratch::defaults();
+    p[scratch::VinylMode] = digital ? 0.f : 1.f;
+    p[scratch::VinylNoise] = p[scratch::Crackle] = 0;
+    p[scratch::Intelligent] = 0;
+    e->controls(p);
+    int first = -1, second = -1, beforeSecond = 0;
+    double withinWordDifference = 0;
+    for (int i = 0; i < 110000; ++i) {
+      double t = i / 48000.;
+      if (i == 80000)
+        beforeSecond = e->serial;
+      float x = scratchVoice(t);
+      auto y = e->process(x, x);
+      if (first < 0 && e->serial > 0)
+        first = i;
+      if (i >= 81600 && second < 0 && e->serial > beforeSecond) {
+        second = i;
+        requireScratch(e->wordSize() < 6000,
+                       "New onset recycled the previous complete word");
+      }
+      if (t > .32 && t < .65) {
+        float dry = scratchVoice((i - scratch::VinylEngine::latencyFor(48000)) /
+                                 48000.);
+        withinWordDifference += std::pow(y[0] - dry, 2);
+      }
+    }
+    std::cout << "ONSET mode=" << (digital ? "DIGITAL" : "VINYL")
+              << " first_ms=" << first / 48. << " second_ms=" << second / 48.
+              << " within_word_difference=" << withinWordDifference << "\n";
+    requireScratch(first >= 0 && first < 12000 && second >= 81600 &&
+                       second < 88000 && withinWordDifference > .05 &&
+                       e->digital.underflows == 0,
+                   "Fresh-word onset did not start a real audible scratch");
+  }
+  std::cout
+      << "PASS: both modes scratch each incoming new word before its end\n";
+}
 void presets() {
   scratch::PresetManager manager;
   requireScratch(manager.presets.size() == 300, "Factory bank is not 300");
@@ -371,6 +412,7 @@ int main(int argc, char **argv) {
     }
     memoryAndMotion();
     digitalPitch();
+    incomingWords();
     faderAndLearning();
     stateAndSafety();
     if (argc != 2 || juce::String(argv[1]) != "--core")

@@ -54,6 +54,7 @@ public:
     words = 0;
     serial = 0;
     lastStart = lastEnd = -1;
+    onsetCaptured = false;
     frameBegin = frameMovement = 0;
     frameSnapshot = -1;
     oldSnapshot = -1;
@@ -117,7 +118,17 @@ public:
     auto event = detector.process(l, r, now);
     if (event.start) {
       lastStart = event.first;
+      onsetCaptured = false;
       ++words;
+    }
+    // Start with the NEW word's own first 80 ms, never a recycled old word.
+    // The full fragment replaces this preview after its detected end/pause.
+    if (detector.active() && !onsetCaptured &&
+        now - detector.firstSample() >= int64_t(rate * .080)) {
+      onsetCaptured = true;
+      if (p[AutoScratch] > .5f && p[Touch] < .5f && manualTTL <= 0 &&
+          capture(detector.firstSample(), now))
+        startAuto();
     }
     if (event.end) {
       lastStart = event.first;
@@ -571,7 +582,8 @@ private:
   int tick = 0, fill = 0, activeSnapshot = 0, oldSnapshot = -1, crossfade = 0,
       lastChop = -1, manualTTL = 0, cueNow = -1, frameSnapshot = -1,
       metaPosition = 0, echoWrite = 0, sampleHold = 0;
-  bool automatic = false, captureNow = false, playNow = false;
+  bool automatic = false, captureNow = false, playNow = false,
+       onsetCaptured = false;
   int64_t lastStart = -1, lastEnd = -1;
   uint32_t noiseSeed = 0x71c30a5d;
   AudioRing ring;

@@ -1,4 +1,20 @@
-# M7G — plugins vocales para Windows
+# M7G — plugins de voz y efectos
+
+## WORD SCRATCHER PRO - 300 — scratch real de palabras
+
+[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Windows-x64.exe) · [Proyecto completo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Source.zip)
+
+300 presets en diez categorías, captura real de cinco segundos, física de vinilo,
+reversa, ocho cues y crossfader. VINYL sigue la velocidad; DIGITAL conserva el
+tono con Rubber Band incluido. Captura automática, aprendizaje de ruido y ducking
+inteligente. Producto independiente con la licencia global M7G.
+
+[Manual](WordScratcher/README.md) · [Validación](WordScratcher/VALIDATION.md) · [Demos, capturas y checksums](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/word-scratcher-v1.0.0)
+
+**88 ms a 48 kHz**: para mezcla/reproducción con compensación del DAW.
+Evaluación directa en Studio One 7 y escucha con grabaciones reales pendientes.
+Código completo GPLv3-o-posterior con JUCE 7 y Rubber Band; paquetes sin firma
+de distribuidor.
 
 ## M7G ALIEN TUNE GOD V1 — afinación y armonías
 

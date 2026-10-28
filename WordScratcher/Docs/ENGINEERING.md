@@ -42,8 +42,9 @@ Source/binary distribution uses the GPLv3-or-later path; proprietary closed-sour
 distribution requires appropriate commercial licences. Existing products' code
 licensing is not changed. Include framework/dependency provenance and source.
 
-Native Windows tests/load/install/reinstall/coexistence/uninstall; native macOS
-universal VST3/AU build, CTest and auval. Publish source package, installers/bundles,
+Native Windows tests/load/install/reinstall/coexistence/uninstall. Mac universal
+VST3/AU targets are source-only here, requiring JUCE 7-compatible SDK 14; native
+CTest/auval remains a separate gate before any Mac release. Publish source package and Windows installer,
 actual screenshots, synthetic-audio demonstration, checksum and CPU measurements.
 Actual Studio One operation and listening on real users' recordings require
 separate evaluation. No unsupported comparative sonic superiority claim.
