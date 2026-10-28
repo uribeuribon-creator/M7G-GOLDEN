@@ -1,5 +1,7 @@
 # Makkine Engineer 5X - AI Vocal Tuner Evolution
 
+[Instalador Windows](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Windows-x64.exe) · [Mac AU/VST3](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-macOS-universal.zip) · [Código completo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Source.zip) · [Demos y captura](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/engineer5x-v1.0.0) · [Validación](VALIDATION.md)
+
 Ingenieria de afinacion vocal por archivo, JUCE 7/C++20. Cinco renders naturales
 de una misma toma monofonica, con Rubber Band R3 y preservacion de formantes.
 Proyecto independiente, sin modulo de scratch. VST3 Windows x64 y objetivos AU/
@@ -79,9 +81,13 @@ y reescanea VST3. El instalador conserva los demas productos y la licencia M7G.
 El instalador no tiene firma de distribuidor.
 
 Mac: CMake/Ninja, Python 3 y Xcode; `bash Engineer5X/Build-macOS.sh` construye AU y
-VST3 arm64/x86_64. Una copia de JUCE en el build recibe el parche incluido para
+VST3 arm64/x86_64. Los binarios publicados pasaron pruebas nativas Intel; la
+seccion ARM se compilo y verifico, sin ejecucion directa en Apple Silicon.
+Una copia de JUCE en el build recibe el parche incluido para
 SDK 15+, sin modificar el framework fijado ni su DSP. Copia bundles a las carpetas
-de usuario Audio/Plug-Ins/Components y Audio/Plug-Ins/VST3. Licencia en
+`/Library/Audio/Plug-Ins/Components` para AU (ruta validada) y
+`/Library/Audio/Plug-Ins/VST3` para VST3; Finder puede pedir permiso de administrador.
+Reabre el DAW y reescanea los plugins. Licencia en
 `~/Library/M7G/M7G.license`. Firmas ad-hoc no son notarizacion Apple.
 
 El Source.zip completo incluye JUCE, Rubber Band, fuentes, scripts y pruebas.

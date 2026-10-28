@@ -1,5 +1,22 @@
 # M7G — plugins de voz y efectos
 
+## Makkine Engineer 5X — AI Vocal Tuner Evolution
+
+[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Windows-x64.exe) · [VST3 portable Windows](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Windows-VST3.zip) · [AU/VST3 Mac universal](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-macOS-universal.zip) · [Código completo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Source.zip)
+
+Carga una vocal y genera cinco versiones: CENTERED, NATURAL DRIFT, PHRASE LEAD,
+VIBRATO KEEPER y TRANSIENT SAFE. Cinco columnas con pitch original gris y resultado
+medido en color, escucha/solo/mute y drag WAV. JUCE 7, YIN adaptativo y Rubber Band
+R3 con formantes. Procesamiento local por archivo, independiente de los demás plugins.
+Tres suites Windows, dos Mac, instalador y auval aprobados; descargas verificadas.
+
+Los WAV float32 conservan duración, silencios, frecuencia/canales y origen BWF
+cuando existe. Colócalos en el mismo inicio del evento original. No corrige en vivo
+la entrada del DAW; esa entrada pasa sin cambios cuando no escuchas un render.
+Escucha con voces reales y prueba directa en Studio One 7 pendientes.
+
+[Manual](Engineer5X/README.md) · [Validación](Engineer5X/VALIDATION.md) · [Demos y captura real](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/engineer5x-v1.0.0)
+
 ## WORD SCRATCHER PRO - 300 — scratch real de palabras
 
 [Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Windows-x64.exe) · [Proyecto completo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Source.zip)
