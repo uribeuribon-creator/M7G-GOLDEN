@@ -10,7 +10,8 @@ def add_tree(folder,prefix):
  for p in folder.rglob('*'):
   if not p.is_file():continue
   rel=p.relative_to(folder)
-  if any(x in {'.git','.vs','dist','__pycache__','.DS_Store','html_docs','ARA_Examples','Debug','Release','x64','ipch'} or x.startswith('build-') for x in rel.parts):continue
+  if any(x in {'.git','.vs','dist','__pycache__','.DS_Store','html_docs','ARA_Examples'} or x.startswith('build-') for x in rel.parts):continue
+  if 'Builds' in rel.parts and any(x in {'Debug','Release','x64','ipch'} for x in rel.parts):continue
   if p.suffix in {'.exe','.dll','.pdb','.obj','.lib','.ilk','.tlog','.lastbuildstate'}:continue
   files[str(Path(prefix)/rel).replace('\\','/')]=p.read_bytes()
 add_tree(product,'M7G_FreshVocalPro');add_tree(product/'ThirdParty/ARA_SDK','M7G_FreshVocalPro/ThirdParty/ARA_SDK');add_tree(root/'JUCE7','JUCE7')
@@ -24,5 +25,7 @@ with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
 with zipfile.ZipFile(out) as z:
  for name,digest in manifest['sha256'].items():assert hashlib.sha256(z.read('FreshVocalProject/'+name)).hexdigest()==digest
  assert 'FreshVocalProject/M7G_FreshVocalPro/Builds/VisualStudio2022/M7G Fresh Vocal Pro Beast.sln' in z.namelist()
+ assert 'FreshVocalProject/M7G_FreshVocalPro/ThirdParty/ARA_SDK/ARA_Library/Debug/ARADebug.h' in z.namelist()
+ assert 'FreshVocalProject/M7G_FreshVocalPro/ThirdParty/ARA_SDK/ARA_Library/Debug/ARADebug.cpp' in z.namelist()
  assert not any(n.endswith('.pem') or '/.git/' in n for n in z.namelist())
 print('PASS: source package',len(files),'files;',out.stat().st_size,'bytes;',out)
