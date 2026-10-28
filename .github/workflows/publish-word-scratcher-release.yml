@@ -63,7 +63,7 @@ jobs:
           path: WordScratcher/dist/*
           retention-days: 7
   macos:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 45
     steps:
       - run: git config --global core.autocrlf false
