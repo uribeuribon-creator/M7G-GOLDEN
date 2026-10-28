@@ -24,7 +24,7 @@ int main(int argc,char** argv){
   auto factory=reinterpret_cast<AudioComponentFactoryFunction>(CFBundleGetFunctionPointerForName(bundle,CFSTR("Makkine_Engineer_5X___AI_Vocal_Tuner_EvolutionAUFactory")));
   if(!factory){std::puts("FAIL: missing exported AU factory");return 4;}
   AudioComponentDescription description{'aufx','E5x1','M7G7',0,0};
-  auto component=AudioComponentRegister(factory,&description,CFSTR("M7G: Makkine Engineer 5X"),0x10000);
+  auto component=AudioComponentRegister(&description,CFSTR("M7G: Makkine Engineer 5X"),0x10000,factory);
   if(!component){std::puts("FAIL: direct AU factory registration");return 5;}
   AudioUnit unit=nullptr;if(!ok(AudioComponentInstanceNew(component,&unit),"instantiate"))return 6;
   AudioStreamBasicDescription format{};format.mSampleRate=48000;format.mFormatID=kAudioFormatLinearPCM;format.mFormatFlags=kAudioFormatFlagIsFloat|kAudioFormatFlagIsPacked|kAudioFormatFlagIsNonInterleaved;format.mBytesPerPacket=format.mBytesPerFrame=4;format.mFramesPerPacket=1;format.mChannelsPerFrame=2;format.mBitsPerChannel=32;
