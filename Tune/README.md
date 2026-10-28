@@ -2,6 +2,8 @@
 
 **V1 TUNE GOD · 100 presets · Makkine Seven Golden**
 
+[Descargar instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/tune-v1.0.0/M7G-ALIEN-TUNE-GOD-V1-Windows-x64.exe) · [Validación y CPU](VALIDATION.md) · [Capturas y demo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/tune-v1.0.0)
+
 Plugin VST3 Windows x64 independiente para afinacion monofonica, efecto robot,
 cuatro armonias y dos dobles derivados de la toma principal. JUCE 7.0.12 / C++20,
 ONNX Runtime 1.20.1 CPU local. Conserva Alien Voice y Alien Transitions.

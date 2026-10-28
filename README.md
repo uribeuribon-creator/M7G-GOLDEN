@@ -1,5 +1,15 @@
 # M7G — plugins vocales para Windows
 
+## M7G ALIEN TUNE GOD V1 — afinación y armonías
+
+[Descargar instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/tune-v1.0.0/M7G-ALIEN-TUNE-GOD-V1-Windows-x64.exe) · [Manual](Tune/README.md) · [Validación y CPU](Tune/VALIDATION.md)
+
+Producto independiente: corrección natural/robot, cuatro armonías, dos dobles
+derivados de la toma, efectos por voz y 100 presets. ONNX local y licencia global.
+Pruebas nativas e instalador aprobados; descarga y SHA-256 verificados. A 48 kHz,
+Estudio 42.67 ms / Monitor 10.67 ms; no afinación de latencia cero. Objetivos de
+CPU en portátil, escucha con cantantes reales y Studio One 7 pendientes.
+
 ## M7G ALIEN TRANSITIONS GOD V1 — 150 FX
 
 [Descargar instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/transitions-v1.0.0/M7G-ALIEN-TRANSITIONS-GOD-V1-Windows-x64.exe) · [Manual](Transitions/README.md) · [Validación](Transitions/VALIDATION.md)
