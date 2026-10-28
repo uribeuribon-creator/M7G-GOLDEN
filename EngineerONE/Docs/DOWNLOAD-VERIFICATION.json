@@ -1,0 +1,192 @@
+{
+  "release": "engineer-one-v1.0.0",
+  "source_commit": "f06031358ce1d3ff99650dd60e2a2cce7d196a87",
+  "source_files": 3825,
+  "assets": [
+    {
+      "name": "M7G.license",
+      "status": 200,
+      "attachment": true,
+      "bytes": 688,
+      "sha256": "c8f26383007429efbba77d67558b7488697082c373f91f4b4b5a95b84b5abf9b"
+    },
+    {
+      "name": "M7G.license.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 79,
+      "sha256": "b231413d642be8814704cb61e5027352f1e29734ac17b814d99341db76492abf"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-LEEME.md",
+      "status": 200,
+      "attachment": true,
+      "bytes": 5596,
+      "sha256": "0dcd7e2826d0c13a59af625e7307625a946f3426c593f24d3b17e4765285db63"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-LEEME.md.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 97,
+      "sha256": "533bb47ebb700fac367ca8c2bfffec3033b06070d7ca0a1c3e04015a2169354e"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-source-manifest.json",
+      "status": 200,
+      "attachment": true,
+      "bytes": 545217,
+      "sha256": "a14942a2843d3658a0a1ecbd902a8d8313756644155f5be5766f4b774ff455ca"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-source-manifest.json.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 109,
+      "sha256": "5cf1efffb3ec8aa7823d89f83e08295526ac33c1d30729f26b42064d021e338e"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Studio-One-Edition-Source.zip",
+      "status": 200,
+      "attachment": true,
+      "bytes": 25727086,
+      "sha256": "4cb98f5a90959d8e2dc7da80394ecdaf9a14fea3d3ca954c484096435d0da066"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Studio-One-Edition-Source.zip.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 118,
+      "sha256": "d958c07e1ddd4e8a902532d1a1f99c7966747a0a786d247ae02dcc5256b70fda"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Studio-One-Edition-Windows-x64.exe",
+      "status": 200,
+      "attachment": true,
+      "bytes": 2529987,
+      "sha256": "669a9f0fa10c9d7d5d89c1175b52fb2d90b2129dd459ad99ad8e1be151112365"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Studio-One-Edition-Windows-x64.exe.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 123,
+      "sha256": "0309040582b734bab016a839412905f19c18360142a228bd18ffedc166494491"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Windows-VST3.zip",
+      "status": 200,
+      "attachment": true,
+      "bytes": 3249246,
+      "sha256": "93de5650a10e0298bb4264ea3c7f264c0d818e198bb3bc205196e09a0e726bce"
+    },
+    {
+      "name": "Makkine-Engineer-ONE-Windows-VST3.zip.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 105,
+      "sha256": "800e02b4fa9478b1f83650f91e289ec4d39fec229e168df179298a5618b515ed"
+    },
+    {
+      "name": "Makkine-Engineer-ONE.png",
+      "status": 200,
+      "attachment": true,
+      "bytes": 160059,
+      "sha256": "2ffbe7a22f8e8ae38c208b238264c5b67d082c7bfeb0f328f63c721d2542e52b"
+    },
+    {
+      "name": "Makkine-Engineer-ONE.png.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 92,
+      "sha256": "b4fc6e1358d02e3868a9cbb836e62389f3f582b1520bd1d549631eb2bf076b1e"
+    },
+    {
+      "name": "Makkine-ONE-Demo-IA-1.wav",
+      "status": 200,
+      "attachment": true,
+      "bytes": 1815184,
+      "sha256": "1f8481aa7cbf9d847010521d6e48c5c4ba3b95392aea5e936b95500b921b2c8f"
+    },
+    {
+      "name": "Makkine-ONE-Demo-IA-1.wav.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 93,
+      "sha256": "8f3e28361c7445393e08123af2c867acb0a52c48b7de9dcc027389d92f2eba1c"
+    },
+    {
+      "name": "Makkine-ONE-Demo-IA-2.wav",
+      "status": 200,
+      "attachment": true,
+      "bytes": 1815184,
+      "sha256": "28bc986af0f5c9f3c251258bbf38faa6e03f24acfb2e4e9fb669b50a23cbdee5"
+    },
+    {
+      "name": "Makkine-ONE-Demo-IA-2.wav.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 93,
+      "sha256": "82b582fd07f640ee806ed0bad4b53ad220d15323bb359d0f94a0a4264c6c0a27"
+    },
+    {
+      "name": "Makkine-ONE-Demo-Original.wav",
+      "status": 200,
+      "attachment": true,
+      "bytes": 1815184,
+      "sha256": "5af7698c71d0eab6e75e7800083add09b66c615817279ed8c5cbecdcdb8e4680"
+    },
+    {
+      "name": "Makkine-ONE-Demo-Original.wav.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 97,
+      "sha256": "1a3d65a6796c0d741549b126382ac98c40238750fb6c953d60589cf4cbacdb6f"
+    },
+    {
+      "name": "Makkine-ONE-native-ARA-validation.txt",
+      "status": 200,
+      "attachment": true,
+      "bytes": 170,
+      "sha256": "5cbd904ac69540d65a67a5360175f550df8651931c4b3aa0b5f9d8dd35cff4de"
+    },
+    {
+      "name": "Makkine-ONE-native-ARA-validation.txt.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 105,
+      "sha256": "63ea382ca4c42afbb9e08786f75ce98b87cb5c8c7e0552888cb758dc97df626d"
+    },
+    {
+      "name": "Makkine-ONE-native-audio-validation.txt",
+      "status": 200,
+      "attachment": true,
+      "bytes": 626,
+      "sha256": "ccfaa8883b0e2481391bd9920eb1ef0cde17998771d993507f50bc754b6cfa3d"
+    },
+    {
+      "name": "Makkine-ONE-native-audio-validation.txt.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 107,
+      "sha256": "44fbdfe2d8e04b0caea31da86560c2355854ce8493918827f58cfc5280d3b5c3"
+    },
+    {
+      "name": "Makkine-ONE-native-CTest.log",
+      "status": 200,
+      "attachment": true,
+      "bytes": 3953,
+      "sha256": "74f3a8a1856673129373f60191e74d43bb6f8a604c02ddb11b96f2697049530e"
+    },
+    {
+      "name": "Makkine-ONE-native-CTest.log.sha256",
+      "status": 200,
+      "attachment": true,
+      "bytes": 96,
+      "sha256": "7ad6e26e22ba0b5b582fd595cefe29efcbbf58b27d46ca2a617b3fdb3752ce52"
+    }
+  ],
+  "native_run": "https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40755943084",
+  "native_result": "success",
+  "payload": "AMD64 PE VST3"
+}

@@ -15,6 +15,15 @@ Windows x64 VST3 + ARA 2.2.0, JUCE 7.0.12, Rubber Band 3.3.0. All test expectati
 - Real JUCE GUI: IA button triggers automatic generation, preview is audible, line WAV exists for native drag, optional editor hidden by default, controls stay inside resized bounds.
 - Real ARA API factory/document/roles connected to test host: assigned region capture, project key signature, automatic application to existing modification, sample-aligned playback at nonzero timeline position, archive/restore of original and corrected PCM without external files. Separate editor-view and editor-renderer instances share preview audio/control.
 
+## Native Windows result — passed
+
+Release source/tag commit: `f06031358ce1d3ff99650dd60e2a2cce7d196a87`.
+[Native Windows build and publish run](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40755943084): **success**. Four CTest suites passed; installer, reinstall, preservation of earlier products/global licence, installed VST3 loading and uninstall passed. The published binary was built from the exact full source archive.
+
+All 26 public assets returned HTTP 200 as attachments. All SHA-256 files and all corresponding-source entries matched. The portable VST3 payload is AMD64 PE; the NSIS installer bootstrap is a normal executable. Installer SHA-256: `669a9f0fa10c9d7d5d89c1175b52fb2d90b2129dd459ad99ad8e1be151112365`.
+
+[Public download verification](Docs/DOWNLOAD-VERIFICATION.json) records the download names, lengths, hashes and source provenance. Native CTest/audio/ARA logs and the actual native UI screenshot accompany the release.
+
 ## Native Windows release gate
 
 `publish-engineer-one-release.yml` compiles from the exact full Source.zip on Windows 2022 / Visual Studio, runs four CTest suites (DSP/capture/state, UI, ARA integration/archive, real VST3 factory/load/process), verifies the payload is AMD64, tests install/reinstall/global-licence preservation/earlier products/uninstall, and publishes only after every job succeeds. Native logs, screenshot, demo WAVs, source manifest and per-asset SHA-256 accompany the release.
