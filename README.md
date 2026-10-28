@@ -8,6 +8,7 @@
 reversa, ocho cues y crossfader. VINYL sigue la velocidad; DIGITAL conserva el
 tono con Rubber Band incluido. Captura automática, aprendizaje de ruido y ducking
 inteligente. Producto independiente con la licencia global M7G.
+Tres suites nativas e instalación/reinstalación/desinstalación aprobadas en Windows.
 
 [Manual](WordScratcher/README.md) · [Validación](WordScratcher/VALIDATION.md) · [Demos, capturas y checksums](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/word-scratcher-v1.0.0)
 

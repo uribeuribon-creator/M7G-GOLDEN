@@ -1,8 +1,51 @@
 # WORD SCRATCHER PRO - 300 — validación
 
-Código de producto: `c76cb404ec3464467c9a09088ca42fd7344105a4`.
+Código de producto: `94d105295290c9a801a64a140a89eed684a72129`.
 JUCE 7.0.12: `4f43011b96eb0636104cb3e433894cda98243626`.
 Rubber Band 3.3.0: `2be46b0dffb13273a67396c77bc9278736bb03d2`.
+
+[Descarga Windows VST3](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/WORD-SCRATCHER-PRO-300-Windows-x64.exe) · [Release y evidencia](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/word-scratcher-v1.0.0) · [Ejecución nativa](https://github.com/uribeuribon-creator/M7G-GOLDEN/actions/runs/40717820413)
+
+## Resultado nativo Windows
+
+El build MSVC x64 y la publicación finalizaron correctamente el 28 de octubre
+de 2026. **Tres suites aprobadas, cero fallos**: ScratchAudio, ScratchInterface
+y ScratchVST3. El host de prueba reconoció el nombre, la identidad independiente,
+los buses estéreo y el procesamiento del VST3.
+
+Instalación, reinstalación, conservación de licencia y productos anteriores,
+carga del VST3 instalado y desinstalación aprobadas en Windows. El instalador
+incluye el bundle VST3 AMD64; su ejecutable NSIS de arranque puede ser PE32.
+
+El inicio de captura del ensayo fue 194.5 ms para una palabra que empieza a
+120 ms, y 1774.5 ms para la que empieza a 1700 ms, en ambos modos. El preroll del
+detector explica esa diferencia; la salida añade la compensación declarada.
+La diferencia de audio dentro de la primera palabra fue medible sin ruido/polvo:
+238.993 VINYL / 141.34 DIGITAL en la métrica de energía del ensayo.
+
+SHA-256 del instalador publicado:
+`c03d913c8277ff8f4babd932aa8d1dc0402701f7a0b6aab22c3c8190868165a6`.
+
+Las 22 descargas públicas respondieron HTTP 200 como archivos adjuntos. Todos
+los hashes publicados coincidieron con los archivos descargados y los digests
+de GitHub. El ZIP Source contiene 3784 entradas: se verificaron todos los hashes
+de su manifiesto y su correspondencia con el commit construido. Incluye JUCE y
+Rubber Band; no incluye claves privadas ni un proyecto de afinador.
+
+## Rendimiento observado
+
+Runner Windows, cuatro CPU lógicas, una instancia, editor cerrado, 48 kHz,
+bloques de 256 muestras y cuatro segundos por caso. Tiempo de callback respecto
+al audio reproducido; no porcentaje total del sistema ni garantía para portátiles.
+
+| Modo | Entrada | Tiempo de callback/audio | Peor callback | Subdesbordamientos |
+| --- | --- | ---: | ---: | ---: |
+| VINYL | Silencio | 3.77% | 0.390 ms | 0 |
+| VINYL | Vocal sintética | 5.77% | 0.893 ms | 0 |
+| DIGITAL | Silencio | 3.77% | 0.359 ms | 0 |
+| DIGITAL | Vocal sintética | 7.50% | 1.035 ms | 0 |
+
+[Medición original](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/word-scratcher-v1.0.0/Word-Scratcher-300-Windows-performance.txt).
 
 ## DSP verificado
 
@@ -37,8 +80,9 @@ Las pruebas procesan audio, además de comprobar parámetros y nombres:
 | 48 kHz | 4224 | 88 ms |
 | 96 kHz | 8320 | 86.67 ms |
 
-Ambos modos comparten la compensación de latencia. La detección automática espera
-el final del fragmento y su pausa: no anticipa palabras. Se recomienda mezcla o
+Ambos modos comparten la compensación de latencia. El primer gesto usa los primeros
+80 ms capturados de la palabra nueva; el gesto completo espera su final y pausa.
+No anticipa audio que aún no ha entrado. Se recomienda mezcla o
 reproducción con compensación del DAW; no monitoreo DJ de latencia cero.
 
 ## Fuente y distribución
