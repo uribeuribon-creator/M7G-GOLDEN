@@ -1,0 +1,122 @@
+name: Build and publish M7G Fresh Vocal Pro Beast
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - M7G_FreshVocalPro/Source/**
+      - M7G_FreshVocalPro/Tests/**
+      - M7G_FreshVocalPro/Tools/**
+      - M7G_FreshVocalPro/Installer/**
+      - M7G_FreshVocalPro/Assets/**
+      - M7G_FreshVocalPro/*.jucer
+      - M7G_FreshVocalPro/CMakeLists.txt
+      - M7G_FreshVocalPro/Build-Windows.ps1
+      - release-assets/fresh-vocal-pro-v1.0.0/**
+      - .github/workflows/publish-fresh-vocal-release.yml
+concurrency:
+  group: fresh-vocal-release
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 55
+    env:
+      M7G_DISABLE_OPENGL: '1'
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - uses: microsoft/setup-msbuild@v2
+      - name: Prepare official JUCE and ARA sources and export the jucer project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          if ($LASTEXITCODE -ne 0) { throw 'JUCE clone failed' }
+          git clone --depth 1 --branch releases/2.2.0 --recurse-submodules --shallow-submodules https://github.com/Celemony/ARA_SDK.git M7G_FreshVocalPro/ThirdParty/ARA_SDK
+          if ($LASTEXITCODE -ne 0) { throw 'ARA clone failed' }
+          python M7G_FreshVocalPro/Tools/prepare-projucer.py
+          if ($LASTEXITCODE -ne 0) { throw 'Projucer export validation failed' }
+          python M7G_FreshVocalPro/Tools/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Source package failed' }
+          Expand-Archive M7G_FreshVocalPro/dist/M7G-Fresh-Vocal-Pro-Beast-Source.zip "$env:RUNNER_TEMP/FreshSource"
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build CMake and actual Projucer solution and run tests from exact source archive
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP/FreshSource/FreshVocalProject/M7G_FreshVocalPro/Build-Windows.ps1" -BuildRoot "$PWD" -AlsoBuildProjucer'
+      - name: Preserve native validation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Fresh-Vocal-Pro-Windows-validation
+          path: |
+            build-fresh-windows/Testing/Temporary/**
+            build-fresh-windows/Release/*.exe
+            build-fresh-windows/FreshVocal_artefacts/Release/VST3/**
+          retention-days: 7
+      - name: Validate installer, reinstall, legacy coexistence, licence and uninstall
+        shell: pwsh
+        run: ./M7G_FreshVocalPro/Tests/InstallerSmoke.ps1
+      - name: Render actual GUI views and audio evidence
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          & ./build-fresh-windows/Release/FreshUI.exe "$PWD/M7G_FreshVocalPro/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Native interface validation failed' }
+          & ./build-fresh-windows/Release/FreshDSP.exe --render "$PWD/M7G_FreshVocalPro/dist" | Tee-Object M7G_FreshVocalPro/dist/Fresh-native-audio-validation.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Native DSP validation failed' }
+          & ./build-fresh-windows/Release/FreshARA.exe | Tee-Object M7G_FreshVocalPro/dist/Fresh-native-ARA-validation.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Native ARA validation failed' }
+          Compress-Archive -Path 'build-fresh-windows/FreshVocal_artefacts/Release/VST3/*' -DestinationPath M7G_FreshVocalPro/dist/M7G-Fresh-Vocal-Pro-Beast-Windows-VST3.zip
+          Copy-Item Licensing/M7G.license M7G_FreshVocalPro/dist
+          Copy-Item M7G_FreshVocalPro/README.md M7G_FreshVocalPro/dist/M7G-Fresh-Vocal-Pro-LEEME.md
+          Copy-Item build-fresh-windows/Testing/Temporary/LastTest.log M7G_FreshVocalPro/dist/Fresh-native-CTest.log
+          Copy-Item "$env:RUNNER_TEMP/FreshSource/FreshVocalProject/SOURCE-MANIFEST.json" M7G_FreshVocalPro/dist/Fresh-source-manifest.json
+          Get-ChildItem M7G_FreshVocalPro/dist -File | Where-Object {$_.Name -notlike '*.sha256'} | ForEach-Object { ((Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower() + '  ' + $_.Name) | Set-Content -Encoding ascii ($_.FullName+'.sha256') }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Fresh-Vocal-Pro-release-Windows
+          path: M7G_FreshVocalPro/dist/*
+          retention-days: 7
+  publish:
+    needs: windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: M7G-Fresh-Vocal-Pro-release-Windows
+          path: release-files
+      - name: Verify published sources and every checksum
+        env:
+          FRESH_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import hashlib,json,os,zipfile
+          from pathlib import Path
+          root=Path('release-files')
+          manifest=json.loads((root/'Fresh-source-manifest.json').read_text())
+          assert manifest['source_commit']==os.environ['FRESH_SOURCE_SHA']
+          with zipfile.ZipFile(root/'M7G-Fresh-Vocal-Pro-Beast-Source.zip') as z:
+              assert json.loads(z.read('FreshVocalProject/SOURCE-MANIFEST.json'))==manifest
+              for name,digest in manifest['sha256'].items():
+                  assert hashlib.sha256(z.read('FreshVocalProject/'+name)).hexdigest()==digest,name
+              assert any(n.endswith('M7G_FreshVocalPro.jucer') for n in z.namelist())
+              assert any(n.endswith('M7G Fresh Vocal Pro Beast.sln') for n in z.namelist())
+              assert not any('/.git/' in n or n.endswith('.pem') for n in z.namelist())
+          for checksum in root.glob('*.sha256'):
+              digest,name=checksum.read_text().strip().split('  ',1)
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest,name
+          print('PASS: exact full source, Projucer project and all asset hashes')
+          PYCODE
+      - name: Publish tested Windows VST3 ARA release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view fresh-vocal-pro-v1.0.0 --json tagName || gh release create fresh-vocal-pro-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'M7G Fresh Vocal Pro Beast / Windows VST3 + ARA' --notes-file release-assets/fresh-vocal-pro-v1.0.0/RELEASE_NOTES.md
+          gh release upload fresh-vocal-pro-v1.0.0 release-files/* --clobber
+          gh release edit fresh-vocal-pro-v1.0.0 --draft=false --prerelease

@@ -1,5 +1,19 @@
 # M7G — plugins de voz y efectos
 
+## M7G Fresh Vocal Pro Beast — mezcla vocal / VST3 + ARA
+
+[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Windows-x64.exe) · [VST3 portable](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Windows-VST3.zip) · [Proyecto completo con .jucer](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Source.zip)
+
+Dynamics, EQ de ocho bandas, saturación 4× y espacio paralelo con reverb/delay y
+ducking. 35 presets, tres vistas, A/B, XML, undo/redo y orden de módulos arrastrable
+en Expert. JUCE 7, C++17, OpenGL y ARA con parámetros por evento. Plugin de mezcla;
+el preset **IA Control Vocal** utiliza el DSP automático y no incluye afinación.
+
+[Manual](M7G_FreshVocalPro/README.md) · [Validación](M7G_FreshVocalPro/VALIDATION.md) · [Release, capturas y demos](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/fresh-vocal-pro-v1.0.0)
+
+La apariencia sigue el texto; faltan las fotos y el video para cotejarla exactamente.
+Prueba directa de Studio One 7/GPU pendiente. Los productos anteriores se conservan.
+
 ## Makkine Engineer ONE — Studio One Edition / VST3 + ARA
 
 [Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Studio-One-Edition-Windows-x64.exe) · [VST3 portable](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Windows-VST3.zip) · [Fuente completa](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Studio-One-Edition-Source.zip)

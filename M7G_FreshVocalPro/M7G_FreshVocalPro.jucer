@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<JUCERPROJECT id="M7GFrB01" name="M7G Fresh Vocal Pro Beast" projectType="audioplug" version="1.0.0" bundleIdentifier="com.m7g.freshvocalpro" companyName="M7G Audio" companyCopyright="M7G Audio" pluginName="M7G Fresh Vocal Pro Beast" pluginManufacturer="M7G Audio" pluginManufacturerCode="M7G7" pluginCode="FrB1" pluginFormats="buildVST3,enableARA" pluginCharacteristicsValue="" pluginVST3Category="Fx,Dynamics,Reverb" enableARA="1" araFactoryID="com.m7g.freshvocalpro.arafactory.1.0.0" araDocumentArchiveID="com.m7g.freshvocalpro.aradocumentarchive.1" pluginARATransformFlags="kARAPlaybackTransformationNoChanges" cppLanguageStandard="17" displaySplashScreen="0" reportAppUsage="0" useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+  <MAINGROUP id="FreshMain" name="M7G Fresh Vocal Pro Beast">
+    <GROUP id="FreshSource" name="Source">
+      <FILE id="Fef54ebe25" name="ARA.cpp" compile="1" resource="0" file="Source/ARA.cpp" />
+      <FILE id="F5f3536b0c" name="ARA.h" compile="0" resource="0" file="Source/ARA.h" />
+      <FILE id="F28036a372" name="CRMeter.cpp" compile="1" resource="0" file="Source/Components/CRMeter.cpp" />
+      <FILE id="F0590c7cab" name="CRMeter.h" compile="0" resource="0" file="Source/Components/CRMeter.h" />
+      <FILE id="Fa6b95ea00" name="CharacterContent.cpp" compile="1" resource="0" file="Source/Components/CharacterContent.cpp" />
+      <FILE id="F62464cf5a" name="CharacterContent.h" compile="0" resource="0" file="Source/Components/CharacterContent.h" />
+      <FILE id="F77ecb8e49" name="CharacterView.cpp" compile="1" resource="0" file="Source/Components/CharacterView.cpp" />
+      <FILE id="F0d4797e04" name="CharacterView.h" compile="0" resource="0" file="Source/Components/CharacterView.h" />
+      <FILE id="Fd00fb0148" name="DynamicsContent.cpp" compile="1" resource="0" file="Source/Components/DynamicsContent.cpp" />
+      <FILE id="Fb06ce7040" name="DynamicsContent.h" compile="0" resource="0" file="Source/Components/DynamicsContent.h" />
+      <FILE id="F451289744" name="EQContent.cpp" compile="1" resource="0" file="Source/Components/EQContent.cpp" />
+      <FILE id="F461068c4d" name="EQContent.h" compile="0" resource="0" file="Source/Components/EQContent.h" />
+      <FILE id="Feacd078c4" name="HeaderComponent.cpp" compile="1" resource="0" file="Source/Components/HeaderComponent.cpp" />
+      <FILE id="Fcdd8f91f3" name="HeaderComponent.h" compile="0" resource="0" file="Source/Components/HeaderComponent.h" />
+      <FILE id="F7260e9612" name="SidebarComponent.cpp" compile="1" resource="0" file="Source/Components/SidebarComponent.cpp" />
+      <FILE id="F4f4a8fd67" name="SidebarComponent.h" compile="0" resource="0" file="Source/Components/SidebarComponent.h" />
+      <FILE id="F364cffc25" name="SimpleContent.cpp" compile="1" resource="0" file="Source/Components/SimpleContent.cpp" />
+      <FILE id="F6e523a801" name="SimpleContent.h" compile="0" resource="0" file="Source/Components/SimpleContent.h" />
+      <FILE id="Fd8d4da0ff" name="SpaceContent.cpp" compile="1" resource="0" file="Source/Components/SpaceContent.cpp" />
+      <FILE id="Feb9725440" name="SpaceContent.h" compile="0" resource="0" file="Source/Components/SpaceContent.h" />
+      <FILE id="Fb2da16d54" name="SpaceView.cpp" compile="1" resource="0" file="Source/Components/SpaceView.cpp" />
+      <FILE id="F165b83934" name="SpaceView.h" compile="0" resource="0" file="Source/Components/SpaceView.h" />
+      <FILE id="F08d8b5fd4" name="Widgets.h" compile="0" resource="0" file="Source/Components/Widgets.h" />
+      <FILE id="F478c5f057" name="Chain.cpp" compile="1" resource="0" file="Source/DSP/Chain.cpp" />
+      <FILE id="Fd060237c8" name="Chain.h" compile="0" resource="0" file="Source/DSP/Chain.h" />
+      <FILE id="F7d0de92cd" name="CharacterSat.cpp" compile="1" resource="0" file="Source/DSP/CharacterSat.cpp" />
+      <FILE id="F81808fc0c" name="CharacterSat.h" compile="0" resource="0" file="Source/DSP/CharacterSat.h" />
+      <FILE id="F857863317" name="DeEsser.cpp" compile="1" resource="0" file="Source/DSP/DeEsser.cpp" />
+      <FILE id="F0a119ed9c" name="DeEsser.h" compile="0" resource="0" file="Source/DSP/DeEsser.h" />
+      <FILE id="Fec5085777" name="FreshEQ.cpp" compile="1" resource="0" file="Source/DSP/FreshEQ.cpp" />
+      <FILE id="F90ef830d9" name="FreshEQ.h" compile="0" resource="0" file="Source/DSP/FreshEQ.h" />
+      <FILE id="F29642f3c4" name="FreshSpace.cpp" compile="1" resource="0" file="Source/DSP/FreshSpace.cpp" />
+      <FILE id="F2fc09b01d" name="FreshSpace.h" compile="0" resource="0" file="Source/DSP/FreshSpace.h" />
+      <FILE id="Fa240942be" name="MultiBandComp.cpp" compile="1" resource="0" file="Source/DSP/MultiBandComp.cpp" />
+      <FILE id="Fd2b663d15" name="MultiBandComp.h" compile="0" resource="0" file="Source/DSP/MultiBandComp.h" />
+      <FILE id="Fa45121521" name="Parameters.h" compile="0" resource="0" file="Source/DSP/Parameters.h" />
+      <FILE id="F4826d5c84" name="PresetManager.cpp" compile="1" resource="0" file="Source/DSP/PresetManager.cpp" />
+      <FILE id="Fd8a07a0ab" name="PresetManager.h" compile="0" resource="0" file="Source/DSP/PresetManager.h" />
+      <FILE id="F34ea6bfb8" name="M7GLookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel/M7GLookAndFeel.cpp" />
+      <FILE id="Fd763050f2" name="M7GLookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel/M7GLookAndFeel.h" />
+      <FILE id="F84e8516b6" name="PluginEditor.cpp" compile="1" resource="0" file="Source/PluginEditor.cpp" />
+      <FILE id="F5440271af" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h" />
+      <FILE id="Fc3c9c0d7d" name="PluginProcessor.cpp" compile="1" resource="0" file="Source/PluginProcessor.cpp" />
+      <FILE id="F320a6958b" name="PluginProcessor.h" compile="0" resource="0" file="Source/PluginProcessor.h" />
+    </GROUP>
+    <GROUP id="FreshAssets" name="Assets">
+      <FILE id="Fd9a0fd180" name="Inter-Black.ttf" compile="0" resource="1" file="Assets/Inter-Black.ttf" />
+      <FILE id="F1334c5335" name="Inter-Regular.ttf" compile="0" resource="1" file="Assets/Inter-Regular.ttf" />
+      <FILE id="FreshIcon" name="Icon.png" compile="0" resource="0" file="Assets/Icon.png" />
+      <FILE id="FreshIco" name="Icon.ico" compile="0" resource="0" file="Assets/Icon.ico" />
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2022 targetFolder="Builds/VisualStudio2022" araFolder="ThirdParty/ARA_SDK" extraCompilerFlags="/utf-8" vst3BinaryLocation="$(CommonProgramFiles)\VST3" smallIcon="FreshIcon" bigIcon="FreshIcon">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" isDebug="1" targetName="M7G Fresh Vocal Pro Beast" architecture="x64" useRuntimeLibDLL="0" optimisation="1" vst3BinaryLocation="$(CommonProgramFiles)\VST3" enablePluginBinaryCopyStep="0" />
+        <CONFIGURATION name="Release" isDebug="0" targetName="M7G Fresh Vocal Pro Beast" architecture="x64" useRuntimeLibDLL="0" optimisation="3" vst3BinaryLocation="$(CommonProgramFiles)\VST3" enablePluginBinaryCopyStep="0" />
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_audio_basics" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_audio_devices" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_audio_formats" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_audio_plugin_client" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_audio_processors" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_audio_utils" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_core" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_cryptography" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_data_structures" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_dsp" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_events" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_graphics" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_gui_basics" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_gui_extra" path="../JUCE7/modules" />
+        <MODULEPATH id="juce_opengl" path="../JUCE7/modules" />
+      </MODULEPATHS>
+    </VS2022>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="0" />
+  </MODULES>
+  <JUCEOPTIONS JUCE_WEB_BROWSER="0" JUCE_USE_CURL="0" JUCE_VST3_CAN_REPLACE_VST2="0" JUCE_DISPLAY_SPLASH_SCREEN="0" JUCE_REPORT_APP_USAGE="0" />
+</JUCERPROJECT>
