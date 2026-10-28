@@ -1,0 +1,138 @@
+name: Finish validated Makkine Engineer 5X release
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/finish-engineer5x-release.yml]
+permissions:
+  contents: write
+  actions: read
+env:
+  ENGINEER_SOURCE_RUN: '40740080325'
+  ENGINEER_SOURCE_COMMIT: '713761cc77478144a0e924c6650f1623b062f220'
+jobs:
+  windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-release-Windows
+          run-id: ${{ env.ENGINEER_SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: release-files
+      - name: Verify exact compiled source and every Windows checksum
+        run: |
+          python3 - <<'PY'
+          import hashlib,json,os,zipfile
+          from pathlib import Path
+          root=Path('release-files')
+          m=json.loads((root/'Makkine-Engineer-5X-Windows-source-manifest.json').read_text())
+          assert m['source_commit']==os.environ['ENGINEER_SOURCE_COMMIT']
+          with zipfile.ZipFile(root/'Makkine-Engineer-5X-Source.zip') as z:
+              assert json.loads(z.read('Engineer5XProject/SOURCE-MANIFEST.json'))==m
+              for n,h in m['sha256'].items(): assert hashlib.sha256(z.read('Engineer5XProject/'+n)).hexdigest()==h,n
+          for f in root.glob('*.sha256'):
+              h,n=f.read_text().strip().split('  ',1)
+              assert hashlib.sha256((root/n).read_bytes()).hexdigest()==h,n
+          print('PASS: verified original Windows build/source; no recompilation or changed payload')
+          PY
+      - name: Publish Windows installers and full source with the build server token
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view engineer5x-v1.0.0 --json tagName || gh release create engineer5x-v1.0.0 --target "$ENGINEER_SOURCE_COMMIT" --draft --prerelease --title 'Makkine Engineer 5X - AI Vocal Tuner Evolution' --notes-file release-assets/engineer5x-v1.0.0/RELEASE_NOTES.md
+          gh release upload engineer5x-v1.0.0 release-files/* --clobber
+          gh release edit engineer5x-v1.0.0 --draft=false --prerelease
+  macos:
+    needs: windows
+    runs-on: macos-15-intel
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: Makkine-Engineer-5X-macOS-validation
+          run-id: ${{ env.ENGINEER_SOURCE_RUN }}
+          github-token: ${{ github.token }}
+          path: recovered-mac
+      - name: Verify provenance and prepare the existing universal bundles
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$ENGINEER_SOURCE_RUN" > build-run.json
+          python3 - <<'PY'
+          import json,os
+          r=json.load(open('build-run.json'));assert r['head_sha']==os.environ['ENGINEER_SOURCE_COMMIT']
+          PY
+          mkdir -p release-mac
+          cp recovered-mac/Testing/Temporary/LastTest.log release-mac/Makkine-Engineer-5X-macOS-native-tests.txt
+          grep 'ALL ENGINEER AUDIO TESTS PASSED' release-mac/Makkine-Engineer-5X-macOS-native-tests.txt
+          grep 'PASS: editor-closed analysis' release-mac/Makkine-Engineer-5X-macOS-native-tests.txt
+          mkdir -p "$HOME/Library/M7G" "$HOME/Library/Audio/Plug-Ins/Components" "$HOME/Library/Audio/Plug-Ins/VST3"
+          cp Licensing/M7G.license "$HOME/Library/M7G/"
+          name='Makkine Engineer 5X - AI Vocal Tuner Evolution'
+          for format in AU VST3; do
+            if [[ "$format" == AU ]]; then suffix=component; else suffix=vst3; fi
+            bundle="recovered-mac/Engineer5X_artefacts/Release/$format/$name.$suffix"
+            chmod +x "$bundle/Contents/MacOS/$name"
+            codesign --force --deep --sign - "$bundle"
+            codesign --verify --deep --strict "$bundle"
+            lipo "$bundle/Contents/MacOS/$name" -verify_arch arm64 x86_64
+            lipo -archs "$bundle/Contents/MacOS/$name"
+          done
+          cp -R "recovered-mac/Engineer5X_artefacts/Release/AU/$name.component" "$HOME/Library/Audio/Plug-Ins/Components/"
+          cp -R "recovered-mac/Engineer5X_artefacts/Release/VST3/$name.vst3" "$HOME/Library/Audio/Plug-Ins/VST3/"
+      - name: Refresh native AU registration and validate the actual installed component
+        run: |
+          set -euo pipefail
+          touch "$HOME/Library/Audio/Plug-Ins/Components"
+          killall -u "$(id -un)" AudioComponentRegistrar 2>/dev/null || true
+          /usr/bin/auval -a > release-mac/Makkine-Engineer-5X-au-list.txt
+          found=false
+          for attempt in 1 2 3 4 5; do
+            if /usr/bin/auval -v aufx E5x1 M7G7 > release-mac/Makkine-Engineer-5X-auval.txt 2>&1; then found=true; break; fi
+            cat release-mac/Makkine-Engineer-5X-auval.txt
+            sleep 2
+          done
+          cat release-mac/Makkine-Engineer-5X-auval.txt
+          [[ "$found" == true ]]
+      - name: Package validated AU/VST3 and native evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          name='Makkine Engineer 5X - AI Vocal Tuner Evolution'
+          mkdir -p "$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS/Notices"
+          package="$RUNNER_TEMP/EngineerMac/Makkine-Engineer-5X-macOS"
+          cp -R "recovered-mac/Engineer5X_artefacts/Release/AU/$name.component" "$package/"
+          cp -R "recovered-mac/Engineer5X_artefacts/Release/VST3/$name.vst3" "$package/"
+          cp Engineer5X/README.md Engineer5X/COPYING Engineer5X/NOTICES.md Licensing/M7G.license "$package/"
+          cp Engineer5X/ThirdParty/rubberband/COPYING "$package/Notices/RubberBand-COPYING.txt"
+          cp Assets/Fonts/*LICENSE.txt "$package/Notices/"
+          gh release download engineer5x-v1.0.0 --pattern Makkine-Engineer-5X-Source.zip --dir source-package
+          unzip -q source-package/Makkine-Engineer-5X-Source.zip -d "$RUNNER_TEMP/EngineerSource"
+          cp "$RUNNER_TEMP/EngineerSource/Engineer5XProject/JUCE7/LICENSE.md" "$package/Notices/JUCE7-LICENSE.md"
+          cp "$RUNNER_TEMP/EngineerSource/Engineer5XProject/JUCE7/modules/juce_audio_processors/format_types/VST3_SDK/LICENSE.txt" "$package/Notices/VST3-LICENSE.txt"
+          ditto -c -k --sequesterRsrc --keepParent "$package" release-mac/Makkine-Engineer-5X-macOS-universal.zip
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          root=Path('release-mac')
+          record={'compiled_run':os.environ['ENGINEER_SOURCE_RUN'],'source_commit':os.environ['ENGINEER_SOURCE_COMMIT'],'validation_run':os.environ['GITHUB_RUN_ID'],'native_architecture':'x86_64','universal_slices':['arm64','x86_64'],'note':'Original compiled bundles reused; restored executable permission, ad-hoc signed, verified and auval tested after fresh AU registration.'}
+          (root/'Makkine-Engineer-5X-macOS-provenance.json').write_text(json.dumps(record,indent=2))
+          for f in list(root.iterdir()):
+              if f.is_file(): f.with_name(f.name+'.sha256').write_text(hashlib.sha256(f.read_bytes()).hexdigest()+'  '+f.name+'\n')
+          PY
+          gh release upload engineer5x-v1.0.0 release-mac/* --clobber
+          rm -rf "$HOME/Library/Audio/Plug-Ins/Components/$name.component" "$HOME/Library/Audio/Plug-Ins/VST3/$name.vst3"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Engineer-5X-AU-validation-evidence
+          path: release-mac/*
+          retention-days: 7
