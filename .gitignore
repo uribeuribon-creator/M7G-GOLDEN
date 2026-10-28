@@ -14,3 +14,5 @@ __pycache__/
 /Tune/Dependencies/
 /Tune/dist/
 /Tune/build*/
+/WordScratcher/build*/
+/WordScratcher/dist/

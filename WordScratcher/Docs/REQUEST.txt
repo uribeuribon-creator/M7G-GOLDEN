@@ -1,0 +1,59 @@
+Crea un VST3/AU 100% funcional y compilable llamado "WORD SCRATCHER PRO - 300" usando JUCE 7 C++.
+
+REQUISITO NO NEGOCIABLE: El efecto de scratch debe ser REAL, con DSP funcional. Nada de placebo, nada de UI falsa. Debe procesar audio real con time-stretch + pitch + vinilo physics. Si el efecto no scratchea audio real, el plugin es un fracaso.
+
+ARQUITECTURA DSP REAL - CÓMO DEBE FUNCIONAR:
+
+1.  Usa un ring buffer de 5 segundos para el audio de la palabra. El puntero de lectura es controlado por la posición del vinilo virtual (0.0 a 1.0).
+2.  Implementa resampling con interpolación Lagrange de 4 puntos para el movimiento. Cuando el usuario mueve el vinilo rápido hacia adelante, lees el buffer rápido hacia adelante. Cuando lo mueve hacia atrás, lees hacia atrás con reverse.
+3.  Para evitar cambio de tono tipo chipmunk, integra RubberBand Library (incluye el código fuente de rubberband en el proyecto) para time-stretch independiente. Modo VINYL = pitch sigue velocidad (clásico), Modo DIGITAL = pitch se mantiene.
+4.  Añade física real: velocidad del vinilo, inercia (0.85-0.98), fricción, torque del motor. Usa ecuación: velocity = (target_position - current_position) * friction + velocity * inertia.
+5.  Crossfader: simple gain gate con curva. Cuando está cerrado, mute. Cuando está abierto, audio pasa.
+
+SISTEMA DE 300 PRESETS PROFESIONALES - DEBEN ESTAR PROGRAMADOS EN CÓDIGO, NO VACÍOS:
+
+Crea una clase PresetManager con un array de 300 structs, cada preset con valores reales que cambian el comportamiento del scratch. Cada preset debe sonar DIFERENTE.
+
+Estructura de cada preset:
+struct ScratchPreset {
+  String name;
+  String category;
+  float inertia, friction, motorTorque, releaseTime;
+  float pitchRange, vinylNoise, crackle, tension;
+  bool vinylMode; // true = pitch sigue velocidad
+  int crossfaderCurve; // 0=cut, 1=smooth, 2=hamster
+  float hotCuePositions[8];
+  float transformerRate;
+  float echoDelay, echoFeedback;
+  String description;
+};
+
+LOS 300 PRESETS DIVIDIDOS EN 10 CATEGORÍAS DE 30 PRESETS C/U - USA ESTOS NOMBRES EXACTOS:
+
+CATEGORÍA 1 - CHIRPS (30): Chirp Basic, Chirp Fast, Chirp Slow Drag, Chirp Double, Chirp Triple, Chirp Baby, Chirp Long, Chirp Short Stab, Chirp Echo, Chirp Reverse, Chirp Paisa Slow, Chirp Medallo Fast, Chirp Aggressive, Chirp Soft, Chirp Vinyl Heavy, Chirp Digital Clean, Chirp 33RPM, Chirp 45RPM, Chirp LoFi, Chirp HiFi, Chirp Tape, Chirp Dusty, Chirp Heavy Tension, Chirp Light Tension, Chirp Cut, Chirp Transformer Blend, Chirp Echo Tail, Chirp Brake, Chirp Release Long, Chirp Motor Off
+
+CATEGORÍA 2 - TRANSFORMERS (30): Transformer Basic, Transformer Fast Cut, Transformer Slow, Transformer Machine Gun, Transformer 2-Click, Transformer 3-Click, Transformer 4-Click, Transformer Paisa, Transformer Street, Transformer Club, Transformer Radio, Transformer LoFi, Transformer Hi Cut, Transformer Crab Blend, Transformer Echo, Transformer Reverse, Transformer Baby Transformer, Transformer Long Hold, Transformer Short Stab, Transformer Heavy, Transformer Light, Transformer Crackle, Transformer Clean, Transformer Vinyl, Transformer Digital, Transformer 50% Pitch, Transformer 100% Pitch, Transformer Hamster, Transformer Brake, Transformer Release
+
+CATEGORÍA 3 - FLARES & CRABS (30): Flare 1-Click, Flare 2-Click, Flare Orbit 1, Flare Orbit 2, Flare Autobahn, Crab Basic, Crab Fast, Crab Slow, Crab Paisa Style, Crab Medallo, Crab Street, Crab Aggressive, Crab Soft, Crab Echo, Crab Reverse, Crab Vinyl, Crab Digital, Crab Heavy, Crab Light, Crab Tension Max, Crab Tension Min, Crab 33, Crab 45, Crab LoFi, Crab HiFi, Crab Dusty, Crab Clean, Crab Transformer Combo, Crab Chirp Combo, Crab Endless
+
+CATEGORÍA 4 - WORD CHOPS (30): Word Chop Intro, Word Chop Outro, Word Chop Middle, Word Chop Repeat, Word Chop Stutter, Word Chop Echo, Word Chop Reverse, Word Chop Paisa Accent, Word Chop Fast, Word Chop Slow, Word Chop Heavy, Word Chop Light, Word Chop Vinyl, Word Chop Digital, Word Chop Brake, Word Chop Release, Word Chop Transformer, Word Chop Chirp, Word Chop Flare, Word Chop Crab, Word Chop LoFi, Word Chop HiFi, Word Chop Dusty, Word Chop Clean, Word Chop 33, Word Chop 45, Word Chop Motor Off, Word Chop Tension, Word Chop Crackle, Word Chop Endless Loop
+
+CATEGORÍA 5 - BABY SCRATCHES (30): Baby Scratch Basic, Baby Slow, Baby Fast, Baby Paisa, Baby Street, Baby Soft, Baby Aggressive, Baby Echo, Baby Reverse, Baby Vinyl, Baby Digital, Baby LoFi, Baby HiFi, Baby Dusty, Baby Clean, Baby 33, Baby 45, Baby Heavy, Baby Light, Baby Tension, Baby Crackle, Baby Brake, Baby Release, Baby Transformer, Baby Chirp, Baby Flare, Baby Crab, Baby Motor Off, Baby Endless, Baby Word Hold
+
+CATEGORÍA 6 - TEAR & ORBIT (30): Tear Basic, Tear Slow, Tear Fast, Tear Paisa, Tear Street, Tear Aggressive, Tear Soft, Tear Echo, Tear Reverse, Tear Vinyl, Tear Digital, Tear LoFi, Tear HiFi, Tear Dusty, Tear Clean, Tear 33, Tear 45, Tear Heavy, Tear Light, Tear Tension, Tear Crackle, Tear Brake, Tear Release, Tear Transformer, Tear Chirp, Tear Flare, Tear Crab, Tear Motor Off, Tear Endless, Tear Word Hold
+
+CATEGORÍA 7 - SLOW DRAGS & RELEASES (30): Slow Drag Basic, Slow Drag Paisa, Slow Drag Street, Slow Drag Heavy, Slow Drag Light, Slow Drag Vinyl, Slow Drag Digital, Slow Drag LoFi, Slow Drag HiFi, Slow Drag Dusty, Slow Drag Clean, Slow Drag 33, Slow Drag 45, Slow Drag Echo, Slow Drag Reverse, Slow Drag Brake Long, Slow Drag Release Long, Slow Drag Transformer, Slow Drag Chirp, Slow Drag Flare, Slow Drag Crab, Slow Drag Tension Max, Slow Drag Tension Min, Slow Drag Crackle Max, Slow Drag Crackle Min, Slow Drag Motor Off, Slow Drag Motor On, Slow Drag Echo Tail, Slow Drag Endless, Slow Drag Word Hold
+
+CATEGORÍA 8 - LO-FI & VINTAGE (30): LoFi Dusty Vinyl, LoFi Tape Hiss, LoFi Crackle Max, LoFi Radio, LoFi Phone, LoFi Street, LoFi Paisa, LoFi Heavy, LoFi Light, LoFi Slow, LoFi Fast, LoFi Echo, LoFi Reverse, LoFi Brake, LoFi Release, LoFi Transformer, LoFi Chirp, LoFi Flare, LoFi Crab, LoFi Baby, LoFi Tear, LoFi Orbit, LoFi Word Chop, LoFi Slow Drag, LoFi 33, LoFi 45, LoFi Motor Off, LoFi Tension, LoFi Pitch 50%, LoFi Pitch 100%
+
+CATEGORÍA 9 - EXTREME & FX (30): Extreme Fast, Extreme Slow, Extreme Pitch Up, Extreme Pitch Down, Extreme Reverse, Extreme Brake, Extreme Release, Extreme Transformer, Extreme Chirp, Extreme Flare, Extreme Crab, Extreme Echo, Extreme Dusty, Extreme Clean, Extreme Vinyl, Extreme Digital, Extreme 33, Extreme 45, Extreme Heavy, Extreme Light, Extreme Tension, Extreme Crackle, Extreme Motor Off, Extreme Motor On, Extreme Word Repeat, Extreme Stutter, Extreme Orbit, Extreme Tear, Extreme Baby, Extreme Endless
+
+CATEGORÍA 10 - MAKKINE SIGNATURE (30): Makkine Chop, Makkine Slow Paisa, Makkine Street, Makkine Medallo, Makkine Agite, Makkine Tropel, Makkine Soponcio, Makkine Chirrete, Makkine Care, Makkine Faltón, Makkine Camelle, Makkine Peye, Makkine Tinto, Makkine Tiguere, Makkine Miguele, Makkine Pri, Makkine Tiempo, Makkine Cobro Caro, Makkine Raro, Makkine Guíros, Makkine 2112, Makkine Tiempo Real, Makkine Brake Paisa, Makkine Release Largo, Makkine Transformer Paisa, Makkine Chirp Paisa, Makkine Flare Paisa, Makkine Crab Paisa, Makkine Baby Paisa, Makkine Endless Medallo
+
+IMPLEMENTACIÓN DE PRESETS: En el AudioProcessor, crea ValueTreeState con todos los parámetros. En el constructor, inicializa los 300 presets en un std::vector. Cuando el usuario selecciona preset 0-299, aplica todos los valores con setParameter. Guarda el preset actual en XML.
+
+UI: ComboBox con 300 presets agrupados por categorías, buscador de texto. Cuando cambias preset, los knobs se mueven animados.
+
+ENTREGA: Proyecto JUCE completo, carpeta Source con PluginProcessor.cpp/.h y PluginEditor.cpp/.h y PresetManager.h y VinylEngine.h y RubberBand incluido, CMakeLists.txt, listo para compilar. Código real, no TODOs.
+
+Si no puedes incluir RubberBand por licencia, implementa tu propio PSOLA time-stretch simple pero funcional.

@@ -1,0 +1,148 @@
+name: Build and publish WORD SCRATCHER PRO 300
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/word-scratcher-v1.0.0/**
+      - .github/workflows/publish-word-scratcher-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 40
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - name: Prepare offline source project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          if ($LASTEXITCODE -ne 0) { throw 'JUCE source clone failed' }
+          python WordScratcher/Tools/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Offline source packaging failed' }
+          Expand-Archive WordScratcher/dist/WORD-SCRATCHER-PRO-300-Source.zip "$env:RUNNER_TEMP/ScratchSource"
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build and test from the exact published source archive
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP/ScratchSource/WordScratcher300Project/WordScratcher/Build-Windows.ps1" -BuildRoot "$PWD"'
+      - name: Preserve validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Word-Scratcher-300-Windows-validation
+          path: |
+            build-scratcher-windows/Testing/Temporary/**
+            build-scratcher-windows/Release/*.exe
+            build-scratcher-windows/WordScratcher_artefacts/Release/VST3/**
+          retention-days: 7
+      - name: Test install, reinstall, licence and earlier products, then uninstall
+        shell: pwsh
+        run: ./WordScratcher/Tests/InstallerSmoke.ps1
+      - name: Render real interface, actual scratch demos and measured callback budget
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          & ./build-scratcher-windows/Release/ScratchUI.exe "$PWD/WordScratcher/dist/Word-Scratcher-300.png"
+          if ($LASTEXITCODE -ne 0) { throw 'UI failed' }
+          & ./build-scratcher-windows/Release/ScratchDSP.exe --render "$PWD/WordScratcher/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Vowel scratch demo failed' }
+          & ./build-scratcher-windows/Release/ScratchDSP.exe --speech "$PWD/WordScratcher/dist"
+          if ($LASTEXITCODE -ne 0) { throw 'Synthetic word demo failed' }
+          & ./build-scratcher-windows/Release/ScratchBenchmark.exe | Tee-Object -FilePath WordScratcher/dist/Word-Scratcher-300-Windows-performance.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Benchmark failed' }
+          Copy-Item Licensing/M7G.license WordScratcher/dist
+          Copy-Item "$env:RUNNER_TEMP/ScratchSource/WordScratcher300Project/SOURCE-MANIFEST.json" WordScratcher/dist/Word-Scratcher-300-Windows-source-manifest.json
+          Get-ChildItem WordScratcher/dist -File | Where-Object {$_.Name -notlike '*.sha256'} | ForEach-Object { ((Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower() + '  ' + $_.Name) | Set-Content -Encoding ascii ($_.FullName+'.sha256') }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Word-Scratcher-300-release-Windows
+          path: WordScratcher/dist/*
+          retention-days: 7
+  macos:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - name: Prepare and extract offline source project
+        run: |
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          python3 WordScratcher/Tools/package-source.py
+          mkdir -p "$RUNNER_TEMP/ScratchSource"
+          unzip -q WordScratcher/dist/WORD-SCRATCHER-PRO-300-Source.zip -d "$RUNNER_TEMP/ScratchSource"
+      - name: Build universal AU and VST3 and run native tests from source archive
+        run: bash "$RUNNER_TEMP/ScratchSource/WordScratcher300Project/WordScratcher/Build-macOS.sh" "$PWD"
+      - name: Preserve native validation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Word-Scratcher-300-macOS-validation
+          path: build-scratcher-macos/Testing/Temporary/**
+          retention-days: 7
+      - name: Validate both architectures, install AU, run auval and remove test bundles
+        run: bash WordScratcher/Tests/MacSmoke.sh
+      - name: Package macOS bundles and native evidence
+        run: |
+          set -euo pipefail
+          ./build-scratcher-macos/ScratchUI "$PWD/WordScratcher/dist/Word-Scratcher-300-macOS.png"
+          ./build-scratcher-macos/ScratchBenchmark | tee WordScratcher/dist/Word-Scratcher-300-macOS-performance.txt
+          mkdir -p "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS"
+          cp -R 'build-scratcher-macos/WordScratcher_artefacts/Release/AU/WORD SCRATCHER PRO - 300.component' "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/"
+          cp -R 'build-scratcher-macos/WordScratcher_artefacts/Release/VST3/WORD SCRATCHER PRO - 300.vst3' "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/"
+          cp WordScratcher/README.md WordScratcher/COPYING WordScratcher/NOTICES.md Licensing/M7G.license "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/"
+          mkdir -p "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/Notices"
+          cp WordScratcher/ThirdParty/rubberband/COPYING "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/Notices/RubberBand-COPYING.txt"
+          cp JUCE7/LICENSE.md "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/Notices/JUCE7-LICENSE.md"
+          cp Assets/Fonts/*LICENSE.txt "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/Notices/"
+          cp JUCE7/modules/juce_audio_processors/format_types/VST3_SDK/LICENSE.txt "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS/Notices/VST3-LICENSE.txt"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/ScratchMac/Word-Scratcher-300-macOS" WordScratcher/dist/WORD-SCRATCHER-PRO-300-macOS-universal.zip
+          cp "$RUNNER_TEMP/ScratchSource/WordScratcher300Project/SOURCE-MANIFEST.json" WordScratcher/dist/Word-Scratcher-300-macOS-source-manifest.json
+          rm WordScratcher/dist/WORD-SCRATCHER-PRO-300-Source.zip
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          for f in Path('WordScratcher/dist').iterdir():
+              if f.is_file() and f.suffix!='.sha256':
+                  f.with_name(f.name+'.sha256').write_text(hashlib.sha256(f.read_bytes()).hexdigest()+'  '+f.name+'\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Word-Scratcher-300-release-macOS
+          path: WordScratcher/dist/*
+          retention-days: 7
+  publish:
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Word-Scratcher-300-release-*
+          path: release-files
+          merge-multiple: true
+      - name: Verify both builds used identical plugin source
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          w=json.loads(Path('release-files/Word-Scratcher-300-Windows-source-manifest.json').read_text())
+          m=json.loads(Path('release-files/Word-Scratcher-300-macOS-source-manifest.json').read_text())
+          assert w['source_commit']==m['source_commit']
+          assert w['juce']==m['juce'] and w['rubberband']==m['rubberband']
+          for name,value in w['sha256'].items():
+              if name.startswith(('WordScratcher/','Source/','Assets/')):
+                  assert m['sha256'][name]==value,name
+          print('PASS: Windows and macOS built the same packaged plugin/dependency source')
+          PY
+      - name: Publish verified cross-platform release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view word-scratcher-v1.0.0 --json tagName || gh release create word-scratcher-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'WORD SCRATCHER PRO - 300 — Real Vinyl / Digital / VST3 + AU' --notes-file release-assets/word-scratcher-v1.0.0/RELEASE_NOTES.md
+          gh release upload word-scratcher-v1.0.0 release-files/* --clobber
+          gh release edit word-scratcher-v1.0.0 --draft=false --prerelease

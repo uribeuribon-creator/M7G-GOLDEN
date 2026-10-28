@@ -1,0 +1,8 @@
+{
+  "component": "Rubber Band Library",
+  "version": "3.3.0",
+  "revision": "2be46b0dffb13273a67396c77bc9278736bb03d2",
+  "source": "https://github.com/breakfastquay/rubberband/tree/v3.3.0",
+  "licence": "GPL-2.0-or-later or commercial",
+  "modifications": "Unmodified upstream source, compiled through single/RubberBandSingle.cpp with provided builtin FFT/resampler."
+}
