@@ -19,3 +19,7 @@ __pycache__/
 
 /Engineer5X/dist/
 /Engineer5X/build*/
+
+/EngineerONE/dist/
+/EngineerONE/build*/
+/EngineerONE/ThirdParty/ARA_SDK/

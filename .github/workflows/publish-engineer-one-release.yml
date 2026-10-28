@@ -1,0 +1,106 @@
+name: Build and publish Makkine Engineer ONE VST3 ARA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - release-assets/engineer-one-v1.0.0/**
+      - .github/workflows/publish-engineer-one-release.yml
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v5
+      - name: Prepare and verify full offline source project
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
+          if ($LASTEXITCODE -ne 0) { throw 'JUCE clone failed' }
+          git clone --depth 1 --branch releases/2.2.0 --recurse-submodules --shallow-submodules https://github.com/Celemony/ARA_SDK.git EngineerONE/ThirdParty/ARA_SDK
+          if ($LASTEXITCODE -ne 0) { throw 'ARA clone failed' }
+          python EngineerONE/Tools/package-source.py
+          if ($LASTEXITCODE -ne 0) { throw 'Offline source packaging failed' }
+          Expand-Archive EngineerONE/dist/Makkine-Engineer-ONE-Studio-One-Edition-Source.zip "$env:RUNNER_TEMP/OneSource"
+      - name: Install NSIS
+        run: choco install nsis --yes --no-progress
+      - name: Build and run all four suites from exact published source
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP/OneSource/EngineerONEProject/EngineerONE/Build-Windows.ps1" -BuildRoot "$PWD"'
+      - name: Preserve native validation
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-ONE-Windows-validation
+          path: |
+            build-one-windows/Testing/Temporary/**
+            build-one-windows/Release/*.exe
+            build-one-windows/EngineerONE_artefacts/Release/VST3/**
+          retention-days: 7
+      - name: Test installation, reinstall, previous products, licence and uninstall
+        shell: pwsh
+        run: ./EngineerONE/Tests/InstallerSmoke.ps1
+      - name: Render real UI, evidence and aligned audio demonstration
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          & ./build-one-windows/Release/OneUI.exe "$PWD/EngineerONE/dist/Makkine-Engineer-ONE.png"
+          if ($LASTEXITCODE -ne 0) { throw 'Actual UI validation failed' }
+          & ./build-one-windows/Release/OneDSP.exe --render "$PWD/EngineerONE/dist" | Tee-Object EngineerONE/dist/Makkine-ONE-native-audio-validation.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Automatic tuning/audio validation failed' }
+          & ./build-one-windows/Release/OneARA.exe | Tee-Object EngineerONE/dist/Makkine-ONE-native-ARA-validation.txt
+          if ($LASTEXITCODE -ne 0) { throw 'ARA integration validation failed' }
+          Compress-Archive -Path 'build-one-windows/EngineerONE_artefacts/Release/VST3/*' -DestinationPath EngineerONE/dist/Makkine-Engineer-ONE-Windows-VST3.zip
+          Copy-Item Licensing/M7G.license EngineerONE/dist
+          Copy-Item EngineerONE/README.md EngineerONE/dist/Makkine-Engineer-ONE-LEEME.md
+          Copy-Item build-one-windows/Testing/Temporary/LastTest.log EngineerONE/dist/Makkine-ONE-native-CTest.log
+          Copy-Item "$env:RUNNER_TEMP/OneSource/EngineerONEProject/SOURCE-MANIFEST.json" EngineerONE/dist/Makkine-Engineer-ONE-source-manifest.json
+          Get-ChildItem EngineerONE/dist -File | Where-Object {$_.Name -notlike '*.sha256'} | ForEach-Object { ((Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower() + '  ' + $_.Name) | Set-Content -Encoding ascii ($_.FullName+'.sha256') }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Makkine-Engineer-ONE-release-Windows
+          path: EngineerONE/dist/*
+          retention-days: 7
+  publish:
+    needs: windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          name: Makkine-Engineer-ONE-release-Windows
+          path: release-files
+      - name: Verify exact source, build provenance and every hash
+        env:
+          ONE_SOURCE_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PYCODE'
+          import hashlib,json,os,zipfile
+          from pathlib import Path
+          root=Path('release-files')
+          manifest=json.loads((root/'Makkine-Engineer-ONE-source-manifest.json').read_text())
+          assert manifest['source_commit']==os.environ['ONE_SOURCE_SHA']
+          with zipfile.ZipFile(root/'Makkine-Engineer-ONE-Studio-One-Edition-Source.zip') as z:
+              assert json.loads(z.read('EngineerONEProject/SOURCE-MANIFEST.json'))==manifest
+              for name,digest in manifest['sha256'].items():
+                  assert hashlib.sha256(z.read('EngineerONEProject/'+name)).hexdigest()==digest,name
+              assert any('/ARA_API/ARAInterface.h' in n for n in z.namelist())
+              assert any('/ARA_Library/PlugIn/ARAPlug.cpp' in n for n in z.namelist())
+              assert not any('/.git/' in n or n.endswith('.pem') for n in z.namelist())
+          for checksum in root.glob('*.sha256'):
+              digest,name=checksum.read_text().strip().split('  ',1)
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest,name
+          print('PASS: packaged source and every release asset verified')
+          PYCODE
+      - name: Publish tested Windows VST3 ARA installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view engineer-one-v1.0.0 --json tagName || gh release create engineer-one-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'Makkine Engineer ONE - Studio One Edition / VST3 + ARA' --notes-file release-assets/engineer-one-v1.0.0/RELEASE_NOTES.md
+          gh release upload engineer-one-v1.0.0 release-files/* --clobber
+          gh release edit engineer-one-v1.0.0 --draft=false --prerelease

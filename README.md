@@ -1,5 +1,22 @@
 # M7G — plugins de voz y efectos
 
+## Makkine Engineer ONE — Studio One Edition / VST3 + ARA
+
+[Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Studio-One-Edition-Windows-x64.exe) · [VST3 portable](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Windows-VST3.zip) · [Fuente completa](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer-one-v1.0.0/Makkine-Engineer-ONE-Studio-One-Edition-Source.zip)
+
+**CAPTURA → IA afina sola → ESCUCHA → ARRASTRA.** Cada pulsación de IA genera
+otra interpretación natural desde la captura original. Análisis YIN, tonalidad,
+frases, vibrato y ataques; Rubber Band R3 con formantes. Los retoques de notas
+son opcionales. Preview interno y WAV PCM24/48k con duración/silencios y origen BWF.
+
+ARA procesa el evento en su posición original y guarda el audio en el proyecto.
+El arrastre de WAV depende de la posición que permita Studio One; un VST3 no puede
+forzarla ni borrar/reemplazar eventos del arreglo. Motor automático DSP local;
+no incorpora una red neuronal entrenada. Validación ARA con host simulado;
+comprobación directa en Studio One 7 pendiente.
+
+[Manual y alcance](EngineerONE/README.md) · [Validación](EngineerONE/VALIDATION.md) · [Release y demos](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/engineer-one-v1.0.0)
+
 ## Makkine Engineer 5X — AI Vocal Tuner Evolution
 
 [Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Windows-x64.exe) · [VST3 portable Windows](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Windows-VST3.zip) · [AU/VST3 Mac universal](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-macOS-universal.zip) · [Código completo](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/engineer5x-v1.0.0/Makkine-Engineer-5X-Source.zip)
