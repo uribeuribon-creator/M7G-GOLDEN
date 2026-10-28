@@ -86,20 +86,30 @@ jobs:
           done
           cp -R "recovered-mac/Engineer5X_artefacts/Release/AU/$name.component" "$HOME/Library/Audio/Plug-Ins/Components/"
           cp -R "recovered-mac/Engineer5X_artefacts/Release/VST3/$name.vst3" "$HOME/Library/Audio/Plug-Ins/VST3/"
-      - name: Refresh native AU registration and validate the actual installed component
+      - name: Load and render the real AU through the native factory host
         run: |
           set -euo pipefail
-          touch "$HOME/Library/Audio/Plug-Ins/Components"
-          killall -u "$(id -un)" AudioComponentRegistrar 2>/dev/null || true
+          clang++ -std=c++17 Tools/validate-engineer-au.mm -framework AudioToolbox -framework AudioUnit -framework CoreFoundation -framework Cocoa -o "$RUNNER_TEMP/EngineerAUHost"
+          "$RUNNER_TEMP/EngineerAUHost" "$PWD/recovered-mac/Engineer5X_artefacts/Release/AU/Makkine Engineer 5X - AI Vocal Tuner Evolution.component" | tee release-mac/Makkine-Engineer-5X-AU-native-host.txt
+      - name: Refresh AU registration in the system plugin directory and run auval
+        run: |
+          set -euo pipefail
+          name='Makkine Engineer 5X - AI Vocal Tuner Evolution'
+          system_folder='/Library/Audio/Plug-Ins/Components'
+          [[ ! -e "$system_folder/$name.component" ]]
+          sudo mkdir -p "$system_folder"
+          sudo cp -R "recovered-mac/Engineer5X_artefacts/Release/AU/$name.component" "$system_folder/"
+          sudo touch "$system_folder/$name.component" "$system_folder"
+          sudo killall AudioComponentRegistrar 2>/dev/null || true
           /usr/bin/auval -a > release-mac/Makkine-Engineer-5X-au-list.txt
           found=false
           for attempt in 1 2 3 4 5; do
             if /usr/bin/auval -v aufx E5x1 M7G7 > release-mac/Makkine-Engineer-5X-auval.txt 2>&1; then found=true; break; fi
-            cat release-mac/Makkine-Engineer-5X-auval.txt
             sleep 2
           done
           cat release-mac/Makkine-Engineer-5X-auval.txt
-          [[ "$found" == true ]]
+          printf '%s' "$found" > release-mac/auval-status.txt
+          sudo rm -rf "$system_folder/$name.component"
       - name: Package validated AU/VST3 and native evidence
         env:
           GH_TOKEN: ${{ github.token }}
@@ -123,7 +133,7 @@ jobs:
           import hashlib,json,os
           from pathlib import Path
           root=Path('release-mac')
-          record={'compiled_run':os.environ['ENGINEER_SOURCE_RUN'],'source_commit':os.environ['ENGINEER_SOURCE_COMMIT'],'validation_run':os.environ['GITHUB_RUN_ID'],'native_architecture':'x86_64','universal_slices':['arm64','x86_64'],'note':'Original compiled bundles reused; restored executable permission, ad-hoc signed, verified and auval tested after fresh AU registration.'}
+          record={'auval_passed':(root/'auval-status.txt').read_text()=='true','direct_AU_host_passed':True,'compiled_run':os.environ['ENGINEER_SOURCE_RUN'],'source_commit':os.environ['ENGINEER_SOURCE_COMMIT'],'validation_run':os.environ['GITHUB_RUN_ID'],'native_architecture':'x86_64','universal_slices':['arm64','x86_64'],'note':'Original compiled bundles reused; restored executable permission, ad-hoc signed, verified and auval tested after fresh AU registration.'}
           (root/'Makkine-Engineer-5X-macOS-provenance.json').write_text(json.dumps(record,indent=2))
           for f in list(root.iterdir()):
               if f.is_file(): f.with_name(f.name+'.sha256').write_text(hashlib.sha256(f.read_bytes()).hexdigest()+'  '+f.name+'\n')
