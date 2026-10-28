@@ -8,6 +8,7 @@ on:
       - M7G_FreshVocalPro/Tests/**
       - M7G_FreshVocalPro/Tools/**
       - M7G_FreshVocalPro/Installer/**
+      - M7G_FreshVocalPro/ThirdParty/**
       - M7G_FreshVocalPro/Assets/**
       - M7G_FreshVocalPro/*.jucer
       - M7G_FreshVocalPro/CMakeLists.txt
