@@ -37,8 +37,9 @@ int main(int argc, char **argv) {
     return 5;
   std::printf("VST3 vendor: %s; classes: %d\n", info.vendor,
               factory->countClasses());
-  if (factory->countClasses() != 2) {
-    std::puts("Expected standard VST3 without ARA extension classes");
+  if (factory->countClasses() != 3) {
+    std::puts("Expected standard JUCE VST3 audio/controller/compatibility "
+              "classes without ARA");
     return 18;
   }
   Vst::IComponent *component = nullptr;

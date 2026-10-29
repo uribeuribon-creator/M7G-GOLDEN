@@ -14,7 +14,7 @@ Pruebas con señal sintética controlada; sus umbrales no garantizan el resultad
 - GUI: modos exactos 600×400, 1200×750 y 1400×900; morph, knobs, curvas de estilos, bypass, Ctrl+Z/Y, A/B, XML, drag de orden real, radar y curva animados.
 - Projucer oficial 7.0.12: .jucer resalvado a Visual Studio 2022, VST3 normal, ARA deshabilitado y código de plugin cotejado con CMake.
 
-- El factory VST3 debe exponer dos clases estándar, sin clases de extensión ARA. El proyecto no incluye el SDK de ARA.
+- El factory VST3 debe exponer tres clases estándar de JUCE (audio, controlador y compatibilidad), sin clases de extensión ARA. El proyecto no incluye el SDK de ARA.
 
 ## Puerta de publicación Windows
 
@@ -23,3 +23,5 @@ La automatización compila desde el Source.zip exacto con CMake y MSBuild/Projuc
 ## Límites
 
 No se ha ejecutado Studio One 7 en este entorno ni un benchmark de sus controladores GPU. Las capturas nativas de CI usan fallback gráfico para servidores sin GPU; el producto compila soporte OpenGL. No hay evaluación auditiva con las grabaciones del usuario ni comparación ciega con un plugin comercial. Las fotos/video de referencia no fueron adjuntadas y no se afirma coincidencia visual exacta. No incluye afinación ni red neuronal.
+
+La prueba adicional de OpenGL bajo Wine/Xvfb devolvió un error X11 BadMatch. La interfaz y sus animaciones pasan con la ruta de software; el controlador OpenGL real de Windows/Studio One sigue pendiente de validación.
