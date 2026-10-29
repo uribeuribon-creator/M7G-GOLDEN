@@ -42,8 +42,6 @@ FreshProcessor::FreshProcessor()
 }
 FreshProcessor::~FreshProcessor() {
   stopTimer();
-  if (selectedRegion)
-    selectedRegion->removeListener(this);
   for (auto &s : fresh::specs)
     state.removeParameterListener(s.id, this);
 }
@@ -58,8 +56,6 @@ void FreshProcessor::prepareToPlay(double sr, int block) {
   maximum = std::max(32, block);
   chain.prepare(sr, getTotalNumOutputChannels(), maximum);
   setLatencySamples(chain.latency());
-  prepareToPlayForARA(sr, maximum, getTotalNumOutputChannels(),
-                      getProcessingPrecision());
 }
 fresh::Values FreshProcessor::settings() const {
   fresh::Values values{};
@@ -72,7 +68,6 @@ void FreshProcessor::set(fresh::Param p, float value) {
   parameter->setValueNotifyingHost(parameter->convertTo0to1(value));
 }
 void FreshProcessor::parameterChanged(const juce::String &, float) {
-  dirty.store(true);
   if (morphing.load() && !morphWriting.load())
     morphing.store(false);
 }
@@ -84,13 +79,7 @@ void FreshProcessor::process(juce::AudioBuffer<float> &buffer,
   if (auto *head = getPlayHead())
     if (auto p = head->getPosition())
       pos = *p;
-  if (auto *renderer = getPlaybackRenderer<fresh::Renderer>())
-    renderer->hostBypass.store(hostBypass || raw[fresh::bypass]->load() > .5f);
-  bool processed = processBlockForARA(
-      buffer, isNonRealtime() ? Realtime::no : Realtime::yes, pos);
-  if (!processed)
-    chain.process(buffer, settings(), pos.getBpm().orFallback(120.),
-                  hostBypass);
+  chain.process(buffer, settings(), pos.getBpm().orFallback(120.), hostBypass);
 }
 void FreshProcessor::processBlock(juce::AudioBuffer<float> &b,
                                   juce::MidiBuffer &m) {
@@ -196,37 +185,9 @@ void FreshProcessor::reorder(int from, int to) {
   undo.beginNewTransaction("Module order");
   set(fresh::order, float(i));
 }
-fresh::Controller *FreshProcessor::controller() const {
-  auto *doc = getDocumentController();
-  return doc ? juce::ARADocumentControllerSpecialisation::
-                   getSpecialisedDocumentController<fresh::Controller>(doc)
-             : nullptr;
-}
-fresh::Meters &FreshProcessor::meters() {
-  if (auto *c = controller())
-    return c->meters;
-  return chain.meters;
-}
-void FreshProcessor::attach(juce::ARAPlaybackRegion *r) {
-  if (selectedRegion == r)
-    return;
-  if (selectedRegion)
-    selectedRegion->removeListener(this);
-  selectedRegion = r;
-  if (r) {
-    r->addListener(this);
-    auto *mod = r->getAudioModification<fresh::Modification>();
-    if (mod->initialised)
-      apply(mod->parameters.load(), "Evento ARA", false);
-    else
-      mod->apply(settings());
-    dirty.store(false);
-  }
-}
-void FreshProcessor::willDestroyPlaybackRegion(juce::ARAPlaybackRegion *r) {
-  if (r == selectedRegion)
-    selectedRegion = nullptr;
-}
+
+fresh::Meters &FreshProcessor::meters() { return chain.meters; }
+
 void FreshProcessor::timerCallback() {
   if (morphing.load()) {
     morphWriting.store(true);
@@ -241,27 +202,6 @@ void FreshProcessor::timerCallback() {
     if (t >= 1)
       morphing.store(false);
     morphWriting.store(false);
-  }
-  if (isEditorView()) {
-    juce::ARAPlaybackRegion *chosen = nullptr;
-    if (auto *view = getEditorView()) {
-      auto regions =
-          view->getViewSelection()
-              .getEffectivePlaybackRegions<juce::ARAPlaybackRegion>();
-      if (!regions.empty())
-        chosen = regions.front();
-    }
-    if (!chosen)
-      if (auto *renderer = getPlaybackRenderer()) {
-        auto &regions = renderer->getPlaybackRegions();
-        if (!regions.empty())
-          chosen = regions.front();
-      }
-    if (chosen)
-      attach(chosen);
-    if (selectedRegion && dirty.exchange(false))
-      selectedRegion->getAudioModification<fresh::Modification>()->apply(
-          settings());
   }
 }
 void FreshProcessor::getStateInformation(juce::MemoryBlock &out) {

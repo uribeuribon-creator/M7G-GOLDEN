@@ -1,4 +1,4 @@
-# M7G Fresh Vocal Pro Beast / VST3 + ARA / Windows x64
+# M7G Fresh Vocal Pro Beast / VST3 NORMAL / Windows x64
 
 Plugin nuevo de mezcla vocal con interfaz negra/dorada y tres vistas:
 
@@ -9,10 +9,10 @@ Plugin nuevo de mezcla vocal con interfaz negra/dorada y tres vistas:
 - Space: reverb y delay en paralelo con ducking, filtros y sincronización musical al tempo del DAW.
 - 35 presets, Load/Save XML, A/B, undo/redo, bypass por sección/global y orden de cadena arrastrable en Expert.
 - Radar y curva de saturación reactivos, soporte OpenGL, tooltip y doble clic para resetear.
-- Latencia real comunicada al host, ARA con parámetros por evento y archive/restore.
+- Inserto VST3 normal, sin ARA; latencia real comunicada al host y estado completo guardado por el DAW.
 
 **Instalar:** cierra el DAW, ejecuta el `.exe`, abre Studio One y escanea VST3. Busca **M7G Fresh Vocal Pro Beast**. La licencia global M7G se incluye y se conservan los productos anteriores.
 
-Se publican instalador, VST3 portable, fuentes completas JUCE 7/ARA/Inter con `.jucer` y proyectos Visual Studio 2022, capturas reales, demos sintéticas, logs y SHA-256.
+Se publican instalador, VST3 portable, fuentes completas JUCE 7/Inter con `.jucer` y proyectos Visual Studio 2022, capturas reales, demos sintéticas, logs y SHA-256.
 
-Este plugin mezcla la voz; no es un afinador ni utiliza una red neuronal. El preset se llama **IA Control Vocal**, según la elección del usuario. La apariencia sigue el texto: faltan las cinco fotos y el video para verificar coincidencia exacta. Prueba directa en Studio One 7 y de sus controladores GPU pendiente; la integración ARA se valida con un host de ensayo. Ver README/VALIDATION para alcance y resultados.
+Este plugin mezcla la voz; no es un afinador ni utiliza una red neuronal. El preset se llama **IA Control Vocal**, según la elección del usuario. La apariencia sigue el texto: faltan las cinco fotos y el video para verificar coincidencia exacta. Prueba directa en Studio One 7 y de sus controladores GPU pendiente; se valida la carga y procesamiento del VST3 estándar. Ver README/VALIDATION para alcance y resultados.

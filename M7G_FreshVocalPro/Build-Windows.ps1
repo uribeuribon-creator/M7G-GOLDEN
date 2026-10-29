@@ -8,8 +8,6 @@ $juce=Join-Path $sourceRoot 'JUCE7'
 if(-not(Test-Path "$juce/CMakeLists.txt")){Checked{git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git $juce}}
 if(Test-Path "$juce/.git"){$revision=(git -C $juce rev-parse HEAD).Trim()}else{$revision=(Get-Content (Join-Path $sourceRoot 'JUCE7_REVISION.txt') -Raw).Trim()}
 if($revision -ne '4f43011b96eb0636104cb3e433894cda98243626'){throw 'Unexpected JUCE 7 revision'}
-$ara=Join-Path $sourceRoot 'M7G_FreshVocalPro/ThirdParty/ARA_SDK'
-if(-not(Test-Path "$ara/ARA_API/ARAInterface.h")){Checked{git clone --depth 1 --branch releases/2.2.0 --recurse-submodules --shallow-submodules https://github.com/Celemony/ARA_SDK.git $ara}}
 Checked{cmake -S "$sourceRoot/M7G_FreshVocalPro" -B build-fresh-windows -A x64 -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded}
 Checked{cmake --build build-fresh-windows --config Release -j 4}
 $licenseDirectory=Join-Path $env:APPDATA 'M7G';New-Item -ItemType Directory -Force $licenseDirectory | Out-Null

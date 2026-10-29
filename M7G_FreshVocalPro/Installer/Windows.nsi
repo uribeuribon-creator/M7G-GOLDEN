@@ -15,7 +15,7 @@ OutFile "${OUTPUT_FILE}"
 InstallDir "$PROGRAMFILES64\M7G\M7G Fresh Vocal Pro Beast"
 RequestExecutionLevel admin
 SetCompressor /SOLID lzma
-BrandingText "M7G FRESH VOCAL PRO BEAST / VOCAL MIX / VST3 + ARA"
+BrandingText "M7G FRESH VOCAL PRO BEAST / VOCAL MIX / VST3"
 VIProductVersion "1.0.0.0"
 VIAddVersionKey /LANG=1034 "ProductName" "${PRODUCT}"
 VIAddVersionKey /LANG=1034 "FileDescription" "${PRODUCT} - Instalador VST3 Windows x64"
@@ -44,7 +44,7 @@ Function .onInit
  ${EndIf}
  SetRegView 64
 FunctionEnd
-Section "VST3 + ARA / FRESH VOCAL PRO BEAST"
+Section "VST3 / FRESH VOCAL PRO BEAST"
  SetOutPath "$COMMONFILES64\VST3\M7G Fresh Vocal Pro Beast.vst3"
  ClearErrors
  File /r "${ARTIFACT_DIR}\VST3\M7G Fresh Vocal Pro Beast.vst3\*.*"
@@ -54,8 +54,6 @@ Section "VST3 + ARA / FRESH VOCAL PRO BEAST"
  SetOutPath "$INSTDIR"
  File /oname=LEEME.md "..\README.md"
  File /oname=COPYING-GPL3.txt "..\COPYING"
- File /oname=ARA-API-LICENSE.txt "..\ThirdParty\ARA_SDK\ARA_API\LICENSE.txt"
- File /oname=ARA-LIBRARY-LICENSE.txt "..\ThirdParty\ARA_SDK\ARA_Library\LICENSE.txt"
  File /oname=INTER-OFL.txt "..\Assets\Inter-OFL.txt"
  File /oname=NOTICES.md "..\NOTICES.md"
  File /oname=JUCE7-LICENSE.md "..\..\JUCE7\LICENSE.md"
@@ -81,8 +79,6 @@ Section "Uninstall"
  Delete "$INSTDIR\COPYING-GPL3.txt"
  Delete "$INSTDIR\NOTICES.md"
  Delete "$INSTDIR\INTER-OFL.txt"
- Delete "$INSTDIR\ARA-API-LICENSE.txt"
- Delete "$INSTDIR\ARA-LIBRARY-LICENSE.txt"
  Delete "$INSTDIR\JUCE7-LICENSE.md"
  Delete "$INSTDIR\VST3-LICENSE.txt"
  Delete "$INSTDIR\Uninstall.exe"

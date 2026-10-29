@@ -37,6 +37,10 @@ int main(int argc, char **argv) {
     return 5;
   std::printf("VST3 vendor: %s; classes: %d\n", info.vendor,
               factory->countClasses());
+  if (factory->countClasses() != 2) {
+    std::puts("Expected standard VST3 without ARA extension classes");
+    return 18;
+  }
   Vst::IComponent *component = nullptr;
   for (int i = 0; i < factory->countClasses(); ++i) {
     PClassInfo cls{};

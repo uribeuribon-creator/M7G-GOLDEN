@@ -1,13 +1,12 @@
 #pragma once
 #include "../../Source/V11License.h"
-#include "ARA.h"
+#include "DSP/Chain.h"
 #include "DSP/PresetManager.h"
+#include <juce_audio_utils/juce_audio_utils.h>
 class FreshProcessor final
     : public juce::AudioProcessor,
-      public juce::AudioProcessorARAExtension,
       private juce::Timer,
-      private juce::AudioProcessorValueTreeState::Listener,
-      private juce::ARAPlaybackRegion::Listener {
+      private juce::AudioProcessorValueTreeState::Listener {
 public:
   FreshProcessor();
   ~FreshProcessor() override;
@@ -15,7 +14,7 @@ public:
     return "M7G Fresh Vocal Pro Beast";
   }
   void prepareToPlay(double, int) override;
-  void releaseResources() override { releaseResourcesForARA(); }
+  void releaseResources() override { chain.reset(); }
   void processBlock(juce::AudioBuffer<float> &, juce::MidiBuffer &) override;
   void processBlockBypassed(juce::AudioBuffer<float> &,
                             juce::MidiBuffer &) override;
@@ -53,7 +52,6 @@ public:
   void reorder(int from, int to);
   fresh::Meters &meters();
   juce::String presetName() const;
-  bool ara() const { return isBoundToARA(); }
   juce::UndoManager undo;
   juce::AudioProcessorValueTreeState state;
   std::atomic<int> viewMode{0}, selectedTab{0}, selectedPreset{3};
@@ -65,20 +63,15 @@ private:
   void parameterChanged(const juce::String &, float) override;
   void timerCallback() override;
   void process(juce::AudioBuffer<float> &, juce::MidiBuffer &, bool);
-  void attach(juce::ARAPlaybackRegion *);
-  void willDestroyPlaybackRegion(juce::ARAPlaybackRegion *) override;
   std::array<std::atomic<float> *, fresh::count> raw{};
   fresh::Chain chain;
   double rate = 48000;
   int maximum = 512;
-  std::atomic<bool> dirty{false};
   juce::CriticalSection nameLock;
   juce::String currentName = "Default";
   fresh::Values morphFrom{}, morphTo{}, a{}, b{};
   double morphStart = 0;
   std::atomic<bool> morphWriting{false};
-  juce::ARAPlaybackRegion *selectedRegion = nullptr;
-  fresh::Controller *controller() const;
   V11License license;
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(FreshProcessor)
 };

@@ -30,14 +30,12 @@ jobs:
       - run: git config --global core.autocrlf false
       - uses: actions/checkout@v5
       - uses: microsoft/setup-msbuild@v2
-      - name: Prepare official JUCE and ARA sources and export the jucer project
+      - name: Prepare official JUCE sources and export the jucer project
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
           git clone --depth 1 --branch 7.0.12 https://github.com/juce-framework/JUCE.git JUCE7
           if ($LASTEXITCODE -ne 0) { throw 'JUCE clone failed' }
-          git clone --depth 1 --branch releases/2.2.0 --recurse-submodules --shallow-submodules https://github.com/Celemony/ARA_SDK.git M7G_FreshVocalPro/ThirdParty/ARA_SDK
-          if ($LASTEXITCODE -ne 0) { throw 'ARA clone failed' }
           python M7G_FreshVocalPro/Tools/prepare-projucer.py
           if ($LASTEXITCODE -ne 0) { throw 'Projucer export validation failed' }
           python M7G_FreshVocalPro/Tools/package-source.py
@@ -69,8 +67,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Native interface validation failed' }
           & ./build-fresh-windows/Release/FreshDSP.exe --render "$PWD/M7G_FreshVocalPro/dist" | Tee-Object M7G_FreshVocalPro/dist/Fresh-native-audio-validation.txt
           if ($LASTEXITCODE -ne 0) { throw 'Native DSP validation failed' }
-          & ./build-fresh-windows/Release/FreshARA.exe | Tee-Object M7G_FreshVocalPro/dist/Fresh-native-ARA-validation.txt
-          if ($LASTEXITCODE -ne 0) { throw 'Native ARA validation failed' }
           Compress-Archive -Path 'build-fresh-windows/FreshVocal_artefacts/Release/VST3/*' -DestinationPath M7G_FreshVocalPro/dist/M7G-Fresh-Vocal-Pro-Beast-Windows-VST3.zip
           Copy-Item Licensing/M7G.license M7G_FreshVocalPro/dist
           Copy-Item M7G_FreshVocalPro/README.md M7G_FreshVocalPro/dist/M7G-Fresh-Vocal-Pro-LEEME.md
@@ -113,11 +109,11 @@ jobs:
               assert hashlib.sha256((root/name).read_bytes()).hexdigest()==digest,name
           print('PASS: exact full source, Projucer project and all asset hashes')
           PYCODE
-      - name: Publish tested Windows VST3 ARA release
+      - name: Publish tested Windows standard VST3 release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          gh release view fresh-vocal-pro-v1.0.0 --json tagName || gh release create fresh-vocal-pro-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'M7G Fresh Vocal Pro Beast / Windows VST3 + ARA' --notes-file release-assets/fresh-vocal-pro-v1.0.0/RELEASE_NOTES.md
+          gh release view fresh-vocal-pro-v1.0.0 --json tagName || gh release create fresh-vocal-pro-v1.0.0 --target "$GITHUB_SHA" --draft --prerelease --title 'M7G Fresh Vocal Pro Beast / Windows VST3' --notes-file release-assets/fresh-vocal-pro-v1.0.0/RELEASE_NOTES.md
           gh release upload fresh-vocal-pro-v1.0.0 release-files/* --clobber
           gh release edit fresh-vocal-pro-v1.0.0 --draft=false --prerelease

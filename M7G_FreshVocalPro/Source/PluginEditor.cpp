@@ -1,8 +1,7 @@
 #include "PluginEditor.h"
 using freshui::M7GLookAndFeel;
 FreshEditor::FreshEditor(FreshProcessor &p)
-    : AudioProcessorEditor(p), AudioProcessorEditorARAExtension(&p),
-      processor(p), header(p), sidebar(p), simple(p) {
+    : AudioProcessorEditor(p), processor(p), header(p), sidebar(p), simple(p) {
   setLookAndFeel(&skin);
   modules[0] = std::make_unique<freshui::DynamicsContent>(p);
   modules[1] = std::make_unique<freshui::EQContent>(p);
@@ -136,8 +135,7 @@ void FreshEditor::paint(juce::Graphics &g) {
                            : "M7G FRESH VOCAL PRO / LICENCIA NO ENCONTRADA",
                        {12, y + 3, getWidth() - 290, 18}, 9, freshui::dim,
                        juce::Justification::left);
-  M7GLookAndFeel::text(g,
-                       processor.ara() ? "ARA EVENT FX" : "VST3 / 35 PRESETS",
+  M7GLookAndFeel::text(g, "VST3 / 35 PRESETS",
                        {getWidth() - 270, y + 3, 165, 18}, 9, freshui::gold,
                        juce::Justification::right);
 }

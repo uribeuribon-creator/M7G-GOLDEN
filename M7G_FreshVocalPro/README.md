@@ -1,6 +1,6 @@
 # M7G Fresh Vocal Pro Beast
 
-Plugin nuevo de mezcla vocal para Windows 10/11 x64, VST3 + ARA, JUCE 7.0.12 y C++17. Los plugins anteriores permanecen independientes.
+Plugin nuevo de mezcla vocal para Windows 10/11 x64, VST3 normal, JUCE 7.0.12 y C++17. Los plugins anteriores permanecen independientes.
 
 ## Instalar y usar
 
@@ -37,13 +37,13 @@ El delay sigue el tempo comunicado por el DAW; usa 120 BPM cuando no se informa 
 
 **Salida:** limitador enlazado, techo de muestra −0,5 dBFS, anticipación 1 ms y release 50 ms. No es un medidor/limitador true-peak.
 
-## ARA y Studio One
+## Inserto normal de Studio One
 
-Como inserto VST3 procesa la entrada de la pista en tiempo real. Como extensión ARA, lee el audio del evento asignado mediante read-ahead y procesa la cadena en su posición de reproducción; los parámetros completos de cada modificación se guardan/restauran en el documento ARA. Se admite fuente mono/estéreo y conversión de frecuencia con interpolación bandlimited cuando las frecuencias difieren. No se anuncia time-stretch ARA ni edición/reemplazo arbitrario de eventos.
+Este es un **VST3 normal, sin ARA**. Arrástralo al rack de insertos de una pista o bus vocal. Procesa la entrada en tiempo real, sigue el tempo comunicado por Studio One y guarda todos los parámetros en el estado normal del plugin/proyecto. No captura eventos ni requiere integración o licencia ARA.
 
-Requiere una edición de Studio One con soporte ARA para usar esa integración. La compensación de latencia se informa al host a partir de las muestras reales: 142 a 44,1 kHz, 154 a 48 kHz y 298 a 96 kHz en las pruebas. El ajuste de bypass y el orden de módulos conservan esa cifra.
+La compensación de latencia se informa al host a partir de las muestras reales: 142 a 44,1 kHz, 154 a 48 kHz y 298 a 96 kHz en las pruebas. El bypass y el orden de módulos conservan esa cifra.
 
-Las pruebas incluyen un host ARA de ensayo; Studio One 7 y sus controladores gráficos requieren prueba manual. Las capturas automáticas de CI usan la ruta gráfica de JUCE sin OpenGL, para que sean reproducibles en servidores sin GPU. La compilación del plugin mantiene OpenGL habilitado.
+Studio One 7 y sus controladores gráficos requieren prueba manual. Las capturas automáticas de CI usan la ruta gráfica de JUCE sin OpenGL para servidores sin GPU; el plugin mantiene OpenGL habilitado.
 
 ## Presets
 
@@ -53,12 +53,12 @@ Las pruebas incluyen un host ARA de ensayo; Studio One 7 y sus controladores gr�
 
 ## Proyecto compilable
 
-El paquete Source.zip contiene las fuentes completas, JUCE/ARA fijados a commits, fuentes tipográficas/licencias, `.jucer` y proyectos Visual Studio 2022 exportados con Projucer oficial 7.0.12.
+El paquete Source.zip contiene las fuentes completas, JUCE fijado a un commit, fuentes tipográficas/licencias, `.jucer` y proyectos Visual Studio 2022 exportados con Projucer oficial 7.0.12.
 
 - CMake: ejecuta `M7G_FreshVocalPro/Build-Windows.ps1` con VS2022 Desktop C++, CMake >=3.22, Python 3 y NSIS.
 - Visual Studio: abre `M7G_FreshVocalPro/Builds/VisualStudio2022/M7G Fresh Vocal Pro Beast.sln`, selecciona **Release / x64** y compila.
-- Projucer: abre/resalva `M7G_FreshVocalPro.jucer`. El ARA SDK está en `ThirdParty/ARA_SDK`; JUCE está en `../JUCE7`. La herramienta `Tools/prepare-projucer.py` descarga Projucer oficial si necesitas regenerar los proyectos.
-- `Build-Windows.ps1 -AlsoBuildProjucer` valida ambas rutas. Las soluciones generadas y el paquete completo permiten compilar sin descargar SDKs; solo se descarga Projucer cuando se solicita regenerarlos.
+- Projucer: abre/resalva `M7G_FreshVocalPro.jucer`. JUCE está en `../JUCE7`. La herramienta `Tools/prepare-projucer.py` descarga Projucer oficial si necesitas regenerar los proyectos.
+- `Build-Windows.ps1 -AlsoBuildProjucer` valida ambas rutas. Las soluciones generadas y el paquete completo permiten compilar sin descargar JUCE; solo se descarga Projucer cuando se solicita regenerarlos.
 
 La apariencia sigue la especificación escrita. Las cinco fotos y el video mencionados no se adjuntaron a esta petición; la comparación visual exacta queda pendiente.
 

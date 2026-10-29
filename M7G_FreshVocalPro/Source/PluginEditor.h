@@ -7,7 +7,6 @@
 #include "Components/SimpleContent.h"
 #include "Components/SpaceContent.h"
 class FreshEditor final : public juce::AudioProcessorEditor,
-                          public juce::AudioProcessorEditorARAExtension,
                           private juce::Timer {
 public:
   explicit FreshEditor(FreshProcessor &);

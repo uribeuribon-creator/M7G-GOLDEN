@@ -1,12 +1,12 @@
 # M7G — plugins de voz y efectos
 
-## M7G Fresh Vocal Pro Beast — mezcla vocal / VST3 + ARA
+## M7G Fresh Vocal Pro Beast — mezcla vocal / VST3 normal
 
 [Instalador Windows x64](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Windows-x64.exe) · [VST3 portable](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Windows-VST3.zip) · [Proyecto completo con .jucer](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/download/fresh-vocal-pro-v1.0.0/M7G-Fresh-Vocal-Pro-Beast-Source.zip)
 
 Dynamics, EQ de ocho bandas, saturación 4× y espacio paralelo con reverb/delay y
 ducking. 35 presets, tres vistas, A/B, XML, undo/redo y orden de módulos arrastrable
-en Expert. JUCE 7, C++17, OpenGL y ARA con parámetros por evento. Plugin de mezcla;
+en Expert. JUCE 7, C++17, OpenGL. Inserto de pista o bus, sin ARA. Plugin de mezcla;
 el preset **IA Control Vocal** utiliza el DSP automático y no incluye afinación.
 
 [Manual](M7G_FreshVocalPro/README.md) · [Validación](M7G_FreshVocalPro/VALIDATION.md) · [Release, capturas y demos](https://github.com/uribeuribon-creator/M7G-GOLDEN/releases/tag/fresh-vocal-pro-v1.0.0)

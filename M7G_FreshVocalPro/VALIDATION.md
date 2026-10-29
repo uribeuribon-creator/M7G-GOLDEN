@@ -12,12 +12,13 @@ Pruebas con señal sintética controlada; sus umbrales no garantizan el resultad
 - Delay: 28800 muestras a 100 BPM y 24000 a 120 BPM para 1/4. Reverb con cola audible y ducking que responde a entrada vocal.
 - 35 presets con audio distinto, parámetros completos XML, límite de salida, A/B y recuperación del estado.
 - GUI: modos exactos 600×400, 1200×750 y 1400×900; morph, knobs, curvas de estilos, bypass, Ctrl+Z/Y, A/B, XML, drag de orden real, radar y curva animados.
-- ARA: factory y roles reales conectados a host de ensayo; parámetros al evento, salida en posición no nula, latencia y archive/restore.
-- Projucer oficial 7.0.12: .jucer resalvado a Visual Studio 2022, ARA habilitado y IDs cotejados con CMake.
+- Projucer oficial 7.0.12: .jucer resalvado a Visual Studio 2022, VST3 normal, ARA deshabilitado y código de plugin cotejado con CMake.
+
+- El factory VST3 debe exponer dos clases estándar, sin clases de extensión ARA. El proyecto no incluye el SDK de ARA.
 
 ## Puerta de publicación Windows
 
-La automatización compila desde el Source.zip exacto con CMake y MSBuild/Projucer, ejecuta cuatro suites CTest, comprueba el VST3 real de ambas rutas, el instalador, reinstalación, conservación de plugins/licencia anteriores y desinstalación. La publicación requiere que todos los pasos terminen correctamente. Se adjuntan logs nativos, capturas de las vistas, demostración de audio, manifiesto de fuente y SHA-256.
+La automatización compila desde el Source.zip exacto con CMake y MSBuild/Projucer, ejecuta tres suites CTest, comprueba el VST3 real de ambas rutas, el instalador, reinstalación, conservación de plugins/licencia anteriores y desinstalación. La publicación requiere que todos los pasos terminen correctamente. Se adjuntan logs nativos, capturas de las vistas, demostración de audio, manifiesto de fuente y SHA-256.
 
 ## Límites
 

@@ -1,4 +1,4 @@
-"""Exporta el .jucer con Projucer oficial 7.0.12 y valida ARA/x64."""
+"""Exporta el .jucer con Projucer oficial 7.0.12 y valida VST3 normal/x64."""
 from pathlib import Path
 import argparse,hashlib,io,subprocess,urllib.request,zipfile,xml.etree.ElementTree as ET
 ap=argparse.ArgumentParser();ap.add_argument('--exe',type=Path);args=ap.parse_args()
@@ -14,7 +14,7 @@ if exe is None:
   (cache/'DOWNLOAD.sha256').write_text(hashlib.sha256(raw).hexdigest()+'  juce-7.0.12-windows.zip\n')
 subprocess.run([str(exe.resolve()),'--resave',str(root/'M7G_FreshVocalPro.jucer')],check=True)
 defines=(root/'JuceLibraryCode/JucePluginDefines.h').read_text()
-for marker in ['JucePlugin_Enable_ARA             1','0x46724231','com.m7g.freshvocalpro.arafactory.1.0.0','com.m7g.freshvocalpro.aradocumentarchive.1']:
+for marker in ['JucePlugin_Enable_ARA             0','0x46724231']:
  assert marker in defines,marker
 project=ET.parse(root/'M7G_FreshVocalPro.jucer').getroot();assert project.get('cppLanguageStandard')=='17'
 assert all(c.get('architecture')=='x64' for c in project.findall('.//CONFIGURATION'))
@@ -22,4 +22,4 @@ registered={p.get('file') for p in project.findall('.//FILE') if p.get('compile'
 assert registered=={p.relative_to(root).as_posix() for p in (root/'Source').rglob('*.cpp')}
 assert 'juce_opengl' in {m.get('id') for m in project.findall('.//MODULE')}
 assert (root/'Builds/VisualStudio2022/M7G Fresh Vocal Pro Beast.sln').exists()
-print('PASS: official Projucer export, every source registered, VST3 + ARA, matching factory/archive IDs, C++17, OpenGL and x64')
+print('PASS: official Projucer export, every source registered, standard VST3 without ARA, C++17, OpenGL and x64')

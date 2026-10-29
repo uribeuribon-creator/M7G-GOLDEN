@@ -1,9 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<JUCERPROJECT id="M7GFrB01" name="M7G Fresh Vocal Pro Beast" projectType="audioplug" version="1.0.0" bundleIdentifier="com.m7g.freshvocalpro" companyName="M7G Audio" companyCopyright="M7G Audio" pluginName="M7G Fresh Vocal Pro Beast" pluginManufacturer="M7G Audio" pluginManufacturerCode="M7G7" pluginCode="FrB1" pluginFormats="buildVST3,enableARA" pluginCharacteristicsValue="" pluginVST3Category="Fx,Dynamics,Reverb" enableARA="1" araFactoryID="com.m7g.freshvocalpro.arafactory.1.0.0" araDocumentArchiveID="com.m7g.freshvocalpro.aradocumentarchive.1" pluginARATransformFlags="kARAPlaybackTransformationNoChanges" cppLanguageStandard="17" displaySplashScreen="0" reportAppUsage="0" useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
+<JUCERPROJECT id="M7GFrB01" name="M7G Fresh Vocal Pro Beast" projectType="audioplug" version="1.0.0" bundleIdentifier="com.m7g.freshvocalpro" companyName="M7G Audio" companyCopyright="M7G Audio" pluginName="M7G Fresh Vocal Pro Beast" pluginManufacturer="M7G Audio" pluginManufacturerCode="M7G7" pluginCode="FrB1" pluginFormats="buildVST3" pluginVST3Category="Fx,Dynamics,Reverb" cppLanguageStandard="17" displaySplashScreen="0" reportAppUsage="0" useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="FreshMain" name="M7G Fresh Vocal Pro Beast">
     <GROUP id="FreshSource" name="Source">
-      <FILE id="Fef54ebe25" name="ARA.cpp" compile="1" resource="0" file="Source/ARA.cpp" />
-      <FILE id="F5f3536b0c" name="ARA.h" compile="0" resource="0" file="Source/ARA.h" />
       <FILE id="F28036a372" name="CRMeter.cpp" compile="1" resource="0" file="Source/Components/CRMeter.cpp" />
       <FILE id="F0590c7cab" name="CRMeter.h" compile="0" resource="0" file="Source/Components/CRMeter.h" />
       <FILE id="Fa6b95ea00" name="CharacterContent.cpp" compile="1" resource="0" file="Source/Components/CharacterContent.cpp" />
@@ -55,7 +53,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <VS2022 targetFolder="Builds/VisualStudio2022" araFolder="ThirdParty/ARA_SDK" extraCompilerFlags="/utf-8" vst3BinaryLocation="$(CommonProgramFiles)\VST3" smallIcon="FreshIcon" bigIcon="FreshIcon">
+    <VS2022 targetFolder="Builds/VisualStudio2022" extraCompilerFlags="/utf-8" vst3BinaryLocation="$(CommonProgramFiles)\VST3" smallIcon="FreshIcon" bigIcon="FreshIcon">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" isDebug="1" targetName="M7G Fresh Vocal Pro Beast" architecture="x64" useRuntimeLibDLL="0" optimisation="1" vst3BinaryLocation="$(CommonProgramFiles)\VST3" enablePluginBinaryCopyStep="0" />
         <CONFIGURATION name="Release" isDebug="0" targetName="M7G Fresh Vocal Pro Beast" architecture="x64" useRuntimeLibDLL="0" optimisation="3" vst3BinaryLocation="$(CommonProgramFiles)\VST3" enablePluginBinaryCopyStep="0" />
