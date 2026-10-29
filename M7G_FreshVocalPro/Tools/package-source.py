@@ -26,6 +26,9 @@ with zipfile.ZipFile(out) as z:
  for name,digest in manifest['sha256'].items():assert hashlib.sha256(z.read('FreshVocalProject/'+name)).hexdigest()==digest
  assert 'FreshVocalProject/M7G_FreshVocalPro/Builds/VisualStudio2022/M7G Fresh Vocal Pro Beast.sln' in z.namelist()
  assert 'FreshVocalProject/M7G_FreshVocalPro/ThirdParty/ARA_SDK/ARA_Library/Debug/ARADebug.h' in z.namelist()
- assert 'FreshVocalProject/M7G_FreshVocalPro/ThirdParty/ARA_SDK/ARA_Library/Debug/ARADebug.cpp' in z.namelist()
+ for part in ['ARA_API','ARA_Library']:
+  for file in (product/'ThirdParty/ARA_SDK'/part).rglob('*'):
+   if file.is_file() and file.suffix in {'.h','.hpp','.cpp','.c','.inc'}:
+    assert 'FreshVocalProject/M7G_FreshVocalPro/ThirdParty/ARA_SDK/'+file.relative_to(product/'ThirdParty/ARA_SDK').as_posix() in z.namelist(),str(file)
  assert not any(n.endswith('.pem') or '/.git/' in n for n in z.namelist())
 print('PASS: source package',len(files),'files;',out.stat().st_size,'bytes;',out)
