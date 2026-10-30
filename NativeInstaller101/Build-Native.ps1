@@ -46,9 +46,15 @@ if ($compileLog -notmatch 'Compiler engine version: Inno Setup 6\.2\.2(?:\r?\n|$
 }
 $installer = Join-Path $dist $filename
 $versionInfo = (Get-Item $installer).VersionInfo
-if ($versionInfo.FileDescription -cne 'Instalador VST3 Windows x64') { throw 'Wrong FileDescription.' }
-if ($versionInfo.CompanyName -cne 'M7G Music') { throw 'Wrong CompanyName.' }
-if ($versionInfo.FileVersion -notmatch '^1\.0\.1(?:\.0)?$') { throw 'Wrong FileVersion.' }
+$metadata = [ordered]@{ FileDescription=$versionInfo.FileDescription; CompanyName=$versionInfo.CompanyName; FileVersion=$versionInfo.FileVersion; Language=$versionInfo.Language }
+$metadata | ConvertTo-Json | Tee-Object (Join-Path $evidence 'file-properties.json')
+# Inno Setup pads PE version strings with spaces; validate their displayed values.
+$description = $versionInfo.FileDescription.TrimEnd()
+$company = $versionInfo.CompanyName.TrimEnd()
+$fileVersion = $versionInfo.FileVersion.TrimEnd()
+if ($description -cne 'Instalador VST3 Windows x64') { throw "Wrong FileDescription: '$description'" }
+if ($company -cne 'M7G Music') { throw 'Wrong CompanyName.' }
+if ($fileVersion -notmatch '^1\.0\.1(?:\.0)?$') { throw 'Wrong FileVersion.' }
 if ((Get-Item $installer).Length -lt 2MB -or (Get-Item $installer).Length -gt 4MB) { throw 'Unexpected installer size.' }
 
 $report = [ordered]@{
@@ -58,9 +64,9 @@ $report = [ordered]@{
     Architecture = 'x64'
     Compiler = "Inno Setup $compilerVersion"
     Filename = $filename
-    FileDescription = $versionInfo.FileDescription
-    FileVersion = $versionInfo.FileVersion
-    CompanyName = $versionInfo.CompanyName
+    FileDescription = $description
+    FileVersion = $fileVersion
+    CompanyName = $company
     SizeBytes = (Get-Item $installer).Length
     InstallerSHA256 = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
     OriginalVST3SHA256 = $inputs.vst3_sha256
