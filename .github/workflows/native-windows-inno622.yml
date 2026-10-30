@@ -1,0 +1,37 @@
+name: M7G Fresh Vocal 1.0.1 native Windows Inno 6.2.2
+on:
+  push:
+    branches: [build/m7g-fresh-vocal-101-windows-x64-inno622]
+    paths:
+      - NativeInstaller101/**
+      - .github/workflows/native-windows-inno622.yml
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: NativeInstaller101
+          sparse-checkout-cone-mode: true
+      - name: Compile with Windows ISCC 6.2.2 and verify native install and uninstall
+        shell: pwsh
+        run: ./NativeInstaller101/Build-Native.ps1
+      - name: Preserve native Windows verification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-native-Windows-verification
+          path: NativeInstaller101/validation/**
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Windows installer EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: M7G-Fresh-Vocal-Pro-Beast-Installer-v1.0.1-Windows-x64
+          path: NativeInstaller101/deliverables/M7G-Fresh-Vocal-Pro-Beast-Installer-v1.0.1-Windows-x64.exe
+          if-no-files-found: error
+          retention-days: 7
